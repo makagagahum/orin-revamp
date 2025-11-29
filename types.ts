@@ -1,26 +1,8 @@
-export interface Feature {
-  icon: string;
-  title: string;
-  description: string;
-}
 
+// Types definitions if needed
 export interface TeamMember {
-  name: string;
-  role: string;
-  image: string;
-  email: string;
-  link: string;
-}
-
-export interface ChatMessage {
-  id: string;
-  role: 'user' | 'model';
-  text: string;
-  timestamp: number;
-}
-
-export interface GalleryImage {
-  url: string;
-  caption: string;
-  color: string;
+    name: string;
+    role: string;
+    image: string;
+    link: string;
 }
