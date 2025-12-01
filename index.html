@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ORIN AI | GEN Z EDITION</title>
+    <title>ORIN AI | Your 24/7 AI Employee</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -11,27 +11,26 @@
         theme: {
           extend: {
             colors: {
-              background: '#0B1120',
+              background: '#020202', 
+              surface: '#0A0A0A', 
               primary: '#38F8A8',
               secondary: '#A855F7',
-              accent: '#FF3366',
-              surface: '#1A2035',
             },
-            fontFamily: { sans: ['Inter', 'sans-serif'] },
+            fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['monospace'] },
             animation: {
               'spin-slow': 'spin 20s linear infinite',
-              'marquee': 'marquee 25s linear infinite',
               'glitch': 'glitch 1s linear infinite',
+              'marquee': 'marquee 25s linear infinite',
             },
             keyframes: {
-              marquee: {
-                '0%': { transform: 'translateX(0%)' },
-                '100%': { transform: 'translateX(-100%)' },
-              },
               glitch: {
                 '2%, 64%': { transform: 'translate(2px,0) skew(0deg)' },
                 '4%, 60%': { transform: 'translate(-2px,0) skew(0deg)' },
                 '62%': { transform: 'translate(0,0) skew(5deg)' },
+              },
+              marquee: {
+                '0%': { transform: 'translateX(0%)' },
+                '100%': { transform: 'translateX(-100%)' },
               }
             }
           },
@@ -40,70 +39,44 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-      body { 
-        background-color: #0B1120; 
-        color: #E0E7FF; 
-        overflow-x: hidden; 
-        font-family: 'Inter', sans-serif; 
-      }
-      
-      /* Gen Z Noise Overlay */
-      .noise-bg {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100vw; height: 100vh;
-        z-index: 50;
-        pointer-events: none;
-        opacity: 0.05;
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-      }
-
-      /* Scanline */
-      .scanline {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.1) 51%);
-        background-size: 100% 4px;
-        pointer-events: none;
-        z-index: 51;
-        transform: translateZ(0); /* GPU acceleration */
-      }
-
-      /* Rounded Scrollbar */
+      body { background-color: #020202; color: #ffffff; overflow-x: hidden; font-family: 'Inter', sans-serif; }
       ::-webkit-scrollbar { width: 8px; }
-      ::-webkit-scrollbar-track { background: #0B1120; }
-      ::-webkit-scrollbar-thumb { background: #38F8A8; border-radius: 4px; }
-      ::-webkit-scrollbar-thumb:hover { background: #2DD4BF; }
+      ::-webkit-scrollbar-track { background: #020202; }
+      ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; border: 2px solid #020202; }
+      ::-webkit-scrollbar-thumb:hover { background: #38F8A8; }
       
-      .glass-card { 
-        background: rgba(26, 32, 53, 0.6); 
-        backdrop-filter: blur(12px); 
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      .glass-card { background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 20px 80px -10px rgba(0, 0, 0, 0.6); }
+      .text-stroke { -webkit-text-stroke: 2px #ffffff; color: transparent; }
+      
+      .scanline {
+        width: 100%; height: 100px; z-index: 99;
+        background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(56, 248, 168, 0.04) 50%, rgba(0,0,0,0) 100%);
+        opacity: 0.1; background-size: 100% 4px; animation: scanline 8s linear infinite;
+        pointer-events: none; position: fixed; top: 0; left: 0; will-change: transform;
       }
+      @keyframes scanline { 0% { transform: translateY(-100px); } 100% { transform: translateY(100vh); } }
       
-      .text-glow { text-shadow: 0 0 10px rgba(56, 248, 168, 0.5); }
-      .text-stroke { -webkit-text-stroke: 1px rgba(255,255,255,0.2); color: transparent; }
+      .chat-bubble-user { border-bottom-right-radius: 2px; }
+      .chat-bubble-bot { border-bottom-left-radius: 2px; }
+      .backface-hidden { backface-visibility: hidden; }
     </style>
 <script type="importmap">
 {
   "imports": {
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
     "react": "https://aistudiocdn.com/react@^19.2.0",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.0",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "recharts": "https://aistudiocdn.com/recharts@^3.5.0",
     "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
-    "recharts": "https://aistudiocdn.com/recharts@^3.5.1"
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0"
   }
 }
 </script>
 </head>
 <body>
     <div id="root"></div>
-    <div class="noise-bg"></div>
     <div class="scanline"></div>
+    <div class="noise-bg" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;opacity:0.02;background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAA5OTkAAABMTExERERmZmYzMzPMzMxloRvSAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfmCw0QKzdN1O8kAAAAfUlEQVQ4y6XTwQ3AIAwE0QckhzJ0/6F04g8s+IjlA/TA4Z87I0F69jzm7h7V3eN0d4/T3T1Od/c43d3jdHeP0909Tnf3ON3d43R3j9PdPU539zjd3eN09w96H3oYJ/f0WAAAAABJRU5ErkJggg==)"></div>
     <script type="module" src="/index.tsx"></script>
 </body>
 </html>

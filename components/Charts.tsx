@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
 
@@ -14,10 +13,10 @@ export const MarketGrowthChart = () => (
     <div className="h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
             <LineChart data={dataGrowth}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
                 <XAxis dataKey="year" stroke="#666" />
                 <YAxis stroke="#666" />
-                <RechartsTooltip contentStyle={{ backgroundColor: '#1A2035', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }} />
+                <RechartsTooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #333' }} />
                 <Line type="monotone" dataKey="val" stroke="#38F8A8" strokeWidth={3} dot={{r: 4, fill: '#38F8A8'}} />
             </LineChart>
         </ResponsiveContainer>
@@ -30,7 +29,7 @@ export const ROIChart = () => (
             <BarChart data={dataROI} layout="vertical">
                 <XAxis type="number" stroke="#666" hide />
                 <YAxis dataKey="name" type="category" stroke="#999" width={80} />
-                <RechartsTooltip contentStyle={{ backgroundColor: '#1A2035', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }} cursor={{fill: 'transparent'}} />
+                <RechartsTooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #333' }} cursor={{fill: 'transparent'}} />
                 <Bar dataKey="val" radius={[0, 4, 4, 0]}>
                     {dataROI.map((entry, index) => <Cell key={index} fill={entry.color} />)}
                 </Bar>

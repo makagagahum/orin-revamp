@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 
 const PacManGame = ({ onClose }: { onClose: () => void }) => {
@@ -29,7 +28,7 @@ const PacManGame = ({ onClose }: { onClose: () => void }) => {
             for (let y = 0; y < map.length; y++) {
                 for (let x = 0; x < map[y].length; x++) {
                     if (map[y][x] === 1) {
-                        ctx.fillStyle = '#1A2035'; ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
+                        ctx.fillStyle = '#222'; ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
                         ctx.strokeStyle = '#38F8A8'; ctx.lineWidth = 1; ctx.strokeRect(x * TILE, y * TILE, TILE, TILE);
                     } else if (map[y][x] === 2) {
                         ctx.fillStyle = '#fbbf24'; ctx.fillRect(x * TILE + 8, y * TILE + 8, 4, 4);
@@ -62,11 +61,11 @@ const PacManGame = ({ onClose }: { onClose: () => void }) => {
     }, []);
 
     return (
-        <div className="glass-card p-6 rounded-3xl max-w-md w-full relative shadow-[0_0_50px_rgba(56,248,168,0.3)]">
-            <h3 className="text-[#38F8A8] font-black text-center text-xl mb-4 tracking-widest text-glow">ORIN PROTOCOL</h3>
-            <div className="flex justify-center mb-4"><canvas ref={canvasRef} width={300} height={140} className="bg-black/50 rounded-xl" /></div>
+        <div className="bg-black border-2 border-[#38F8A8] p-6 rounded-xl max-w-md w-full relative shadow-[0_0_50px_rgba(56,248,168,0.3)]">
+            <h3 className="text-[#38F8A8] font-black text-center text-xl mb-4 tracking-widest">ORIN PROTOCOL</h3>
+            <div className="flex justify-center mb-4"><canvas ref={canvasRef} width={300} height={140} className="bg-zinc-900 rounded" /></div>
             <div className="text-center font-mono text-white mb-4">SCORE: {score}</div>
-            <button onClick={onClose} className="w-full bg-white/10 text-white font-bold py-2 hover:bg-[#38F8A8] hover:text-black transition-colors rounded-xl">Close Simulation</button>
+            <button onClick={onClose} className="w-full bg-white text-black font-bold py-2 hover:bg-[#38F8A8] transition-colors uppercase">Close Simulation</button>
         </div>
     );
 };
