@@ -17,8 +17,44 @@ export const TEAM = [
 ];
 
 export const GALLERY_IMAGES = [
-    { url: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1932&auto=format&fit=crop", caption: "Online Sellers" }, 
-    { url: "https://images.unsplash.com/photo-1664575602554-208c7a696d11?q=80&w=1974&auto=format&fit=crop", caption: "Corporates" }, 
-    { url: "https://images.unsplash.com/photo-1577962917302-cd874c4e31d2?q=80&w=1932&auto=format&fit=crop", caption: "LGUs & Gov" }, 
-    { url: "https://images.unsplash.com/photo-1590650516494-0c8e4a4dd67e?q=80&w=2071&auto=format&fit=crop", caption: "Hospitals" }, 
+    { 
+        urls: [
+            "https://expat.com.ph/wp-content/uploads/sites/277/2021/10/Blog-Images-86.jpg",
+            "https://www.speed.ph/wp-content/uploads/2022/07/TikTok-Shop-1024x576.jpg"
+        ], 
+        caption: "Online Sellers",
+        description: "PAIN: Missed replies = Lost sales. \nSOLVED: I auto-reply to 'Hm?' & 'Avail?' instantly. I close deals while you sleep."
+    },
+    { 
+        urls: [
+            "https://media.philstar.com/photos/2023/03/02/airbnb-women_2023-03-02_19-38-34.jpg",
+            "https://media.philstar.com/photos/2023/03/02/airbnb-women_2023-03-02_19-38-34.jpg" 
+        ], 
+        caption: "Airbnb Hosts",
+        description: "PAIN: 2AM inquiries asking 'Is this available?'. \nSOLVED: I handle bookings & guide guests 24/7 in any language."
+    },
+    { 
+        urls: [
+            "https://cfw51.rabbitloader.xyz/eyJjIjp0cnVlLCJoIjoid3d3Lm9sZXJuLmNvbSIsInYiOjMxNTUxNjgxMjcsInIiOjEsImkiOiI5MjIwM2Y1Zi1iNWMzLTQ2NjQtZTkyOC1hY2U0YzY4ZWNmMDAifQ/wp-content/uploads/2025/01/employee-engagement-significance-for-SMEs-1.jpg",
+            "https://static01.nyt.com/images/2011/11/26/business/Callcenterjp2/Callcenterjp2-jumbo.jpg?quality=75&auto=webp"
+        ], 
+        caption: "Corporates",
+        description: "PAIN: Hiring costs, training fatigue, & resignation. \nSOLVED: Zero HR headaches. I never resign, I never complain. Infinite scale."
+    },
+    { 
+        urls: [
+            "https://www.upou.edu.ph/wp-content/uploads/2024/03/UPOU-FMDS-and-PESO-Laguna-Conducted-a-Courtesy-Visit-with-the-Local-Government-Unit-of-Los-Banos-Laguna-for-Barangay-Digital-Transformation-Project_1-600x338.jpg",
+            "https://www.gsis.gov.ph/downloads/images/gfal/Active-Employees_Compensation.jpg"
+        ], 
+        caption: "LGUs & Gov",
+        description: "PAIN: Long queues & angry constituents. \nSOLVED: Instant public service. Digital triage. No more backlogs."
+    },
+    { 
+        urls: [
+            "https://www.itnonline.com/sites/default/files/styles/content_large/public/Makati%20Radiologists%201.JPG?itok=rKSuESSy",
+            "https://files01.pna.gov.ph/source/2024/08/19/pnp-command-center-crame-08162024jb.jpg"
+        ], 
+        caption: "Hospitals & Police",
+        description: "PAIN: Critical delays in information. \nSOLVED: Instant data collection & routing. Fast response saves lives."
+    },
 ];

@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, MessageCircle, X, ArrowRight, Zap, Send, Sparkles, CheckCircle2, Facebook, Instagram, Twitter, ShoppingBag, Globe, TrendingUp, ShieldCheck, Clock, AlertCircle, Building2, Headset } from 'lucide-react';
+import { Menu, MessageCircle, X, ArrowRight, Zap, Send, Sparkles, CheckCircle2, Facebook, Instagram, Twitter, ShoppingBag, Globe, TrendingUp, ShieldCheck, Clock, AlertCircle, Building2, Headset, Cpu } from 'lucide-react';
 import { MarketGrowthChart, ROIChart } from './components/Charts';
 import PacManGame from './components/PacManGame';
 import { ContentProtection } from './components/ContentProtection';
@@ -106,7 +105,57 @@ const MouseTilt: React.FC<{ children: React.ReactNode; intensity?: number }> = (
     return <div ref={ref} onMouseMove={onMove} onMouseLeave={onLeave} className="transition-transform duration-300 ease-out will-change-transform" style={{ transformStyle: 'preserve-3d' }}>{children}</div>;
 };
 
-const FloatingTicker = () => {
+// --- Gallery Card with Slideshow ---
+const GalleryCard: React.FC<{ urls: string[], caption: string, description: string }> = ({ urls, caption, description }) => {
+    const [current, setCurrent] = useState(0);
+    const [hovering, setHovering] = useState(false);
+
+    useEffect(() => {
+        if (!hovering) return;
+        const interval = setInterval(() => {
+            setCurrent(prev => (prev + 1) % urls.length);
+        }, 2000);
+        return () => clearInterval(interval);
+    }, [hovering, urls.length]);
+
+    return (
+        <MouseTilt intensity={10}>
+            <div 
+                className="relative h-96 rounded-3xl overflow-hidden group border border-white/10 bg-gray-900"
+                onMouseEnter={() => setHovering(true)}
+                onMouseLeave={() => setHovering(false)}
+            >
+                {urls.map((src, i) => (
+                     <img 
+                        key={i}
+                        src={src} 
+                        className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-in-out ${i === current ? 'opacity-100 scale-105' : 'opacity-0 scale-100'} grayscale group-hover:grayscale-0`} 
+                        loading="lazy" 
+                        referrerPolicy="no-referrer" 
+                        alt={caption}
+                    />
+                ))}
+                
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-90 transition-opacity"></div>
+                
+                {/* Content */}
+                <div className="absolute bottom-0 left-0 w-full p-8 z-10 transition-transform duration-500 group-hover:translate-y-[-10px]">
+                    <div className="text-[#38F8A8] text-xs font-black uppercase tracking-widest mb-2 font-grotesk">Built For</div>
+                    <div className="text-3xl font-black uppercase drop-shadow-lg text-white mb-4 font-grotesk">{caption}</div>
+                    
+                    <div className="h-0 group-hover:h-auto overflow-hidden transition-all duration-500 opacity-0 group-hover:opacity-100">
+                        <p className="text-sm font-medium text-gray-200 whitespace-pre-line leading-relaxed border-l-2 border-[#38F8A8] pl-3 font-mono">
+                            {description}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </MouseTilt>
+    );
+};
+
+const FloatingTicker = ({ chatOpen }: { chatOpen: boolean }) => {
     const [idx, setIdx] = useState(0);
     const [visible, setVisible] = useState(true);
     const messages = [
@@ -122,8 +171,14 @@ const FloatingTicker = () => {
         }, 4000);
         return () => clearInterval(i);
     }, []);
+
+    // Logic: Slide to Top-Right when chat is open, Bottom-Right otherwise
+    const positionClasses = chatOpen 
+        ? "top-24 right-4 md:right-8 origin-top-right"
+        : "bottom-32 right-4 md:right-8 origin-bottom-right";
+
     return (
-        <div className="fixed bottom-32 right-8 z-[60] flex flex-col gap-3 items-end pointer-events-none md:pointer-events-auto">
+        <div className={`fixed z-[60] flex flex-col gap-3 items-end pointer-events-none md:pointer-events-auto transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)] ${positionClasses} scale-75 md:scale-100`}>
             <div className={`transition-all duration-500 transform ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                 <div className="glass-card p-3 rounded-2xl rounded-br-sm flex items-center gap-3 border-r-4 border-[#38F8A8] max-w-[280px] flex-row-reverse text-right bg-black/80 backdrop-blur-md">
                     <img src={messages[idx].img} className="w-10 h-10 rounded-full bg-white/10 p-1" alt="avatar" />
@@ -153,13 +208,13 @@ export default function App() {
     const [showFloat, setShowFloat] = useState(false);
 
     useEffect(() => {
-        if(process.env.API_KEY) {
+        if(typeof process !== 'undefined' && process.env && process.env.API_KEY) {
              const client = new GoogleGenAI({ apiKey: process.env.API_KEY });
              setAi(client);
         }
 
         const handleScroll = () => {
-            setShowFloat(window.scrollY > 400);
+            setShowFloat(window.scrollY > 600);
         };
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
@@ -206,245 +261,293 @@ export default function App() {
                 
                 {/* Optimized Blurred Nav */}
                 <nav className="fixed top-0 w-full z-50 py-4 px-6 flex justify-between items-center bg-black/50 backdrop-blur-xl border-b border-white/5 transition-all duration-300">
-                    <div className="hidden md:flex gap-8 text-xs font-black uppercase tracking-widest text-gray-400">
-                        <a href="#features" className="hover:text-[#38F8A8] transition-colors">Features</a>
-                        <a href="#stats" className="hover:text-[#38F8A8] transition-colors">Savings</a>
-                    </div>
-                    <a href="#" onClick={handleLogoClick} className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 group cursor-pointer">
-                        <div className="w-10 h-10 rounded-full overflow-hidden relative border-2 border-transparent group-hover:border-[#38F8A8] transition-all duration-700 bg-black">
-                             <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110 group-hover:rotate-[360deg] transition-transform duration-700" alt="logo" />
+                    <div className="flex items-center gap-2 cursor-pointer" onClick={handleLogoClick}>
+                        <div className="w-10 h-10 rounded-full border border-white/20 overflow-hidden bg-black relative group">
+                            <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110 transition-transform duration-500 group-hover:scale-125" alt="ORIN Logo" />
                         </div>
-                        <span className="font-black text-2xl hidden md:block tracking-tighter">ORIN AI</span>
-                    </a>
-                    <div className="hidden md:flex gap-4">
-                        <a href="#pricing" className="text-xs font-black uppercase tracking-widest text-gray-400 hover:text-[#38F8A8] self-center transition-colors">Prices</a>
+                        <span className="font-black text-xl tracking-tighter font-grotesk">ORIN AI</span>
                     </div>
+                    <div className="hidden md:flex gap-6 text-sm font-medium text-gray-400 font-mono">
+                        <a href="#features" className="hover:text-[#38F8A8] transition-colors">Features</a>
+                        <a href="#demo" className="hover:text-[#38F8A8] transition-colors">Demo</a>
+                        <a href="#pricing" className="hover:text-[#38F8A8] transition-colors">Pricing</a>
+                    </div>
+                    <button onClick={() => setChatOpen(true)} className="hidden md:flex bg-white/10 border border-white/10 px-6 py-2 rounded-full text-xs font-bold hover:bg-[#38F8A8] hover:text-black transition-all">
+                        HIRE ORIN
+                    </button>
                 </nav>
 
                 <VelocityScrollProvider>
-                    <section className="pt-40 pb-20 min-h-screen flex flex-col items-center justify-center text-center relative z-10 px-4">
-                        <ParallaxElement speed={-0.3}>
-                            <div className="inline-block mb-6 px-5 py-2 rounded-full border border-[#38F8A8]/30 bg-[#38F8A8]/5 text-[#38F8A8] text-xs font-black tracking-[0.2em] uppercase">
-                                Your 24/7 Staff
-                            </div>
-                            <h1 className="text-[4rem] md:text-[9rem] font-black tracking-tighter leading-[0.85] mb-6">
-                                YOUR <span className="text-stroke">24/7</span> <br/>
-                                <span className="text-[#38F8A8] animate-glitch inline-block">AI EMPLOYEE</span>
-                            </h1>
-                        </ParallaxElement>
-                        <ParallaxElement speed={0.2}>
-                            <p className="text-gray-400 text-lg md:text-2xl max-w-2xl mx-auto mb-10 font-medium leading-relaxed">
-                                Humans get tired. AI doesn't. Stop replying at 2AM. <br/>
-                                Let Orin handle inquiries and close sales while you sleep.
-                            </p>
-                        </ParallaxElement>
-                        <div className="flex gap-4 justify-center">
-                            <MouseTilt intensity={30}>
-                                <a href="#pricing" onClick={() => setChatOpen(true)} className="bg-white text-black px-10 py-5 rounded-full font-black text-lg uppercase tracking-widest hover:scale-105 transition-transform inline-flex items-center gap-2 hover:bg-[#38F8A8] shadow-[0_0_40px_rgba(255,255,255,0.3)] cursor-pointer">
-                                    Hire Orin <ArrowRight size={20} />
-                                </a>
-                            </MouseTilt>
+                    {/* Hero Section */}
+                    <header className="relative pt-40 pb-32 px-4 flex flex-col items-center justify-center min-h-[90vh]">
+                         <div className="mb-6 flex items-center gap-2 border border-[#38F8A8]/30 bg-[#38F8A8]/10 px-4 py-1 rounded-full animate-pulse">
+                             <span className="relative flex h-2 w-2">
+                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#38F8A8] opacity-75"></span>
+                               <span className="relative inline-flex rounded-full h-2 w-2 bg-[#38F8A8]"></span>
+                             </span>
+                             <span className="text-[#38F8A8] text-xs font-bold tracking-widest uppercase font-mono">Orin V9 Online</span>
+                         </div>
+                         
+                         <h1 className="text-[12vw] md:text-[8vw] leading-[0.85] font-black text-center tracking-tighter mix-blend-screen animate-glitch font-grotesk">
+                             YOUR NEW<br/>
+                             <span className="text-stroke">EMPLOYEE</span><br/>
+                             IS HERE.
+                         </h1>
+                         
+                         <p className="mt-8 text-lg md:text-2xl text-gray-400 max-w-2xl text-center leading-relaxed font-grotesk">
+                            Stop replying manually. Start automating your empire.
+                            <br/><span className="text-[#38F8A8]">24/7. Multilingual. Never Tired.</span>
+                         </p>
+
+                         <div className="mt-12 flex flex-col md:flex-row gap-4 items-center">
+                             <button onClick={() => setChatOpen(true)} className="group relative px-8 py-4 bg-[#38F8A8] text-black font-black text-lg hover:scale-105 transition-transform flex items-center gap-2 font-grotesk">
+                                 HIRE ORIN NOW <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                             </button>
+                             <p className="text-xs text-gray-500 font-mono uppercase">₱15,000 One-Time • Lifetime Access</p>
+                         </div>
+                    </header>
+
+                    {/* Marquee */}
+                    <div className="py-8 bg-[#38F8A8] text-black overflow-hidden rotate-[-2deg] scale-110 border-y-4 border-black mb-32">
+                        <div className="animate-marquee whitespace-nowrap flex gap-12 text-4xl font-black italic tracking-tighter font-grotesk">
+                            <span>AUTOMATE NOW</span><span>•</span><span>NO MONTHLY FEES</span><span>•</span><span>24/7 SUPPORT</span><span>•</span><span>AUTOMATE NOW</span><span>•</span><span>NO MONTHLY FEES</span><span>•</span><span>24/7 SUPPORT</span><span>•</span>
+                             <span>AUTOMATE NOW</span><span>•</span><span>NO MONTHLY FEES</span><span>•</span><span>24/7 SUPPORT</span><span>•</span><span>AUTOMATE NOW</span><span>•</span><span>NO MONTHLY FEES</span><span>•</span><span>24/7 SUPPORT</span><span>•</span>
+                        </div>
+                    </div>
+
+                    {/* Sales Psychology Section */}
+                    <section className="py-32 px-4 max-w-7xl mx-auto">
+                        <div className="grid md:grid-cols-2 gap-16 items-center">
+                            <ParallaxElement speed={0.2} rotation={5}>
+                                <MouseTilt>
+                                    <div className="glass-card p-12 rounded-[3rem] relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/20 blur-[80px] rounded-full"></div>
+                                        <h3 className="text-4xl font-black mb-6 font-grotesk">STOP DOING IT<br/>MANUALLY.</h3>
+                                        <ul className="space-y-6 text-xl text-gray-300 font-grotesk">
+                                            <li className="flex items-center gap-4"><X className="text-red-500 w-8 h-8" /> You reply at 2AM (Tired)</li>
+                                            <li className="flex items-center gap-4"><X className="text-red-500 w-8 h-8" /> Leads ignored = Sales lost</li>
+                                            <li className="flex items-center gap-4"><X className="text-red-500 w-8 h-8" /> Hiring humans = ₱20k/mo cost</li>
+                                        </ul>
+                                    </div>
+                                </MouseTilt>
+                            </ParallaxElement>
+
+                            <ParallaxElement speed={0.4} rotation={-5}>
+                                <MouseTilt>
+                                    <div className="glass-card p-12 rounded-[3rem] border border-[#38F8A8]/30 relative overflow-hidden">
+                                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#38F8A8]/20 blur-[80px] rounded-full"></div>
+                                        <h3 className="text-4xl font-black mb-6 text-[#38F8A8] font-grotesk">THE UPGRADE.</h3>
+                                        <ul className="space-y-6 text-xl text-white font-grotesk">
+                                            <li className="flex items-center gap-4"><CheckCircle2 className="text-[#38F8A8] w-8 h-8" /> Auto-Replies in 1 Second</li>
+                                            <li className="flex items-center gap-4"><CheckCircle2 className="text-[#38F8A8] w-8 h-8" /> Closes Sales While You Sleep</li>
+                                            <li className="flex items-center gap-4"><CheckCircle2 className="text-[#38F8A8] w-8 h-8" /> ₱15k One-Time (Lifetime)</li>
+                                        </ul>
+                                    </div>
+                                </MouseTilt>
+                            </ParallaxElement>
+                        </div>
+                    </section>
+
+                    {/* Stats */}
+                    <section className="py-20 px-4">
+                        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8">
+                             <div className="glass-card p-8 rounded-3xl">
+                                 <h4 className="text-2xl font-bold mb-6 font-grotesk">Market Domination</h4>
+                                 <MarketGrowthChart />
+                             </div>
+                             <div className="glass-card p-8 rounded-3xl">
+                                 <h4 className="text-2xl font-bold mb-6 font-grotesk">ROI Potential (vs Hiring)</h4>
+                                 <ROIChart />
+                             </div>
+                        </div>
+                    </section>
+
+                    {/* Gallery Grid */}
+                    <section id="features" className="py-32 px-4 max-w-7xl mx-auto">
+                        <h2 className="text-6xl md:text-8xl font-black text-center mb-24 tracking-tighter font-grotesk">
+                            BUILT FOR<br/><span className="text-[#38F8A8]">EVERYONE.</span>
+                        </h2>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {GALLERY_IMAGES.map((item, i) => (
+                                <div key={i} className={i === 0 || i === 3 ? "lg:col-span-2" : ""}>
+                                     <GalleryCard urls={item.urls} caption={item.caption} description={item.description} />
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                    
+                    {/* Team Section */}
+                    <section className="py-32 px-4 border-t border-white/10">
+                        <div className="max-w-4xl mx-auto text-center mb-20">
+                            <h2 className="text-5xl font-black mb-6 font-grotesk">MEET THE MINDS</h2>
+                            <p className="text-gray-400 font-mono">The architects behind the intelligence.</p>
+                        </div>
+                        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
+                            {TEAM.map((member, i) => (
+                                <div key={i} className="group relative">
+                                    <div className="aspect-square rounded-2xl overflow-hidden mb-4 border border-white/10 bg-gray-900 grayscale group-hover:grayscale-0 transition-all duration-500">
+                                        <img src={member.image} className={`w-full h-full object-cover ${member.name === 'Marvin' ? 'object-left' : 'object-center'}`} alt={member.name} />
+                                    </div>
+                                    <h4 className="font-bold text-lg font-grotesk">{member.name}</h4>
+                                    <p className="text-xs text-[#38F8A8] uppercase font-mono mt-1">{member.role}</p>
+                                    {member.name === 'Marvin' && (
+                                        <a href={member.link} target="_blank" rel="noreferrer" className="mt-3 block text-xs bg-white text-black py-1 px-3 rounded font-bold hover:bg-[#38F8A8] transition-colors font-mono">
+                                            HIRE MARVIN
+                                        </a>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* Pricing with SILICONE CHIP EFFECT */}
+                    <section id="pricing" className="py-32 px-4 relative">
+                        <div className="max-w-3xl mx-auto glass-card p-12 rounded-[3rem] text-center border border-[#38F8A8] relative overflow-hidden group transition-all duration-700 hover:border-[#D4AF37] hover:shadow-[0_0_100px_rgba(212,175,55,0.4)]">
+                             {/* The Chip Pattern Overlay */}
+                             <div className="absolute inset-0 bg-chip-pattern opacity-0 group-hover:opacity-10 transition-opacity duration-700"></div>
+                             
+                             {/* The Metallic Glint Animation */}
+                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#D4AF37]/20 to-transparent translate-x-[-100%] group-hover:animate-shimmer z-0"></div>
+
+                             {/* Border Glow */}
+                             <div className="chip-border group-hover:opacity-100"></div>
+
+                             <div className="absolute inset-0 bg-[#38F8A8]/5 group-hover:bg-black/80 transition-colors z-0"></div>
+                             
+                             <div className="relative z-10">
+                                 <div className="inline-flex items-center gap-2 bg-[#38F8A8] group-hover:bg-[#D4AF37] text-black px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest transition-colors duration-500 mb-8">
+                                     <Cpu className="w-4 h-4" /> Founder's Chip
+                                 </div>
+                                 
+                                 <h2 className="text-7xl md:text-9xl font-black mt-4 tracking-tighter font-grotesk group-hover:text-[#D4AF37] transition-colors duration-500">₱15,000</h2>
+                                 <p className="text-2xl font-medium text-gray-300 mt-4 font-grotesk group-hover:text-white">One-Time Investment</p>
+                                 
+                                 <div className="my-12 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:via-[#D4AF37]/50"></div>
+                                 
+                                 <ul className="text-left max-w-md mx-auto space-y-4 mb-12 font-grotesk">
+                                     <li className="flex items-center gap-3"><CheckCircle2 className="text-[#38F8A8] group-hover:text-[#D4AF37] transition-colors" /> Lifetime 24/7 Unlimited Tech Support</li>
+                                     <li className="flex items-center gap-3"><CheckCircle2 className="text-[#38F8A8] group-hover:text-[#D4AF37] transition-colors" /> Full Facebook, IG, TikTok, Shopify Integration</li>
+                                     <li className="flex items-center gap-3"><CheckCircle2 className="text-[#38F8A8] group-hover:text-[#D4AF37] transition-colors" /> Voice Note & Image Recognition</li>
+                                     <li className="flex items-center gap-3"><CheckCircle2 className="text-[#38F8A8] group-hover:text-[#D4AF37] transition-colors" /> Custom Training for Your Business</li>
+                                 </ul>
+                                 
+                                 <button onClick={() => setChatOpen(true)} className="w-full py-6 bg-white text-black font-black text-2xl hover:bg-[#D4AF37] hover:text-black transition-all rounded-xl font-grotesk shadow-lg group-hover:shadow-[0_0_40px_rgba(212,175,55,0.6)]">
+                                     HIRE ORIN NOW
+                                 </button>
+                                 
+                                 <p className="mt-6 text-sm text-gray-500 font-mono">Limited chip supply. Secure yours today.</p>
+                             </div>
                         </div>
                     </section>
                 </VelocityScrollProvider>
 
-                {/* Marquee Banner */}
-                <div className="py-20 bg-[#38F8A8] text-black border-y-8 border-black rotate-1 scale-105 z-20 relative overflow-hidden">
-                    <div className="animate-marquee whitespace-nowrap flex gap-16 items-center">
-                        {[1,2,3,4,5,6].map(i => (
-                            <div key={i} className="flex items-center gap-6">
-                                <span className="text-6xl font-black uppercase italic">ALWAYS ONLINE</span>
-                                <Sparkles size={40} className="animate-spin-slow" />
-                                <span className="text-6xl font-black uppercase text-black">ALWAYS PRECISE</span>
-                                <Sparkles size={40} className="animate-spin-slow" />
-                                <span className="text-6xl font-black uppercase italic text-black/50">NO DOWNTIME</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Psychology */}
-                <section className="py-32 container mx-auto px-6 relative z-10">
-                    <div className="grid md:grid-cols-3 gap-12">
-                        <div className="md:col-span-1 self-center">
-                            <div className="flex items-center gap-2 text-purple-400 font-bold tracking-widest uppercase text-xs">
-                                <TrendingUp size={16}/> The New Way to Work
-                            </div>
-                            <h2 className="text-5xl md:text-6xl font-black uppercase leading-[0.9] mb-6">
-                                Stop <span className="text-gray-600">Doing It</span><br/> <span className="text-[#38F8A8]">Manually</span>
-                            </h2>
-                            <p className="text-gray-400 text-lg mb-8 leading-relaxed">
-                                You can't be online 24/7. Orin can. While you sleep, eat, or rest, Orin answers inquiries and closes sales for you.
-                            </p>
-                            <div className="flex flex-col gap-4">
-                                 <div className="flex items-center gap-3"><Clock className="text-gray-500" /> <span className="text-gray-500">Human: Needs Sleep</span></div>
-                                 <div className="flex items-center gap-3"><Zap className="text-[#38F8A8]" /> <span className="font-bold text-white">ORIN: 24/7 Awake</span></div>
-                                 <div className="h-px bg-white/10 my-2"></div>
-                                 <div className="flex items-center gap-3"><ShoppingBag className="text-[#38F8A8]" /> <span className="font-bold">Good for Online Sellers</span></div>
-                                 <div className="flex items-center gap-3"><Building2 className="text-[#38F8A8]" /> <span className="font-bold">Great for Big Business</span></div>
-                            </div>
-                        </div>
-                        <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            {GALLERY_IMAGES.map((img, i) => (
-                                <MouseTilt key={i} intensity={10}>
-                                    <div className="relative h-72 rounded-3xl overflow-hidden group border border-white/10">
-                                        <img src={img.url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 grayscale group-hover:grayscale-0" loading="lazy" referrerPolicy="no-referrer" />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 group-hover:opacity-60 transition-opacity"></div>
-                                        <div className="absolute bottom-6 left-6">
-                                            <div className="text-[#38F8A8] text-xs font-black uppercase tracking-widest mb-1">Built For</div>
-                                            <div className="text-2xl font-black uppercase drop-shadow-lg">{img.caption}</div>
-                                        </div>
-                                    </div>
-                                </MouseTilt>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-
-                <section id="features" className="py-32 container mx-auto px-6 relative z-10">
-                    <div className="grid md:grid-cols-3 gap-6">
-                        <div className="md:col-span-2">
-                            <h2 className="text-6xl md:text-8xl font-black tracking-tighter mb-8">POWERFUL <span className="text-[#38F8A8]">FEATURES</span></h2>
-                        </div>
-                        {FEATURES.map((f, i) => (
-                            <MouseTilt key={i}>
-                                <div className="glass-card p-8 rounded-3xl h-full border border-white/10 hover:bg-white/5 transition-colors group">
-                                    <div className="text-[#38F8A8] mb-4 group-hover:scale-110 transition-transform origin-left inline-block"><Zap size={32} /></div>
-                                    <div className="text-white text-xl font-black uppercase mb-2">{f.title}</div>
-                                    <p className="text-gray-400 text-sm leading-relaxed">{f.description}</p>
-                                </div>
-                            </MouseTilt>
-                        ))}
-                    </div>
-                </section>
-
-                <section id="stats" className="py-32 container mx-auto px-6 relative z-10">
-                    <div className="flex flex-col md:flex-row gap-20">
-                        <div className="w-full md:w-1/3 self-center">
-                            <h2 className="text-7xl font-black tracking-tighter mb-8">WHY IT <span className="text-stroke">MAKES SENSE</span></h2>
-                            <p className="text-gray-400 text-xl">The math is simple. An employee costs ₱20k+/monthly. ORIN costs less and works more.</p>
-                        </div>
-                        <div className="w-full md:w-2/3 flex flex-col gap-12">
-                            <MouseTilt>
-                                <div className="glass-card p-8 rounded-[2rem] bg-black/40 border border-white/10">
-                                    <h3 className="font-black text-white text-xl mb-6 uppercase tracking-widest flex items-center gap-2"><div className="w-3 h-3 bg-[#38F8A8] rounded-full animate-pulse"/> Business Growth</h3>
-                                    <MarketGrowthChart />
-                                </div>
-                            </MouseTilt>
-                            <MouseTilt>
-                                <div className="glass-card p-8 rounded-[2rem] bg-black/40 border border-white/10">
-                                    <h3 className="font-black text-white text-xl mb-6 uppercase tracking-widest flex items-center gap-2"><div className="w-3 h-3 bg-[#A855F7] rounded-full animate-pulse"/> Cost Savings</h3>
-                                    <ROIChart />
-                                </div>
-                            </MouseTilt>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="pricing" className="py-32 text-center relative z-10">
-                    <div className="max-w-xl mx-auto px-6">
-                        <MouseTilt intensity={25}>
-                            <div className="glass-card rounded-[3rem] p-12 border border-white/20 bg-black/80 relative overflow-hidden group hover:border-[#38F8A8]/50 transition-colors duration-500">
-                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#38F8A8] to-transparent opacity-50"></div>
-                                <div className="bg-[#38F8A8] text-black text-xs font-black px-4 py-1 rounded-full inline-block mb-8 uppercase tracking-widest animate-pulse">Investment</div>
-                                <div className="flex justify-center items-baseline text-white mb-4">
-                                    <span className="text-4xl font-bold text-gray-500 mr-2">₱</span>
-                                    <span className="text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500">15,000</span>
-                                </div>
-                                <p className="text-gray-400 text-sm mb-8 uppercase tracking-widest font-mono">One-Time Payment • Lifetime Service</p>
-                                <div className="space-y-4 mb-10 text-left max-w-xs mx-auto">
-                                    <div className="flex items-center gap-3 text-sm text-gray-300"><CheckCircle2 size={16} className="text-[#38F8A8]"/> <span>Full Setup & Hosting</span></div>
-                                    <div className="flex items-center gap-3 text-sm text-gray-300"><CheckCircle2 size={16} className="text-[#38F8A8]"/> <span>No Monthly Fees</span></div>
-                                    <div className="flex items-center gap-3 text-sm text-[#38F8A8] font-bold"><Headset size={16} className="text-[#38F8A8]"/> <span>Lifetime 24/7 Tech Support</span></div>
-                                    <div className="flex items-center gap-3 text-sm text-white font-bold"><Globe size={16} className="text-[#38F8A8]"/> <span>Works With:</span></div>
-                                    <div className="flex gap-4 justify-center py-2 text-gray-400">
-                                        <Facebook size={20} className="hover:text-[#1877F2]"/>
-                                        <Instagram size={20} className="hover:text-[#E4405F]"/>
-                                        <ShoppingBag size={20} className="hover:text-[#96BF48]"/>
-                                    </div>
-                                </div>
-                                <button onClick={() => setChatOpen(true)} className="w-full bg-white text-black py-4 rounded-xl font-black uppercase hover:bg-[#38F8A8] hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)]">Get Access Now</button>
-                                <p className="mt-4 text-[10px] text-gray-500 uppercase tracking-widest">Secure & Reliable</p>
-                            </div>
-                        </MouseTilt>
-                    </div>
-                </section>
-
-                <section className="py-32 container mx-auto px-6 relative z-10">
-                    <h2 className="text-6xl font-black uppercase mb-12">The <span className="text-stroke">Team</span></h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-                        {TEAM.map((m, i) => (
-                            <MouseTilt key={i}>
-                                <div className="group relative">
-                                    <div className="aspect-[3/4] rounded-3xl bg-gray-900 relative overflow-hidden mb-4 border border-white/5">
-                                        <img src={m.image} className={`w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ${m.name === 'Marvin' ? 'object-left' : 'object-center'}`} loading="lazy" referrerPolicy="no-referrer" />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80"></div>
-                                        <div className="absolute bottom-0 left-0 p-6 w-full">
-                                            <div className="text-white font-black text-xl uppercase mb-1">{m.name}</div>
-                                            <div className="text-[#38F8A8] text-[9px] font-mono uppercase tracking-widest leading-tight">{m.role}</div>
-                                            {m.name === 'Marvin' && <a href={m.link} target="_blank" className="mt-4 inline-block bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10px] px-3 py-1 rounded hover:bg-[#38F8A8] hover:text-black transition-colors uppercase font-bold">View Portfolio</a>}
-                                        </div>
-                                    </div>
-                                </div>
-                            </MouseTilt>
-                        ))}
-                    </div>
-                </section>
-
-                <footer className="py-12 bg-black border-t border-white/10 text-center relative z-20">
-                    <div className="flex items-center justify-center gap-2 mb-4 opacity-50 hover:opacity-100 transition-opacity">
-                        <div className="w-8 h-8 rounded-full overflow-hidden relative bg-black">
-                            <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110" alt="logo" />
-                        </div>
-                        <span className="font-black text-xl tracking-tighter">ORIN AI</span>
-                    </div>
-                    <div className="flex justify-center gap-6 mb-6 text-gray-500">
-                        <a href="#" className="hover:text-[#38F8A8] transition-colors"><Facebook size={20} /></a>
-                        <a href="#" className="hover:text-[#38F8A8] transition-colors"><Instagram size={20} /></a>
-                        <a href="#" className="hover:text-[#38F8A8] transition-colors"><Twitter size={20} /></a>
-                    </div>
-                    <div className="flex flex-col items-center">
-                        <p className="text-gray-400 text-sm font-black mb-1">Organic Intelligence AI</p>
-                        <p className="text-gray-700 text-[10px] font-mono uppercase tracking-widest">&copy; 2025 OASIS Inc.</p>
+                <footer className="py-12 text-center text-gray-600 text-sm border-t border-white/5 relative z-10 bg-black font-mono">
+                    <p className="mb-2">© 2025 Organic Intelligence AI • OASIS Inc.</p>
+                    <div className="flex justify-center gap-4 mt-4">
+                        <a href="#" className="hover:text-white transition-colors">Terms</a>
+                        <a href="#" className="hover:text-white transition-colors">Privacy</a>
                     </div>
                 </footer>
 
-                <FloatingTicker />
+                {/* --- FLOATING UI ELEMENTS --- */}
 
-                <div className={`fixed bottom-0 right-0 md:right-8 z-50 w-full md:w-[380px] transition-transform duration-500 ease-out ${chatOpen ? 'translate-y-0' : 'translate-y-[110%]'}`}>
-                    <div className="bg-[#050505] border border-white/10 rounded-t-3xl shadow-2xl h-[600px] flex flex-col relative overflow-hidden">
-                        <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#101010] z-10">
+                {/* Floating Ticker (Changes position based on chat state) */}
+                <FloatingTicker chatOpen={chatOpen} />
+
+                {/* Scroll-triggered Floating Hire Button (Bottom Right) */}
+                <div className={`fixed bottom-8 right-4 md:right-8 z-50 transition-all duration-500 ${showFloat ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
+                    <button 
+                        onClick={() => setChatOpen(true)}
+                        className="bg-[#38F8A8] text-black font-black py-4 px-8 rounded-full shadow-[0_0_30px_rgba(56,248,168,0.4)] hover:scale-105 transition-transform flex items-center gap-2 font-grotesk"
+                    >
+                        HIRE ORIN <ArrowRight className="w-5 h-5" />
+                    </button>
+                </div>
+
+                {/* Chat Widget */}
+                <div className={`fixed bottom-0 right-0 md:bottom-8 md:right-8 z-[70] transition-all duration-500 transform ${chatOpen ? 'translate-y-0 opacity-100' : 'translate-y-[120%] opacity-0'}`}>
+                    <div className="w-full md:w-[400px] h-[100vh] md:h-[600px] glass-card md:rounded-3xl flex flex-col overflow-hidden border border-[#38F8A8]/30 shadow-2xl bg-black">
+                        {/* Header */}
+                        <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#38F8A8]/5">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-[#38F8A8] p-0.5 overflow-hidden relative">
-                                    <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110 bg-black" />
+                                <div className="w-10 h-10 rounded-full border border-[#38F8A8] overflow-hidden bg-black relative">
+                                    <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110" alt="Orin" />
+                                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#38F8A8] rounded-full border-2 border-black animate-pulse"></div>
                                 </div>
-                                <div><div className="text-sm font-black">ORIN AI</div><div className="text-[10px] text-[#38F8A8] flex items-center gap-1"><span className="w-1.5 h-1.5 bg-[#38F8A8] rounded-full animate-pulse"/> ONLINE</div></div>
+                                <div>
+                                    <h3 className="font-bold text-white font-grotesk">ORIN AI</h3>
+                                    <p className="text-[10px] text-[#38F8A8] uppercase tracking-wider font-mono">V9 Online • 24/7</p>
+                                </div>
                             </div>
-                            <button onClick={() => setChatOpen(false)} className="hover:bg-white/10 p-2 rounded-full transition-colors"><X size={20} /></button>
+                            <button onClick={() => setChatOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                                <X className="w-5 h-5 text-gray-400" />
+                            </button>
                         </div>
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-black/50 scrollbar-thin scrollbar-thumb-gray-800">
+
+                        {/* Messages */}
+                        <div className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth">
                             {messages.map((m, i) => (
-                                <div key={i} className={`flex ${m.role==='user'?'justify-end':'justify-start'}`}>
-                                    <div className={`px-5 py-3 rounded-2xl text-sm max-w-[85%] leading-relaxed ${m.role==='user'?'bg-[#38F8A8] text-black font-medium chat-bubble-user':'bg-[#181818] text-gray-200 border border-white/5 chat-bubble-bot'}`}>{m.text}</div>
+                                <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                    <div className={`max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed ${
+                                        m.role === 'user' 
+                                            ? 'bg-[#38F8A8] text-black chat-bubble-user font-bold font-grotesk' 
+                                            : 'bg-white/10 text-gray-200 chat-bubble-bot border border-white/5 font-grotesk'
+                                    }`}>
+                                        {m.text}
+                                    </div>
                                 </div>
                             ))}
-                            {isThinking && <div className="flex gap-1 pl-4"><span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"/><span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce delay-100"/><span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce delay-200"/></div>}
+                            {isThinking && (
+                                <div className="flex justify-start">
+                                    <div className="bg-white/5 p-4 rounded-2xl rounded-bl-sm flex gap-1 items-center">
+                                        <div className="w-2 h-2 bg-[#38F8A8] rounded-full animate-bounce"></div>
+                                        <div className="w-2 h-2 bg-[#38F8A8] rounded-full animate-bounce delay-100"></div>
+                                        <div className="w-2 h-2 bg-[#38F8A8] rounded-full animate-bounce delay-200"></div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                        <form onSubmit={sendChat} className="p-4 bg-[#101010] border-t border-white/10 flex gap-2 z-10">
-                            <input value={input} onChange={e=>setInput(e.target.value)} placeholder="Type a message..." className="flex-1 bg-[#050505] border border-white/10 px-4 py-3 text-sm rounded-xl focus:outline-none focus:border-[#38F8A8] transition-colors" />
-                            <button type="submit" disabled={!input} className="bg-[#38F8A8] text-black p-3 rounded-xl disabled:opacity-50 hover:opacity-90 transition-opacity"><Send size={18} /></button>
+
+                        {/* Input */}
+                        <form onSubmit={sendChat} className="p-4 border-t border-white/10 bg-black/50">
+                            <div className="relative">
+                                <input 
+                                    type="text" 
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    placeholder="Ask about pricing, features..." 
+                                    className="w-full bg-white/5 border border-white/10 rounded-full py-4 pl-6 pr-14 text-white focus:outline-none focus:border-[#38F8A8] transition-colors placeholder:text-gray-600 font-mono text-sm"
+                                />
+                                <button type="submit" className="absolute right-2 top-2 p-2 bg-[#38F8A8] rounded-full text-black hover:scale-105 transition-transform">
+                                    <Send className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <div className="text-center mt-2">
+                                <p className="text-[10px] text-gray-600 flex items-center justify-center gap-1 font-mono">
+                                    <ShieldCheck className="w-3 h-3" /> Secured by O.A.S.I.S Inc.
+                                </p>
+                            </div>
                         </form>
                     </div>
                 </div>
 
-                {/* Right-Aligned Floating Hire Button */}
-                <button
-                    onClick={() => setChatOpen(true)}
-                    className={`fixed bottom-8 right-8 z-50 bg-[#38F8A8] text-black px-12 py-4 rounded-full font-black text-lg uppercase tracking-widest shadow-[0_0_50px_rgba(56,248,168,0.5)] border-4 border-black transition-all duration-500 hover:scale-110 flex items-center gap-3 ${showFloat && !chatOpen ? 'translate-y-0 opacity-100' : 'translate-y-24 opacity-0 pointer-events-none'}`}
-                >
-                    Hire Orin <MessageCircle size={24} className="animate-bounce"/>
-                </button>
-                {gameOpen && <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4"><PacManGame onClose={() => setGameOpen(false)} /></div>}
+                {/* Floating Action Button (Only visible when chat is closed) */}
+                {!chatOpen && (
+                    <button 
+                        onClick={() => setChatOpen(true)}
+                        className="fixed bottom-8 right-4 md:right-8 z-50 w-16 h-16 bg-[#38F8A8] rounded-full flex items-center justify-center text-black shadow-[0_0_40px_rgba(56,248,168,0.4)] hover:scale-110 transition-transform animate-bounce"
+                    >
+                        <MessageCircle className="w-8 h-8" />
+                    </button>
+                )}
+
+                {/* Game Modal */}
+                {gameOpen && (
+                    <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center backdrop-blur-xl">
+                        <PacManGame onClose={() => setGameOpen(false)} />
+                    </div>
+                )}
+
             </div>
         </ContentProtection>
     );
