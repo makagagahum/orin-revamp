@@ -49,6 +49,101 @@ const ParticleBackground = () => {
     return <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none bg-[#020202]" />;
 };
 
+// --- TESSERACT CIRCUIT COMPONENT ---
+const TesseractCircuit = () => {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        let points: {x: number, y: number, z: number}[] = [];
+        const pointCount = 40;
+        const size = 150;
+        let angleX = 0;
+        let angleY = 0;
+
+        // Init 3D points
+        for(let i=0; i<pointCount; i++) {
+            points.push({
+                x: (Math.random() - 0.5) * size * 2,
+                y: (Math.random() - 0.5) * size * 2,
+                z: (Math.random() - 0.5) * size * 2
+            });
+        }
+
+        const project = (p: {x: number, y: number, z: number}) => {
+            // Rotate X
+            let y = p.y * Math.cos(angleX) - p.z * Math.sin(angleX);
+            let z = p.y * Math.sin(angleX) + p.z * Math.cos(angleX);
+            let x = p.x;
+
+            // Rotate Y
+            let x2 = x * Math.cos(angleY) - z * Math.sin(angleY);
+            let z2 = x * Math.sin(angleY) + z * Math.cos(angleY);
+            
+            // Perspective
+            const scale = 400 / (400 + z2);
+            return {
+                x: x2 * scale + canvas.width/2,
+                y: y * scale + canvas.height/2,
+                scale: scale
+            };
+        };
+
+        const draw = () => {
+            if (!canvas) return;
+            // Resize logic
+            const rect = canvas.parentElement?.getBoundingClientRect();
+            if(rect) {
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+            }
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            angleX += 0.005;
+            angleY += 0.007;
+
+            const projectedPoints = points.map(project);
+
+            // Draw Connections
+            ctx.lineWidth = 0.5;
+            ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)'; // Gold line
+            
+            for(let i=0; i<projectedPoints.length; i++) {
+                for(let j=i+1; j<projectedPoints.length; j++) {
+                    const d = Math.sqrt(
+                        (projectedPoints[i].x - projectedPoints[j].x)**2 + 
+                        (projectedPoints[i].y - projectedPoints[j].y)**2
+                    );
+                    if(d < 100) {
+                        ctx.beginPath();
+                        ctx.moveTo(projectedPoints[i].x, projectedPoints[i].y);
+                        ctx.lineTo(projectedPoints[j].x, projectedPoints[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            // Draw Nodes
+            projectedPoints.forEach(p => {
+                ctx.beginPath();
+                ctx.fillStyle = `rgba(212, 175, 55, ${p.scale})`;
+                ctx.arc(p.x, p.y, 2 * p.scale, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            requestAnimationFrame(draw);
+        };
+        
+        draw();
+    }, []);
+
+    return <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />;
+};
+
 const VelocityScrollProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const contentRef = useRef<HTMLDivElement>(null);
     const lastScrollY = useRef(0);
@@ -131,6 +226,7 @@ const GalleryCard: React.FC<{ urls: string[], caption: string, description: stri
                         src={src} 
                         className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-in-out ${i === current ? 'opacity-100 scale-105' : 'opacity-0 scale-100'} grayscale group-hover:grayscale-0`} 
                         loading="lazy" 
+                        decoding="async"
                         referrerPolicy="no-referrer" 
                         alt={caption}
                     />
@@ -173,12 +269,11 @@ const FloatingTicker = ({ chatOpen }: { chatOpen: boolean }) => {
     }, []);
 
     // Logic: Slide to Top-Right when chat is open, Bottom-Right otherwise
-    const positionClasses = chatOpen 
-        ? "top-24 right-4 md:right-8 origin-top-right"
-        : "bottom-32 right-4 md:right-8 origin-bottom-right";
+    // If chat is open, hide ticker to reduce clutter as per new request (or move to top if preferred, but hiding is cleaner for mobile)
+    if (chatOpen) return null;
 
     return (
-        <div className={`fixed z-[60] flex flex-col gap-3 items-end pointer-events-none md:pointer-events-auto transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)] ${positionClasses} scale-75 md:scale-100`}>
+        <div className={`fixed z-[60] flex flex-col gap-3 items-end pointer-events-none md:pointer-events-auto transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)] bottom-32 right-4 md:right-8 origin-bottom-right scale-75 md:scale-100`}>
             <div className={`transition-all duration-500 transform ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                 <div className="glass-card p-3 rounded-2xl rounded-br-sm flex items-center gap-3 border-r-4 border-[#38F8A8] max-w-[280px] flex-row-reverse text-right bg-black/80 backdrop-blur-md">
                     <img src={messages[idx].img} className="w-10 h-10 rounded-full bg-white/10 p-1" alt="avatar" />
@@ -188,7 +283,7 @@ const FloatingTicker = ({ chatOpen }: { chatOpen: boolean }) => {
             <div className={`transition-all duration-500 delay-100 transform ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                 <div className="glass-card p-3 rounded-2xl rounded-tr-sm flex items-center gap-3 border-r-4 border-[#A855F7] mr-8 max-w-[280px] flex-row-reverse text-right bg-black/80 backdrop-blur-md">
                     <div className="w-10 h-10 rounded-full border border-[#38F8A8] overflow-hidden relative bg-black">
-                         <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110" alt="orin" />
+                         <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110" alt="orin" loading="lazy" />
                     </div>
                     <div><p className="text-[10px] text-[#38F8A8] font-bold">ORIN AI ⚡</p><p className="text-sm font-bold text-white">{messages[idx].a}</p></div>
                 </div>
@@ -201,7 +296,7 @@ export default function App() {
     const [chatOpen, setChatOpen] = useState(false);
     const [gameOpen, setGameOpen] = useState(false);
     const [easterCount, setEasterCount] = useState(0);
-    const [messages, setMessages] = useState([{role: 'model', text: 'Uy boss! Ako si ORIN AI. ₱15,000 one-time payment lang. Integrated sa FB, TikTok, at Shopee mo. G?'}]);
+    const [messages, setMessages] = useState([{role: 'model', text: 'Uy boss! Ako si ORIN AI. ₱15,000 monthly lang. Integrated sa FB, TikTok, at Shopee mo. G?'}]);
     const [input, setInput] = useState('');
     const [isThinking, setIsThinking] = useState(false);
     const [ai, setAi] = useState<GoogleGenAI | null>(null);
@@ -263,7 +358,7 @@ export default function App() {
                 <nav className="fixed top-0 w-full z-50 py-4 px-6 flex justify-between items-center bg-black/50 backdrop-blur-xl border-b border-white/5 transition-all duration-300">
                     <div className="flex items-center gap-2 cursor-pointer" onClick={handleLogoClick}>
                         <div className="w-10 h-10 rounded-full border border-white/20 overflow-hidden bg-black relative group">
-                            <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110 transition-transform duration-500 group-hover:scale-125" alt="ORIN Logo" />
+                            <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110 transition-transform duration-500 group-hover:scale-125" alt="ORIN Logo" loading="lazy" />
                         </div>
                         <span className="font-black text-xl tracking-tighter font-grotesk">ORIN AI</span>
                     </div>
@@ -301,17 +396,17 @@ export default function App() {
 
                          <div className="mt-12 flex flex-col md:flex-row gap-4 items-center">
                              <button onClick={() => setChatOpen(true)} className="group relative px-8 py-4 bg-[#38F8A8] text-black font-black text-lg hover:scale-105 transition-transform flex items-center gap-2 font-grotesk">
-                                 HIRE ORIN NOW <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                 HIRE ORIN NOW <MessageCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
                              </button>
-                             <p className="text-xs text-gray-500 font-mono uppercase">₱15,000 One-Time • Lifetime Access</p>
+                             <p className="text-xs text-gray-500 font-mono uppercase">₱15,000 / Month • Premium Access</p>
                          </div>
                     </header>
 
                     {/* Marquee */}
                     <div className="py-8 bg-[#38F8A8] text-black overflow-hidden rotate-[-2deg] scale-110 border-y-4 border-black mb-32">
                         <div className="animate-marquee whitespace-nowrap flex gap-12 text-4xl font-black italic tracking-tighter font-grotesk">
-                            <span>AUTOMATE NOW</span><span>•</span><span>NO MONTHLY FEES</span><span>•</span><span>24/7 SUPPORT</span><span>•</span><span>AUTOMATE NOW</span><span>•</span><span>NO MONTHLY FEES</span><span>•</span><span>24/7 SUPPORT</span><span>•</span>
-                             <span>AUTOMATE NOW</span><span>•</span><span>NO MONTHLY FEES</span><span>•</span><span>24/7 SUPPORT</span><span>•</span><span>AUTOMATE NOW</span><span>•</span><span>NO MONTHLY FEES</span><span>•</span><span>24/7 SUPPORT</span><span>•</span>
+                            <span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span><span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span>
+                             <span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span><span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span>
                         </div>
                     </div>
 
@@ -340,7 +435,7 @@ export default function App() {
                                         <ul className="space-y-6 text-xl text-white font-grotesk">
                                             <li className="flex items-center gap-4"><CheckCircle2 className="text-[#38F8A8] w-8 h-8" /> Auto-Replies in 1 Second</li>
                                             <li className="flex items-center gap-4"><CheckCircle2 className="text-[#38F8A8] w-8 h-8" /> Closes Sales While You Sleep</li>
-                                            <li className="flex items-center gap-4"><CheckCircle2 className="text-[#38F8A8] w-8 h-8" /> ₱15k One-Time (Lifetime)</li>
+                                            <li className="flex items-center gap-4"><CheckCircle2 className="text-[#38F8A8] w-8 h-8" /> ₱15k Monthly (Premium)</li>
                                         </ul>
                                     </div>
                                 </MouseTilt>
@@ -386,7 +481,7 @@ export default function App() {
                             {TEAM.map((member, i) => (
                                 <div key={i} className="group relative">
                                     <div className="aspect-square rounded-2xl overflow-hidden mb-4 border border-white/10 bg-gray-900 grayscale group-hover:grayscale-0 transition-all duration-500">
-                                        <img src={member.image} className={`w-full h-full object-cover ${member.name === 'Marvin' ? 'object-left' : 'object-center'}`} alt={member.name} />
+                                        <img src={member.image} className={`w-full h-full object-cover ${member.name === 'Marvin' ? 'object-left' : 'object-center'}`} alt={member.name} loading="lazy" />
                                     </div>
                                     <h4 className="font-bold text-lg font-grotesk">{member.name}</h4>
                                     <p className="text-xs text-[#38F8A8] uppercase font-mono mt-1">{member.role}</p>
@@ -400,12 +495,15 @@ export default function App() {
                         </div>
                     </section>
 
-                    {/* Pricing with SILICONE CHIP EFFECT */}
+                    {/* Pricing with TESSERACT EFFECT */}
                     <section id="pricing" className="py-32 px-4 relative">
-                        <div className="max-w-3xl mx-auto glass-card p-12 rounded-[3rem] text-center border border-[#38F8A8] relative overflow-hidden group transition-all duration-700 hover:border-[#D4AF37] hover:shadow-[0_0_100px_rgba(212,175,55,0.4)]">
+                        <div className="max-w-3xl mx-auto glass-card p-12 rounded-[3rem] text-center border border-[#38F8A8] relative overflow-hidden group transition-all duration-700 hover:border-[#D4AF37] hover:shadow-[0_0_100px_rgba(212,175,55,0.4)] hover:scale-[1.02]">
                              {/* The Chip Pattern Overlay */}
                              <div className="absolute inset-0 bg-chip-pattern opacity-0 group-hover:opacity-10 transition-opacity duration-700"></div>
                              
+                             {/* The TESSERACT 3D Animation */}
+                             <TesseractCircuit />
+
                              {/* The Metallic Glint Animation */}
                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#D4AF37]/20 to-transparent translate-x-[-100%] group-hover:animate-shimmer z-0"></div>
 
@@ -415,12 +513,12 @@ export default function App() {
                              <div className="absolute inset-0 bg-[#38F8A8]/5 group-hover:bg-black/80 transition-colors z-0"></div>
                              
                              <div className="relative z-10">
-                                 <div className="inline-flex items-center gap-2 bg-[#38F8A8] group-hover:bg-[#D4AF37] text-black px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest transition-colors duration-500 mb-8">
-                                     <Cpu className="w-4 h-4" /> Founder's Chip
+                                 <div className="inline-flex items-center gap-2 bg-[#38F8A8] group-hover:bg-[#D4AF37] text-black px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest transition-colors duration-500 mb-8 font-grotesk">
+                                     <Cpu className="w-4 h-4" /> Founder's Chip - Tesseract
                                  </div>
                                  
                                  <h2 className="text-7xl md:text-9xl font-black mt-4 tracking-tighter font-grotesk group-hover:text-[#D4AF37] transition-colors duration-500">₱15,000</h2>
-                                 <p className="text-2xl font-medium text-gray-300 mt-4 font-grotesk group-hover:text-white">One-Time Investment</p>
+                                 <p className="text-2xl font-medium text-gray-300 mt-4 font-grotesk group-hover:text-white">Monthly Subscription</p>
                                  
                                  <div className="my-12 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:via-[#D4AF37]/50"></div>
                                  
@@ -451,7 +549,7 @@ export default function App() {
 
                 {/* --- FLOATING UI ELEMENTS --- */}
 
-                {/* Floating Ticker (Changes position based on chat state) */}
+                {/* Floating Ticker (Hides when chat is open) */}
                 <FloatingTicker chatOpen={chatOpen} />
 
                 {/* Scroll-triggered Floating Hire Button (Bottom Right) */}
@@ -460,7 +558,7 @@ export default function App() {
                         onClick={() => setChatOpen(true)}
                         className="bg-[#38F8A8] text-black font-black py-4 px-8 rounded-full shadow-[0_0_30px_rgba(56,248,168,0.4)] hover:scale-105 transition-transform flex items-center gap-2 font-grotesk"
                     >
-                        HIRE ORIN <ArrowRight className="w-5 h-5" />
+                        HIRE ORIN <MessageCircle className="w-5 h-5" />
                     </button>
                 </div>
 
@@ -471,7 +569,7 @@ export default function App() {
                         <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#38F8A8]/5">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full border border-[#38F8A8] overflow-hidden bg-black relative">
-                                    <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110" alt="Orin" />
+                                    <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110" alt="Orin" loading="lazy" />
                                     <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#38F8A8] rounded-full border-2 border-black animate-pulse"></div>
                                 </div>
                                 <div>
@@ -531,16 +629,8 @@ export default function App() {
                     </div>
                 </div>
 
-                {/* Floating Action Button (Only visible when chat is closed) */}
-                {!chatOpen && (
-                    <button 
-                        onClick={() => setChatOpen(true)}
-                        className="fixed bottom-8 right-4 md:right-8 z-50 w-16 h-16 bg-[#38F8A8] rounded-full flex items-center justify-center text-black shadow-[0_0_40px_rgba(56,248,168,0.4)] hover:scale-110 transition-transform animate-bounce"
-                    >
-                        <MessageCircle className="w-8 h-8" />
-                    </button>
-                )}
-
+                {/* Floating Action Button (Only visible when chat is closed) removed redundunt button as requested */}
+                
                 {/* Game Modal */}
                 {gameOpen && (
                     <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center backdrop-blur-xl">
