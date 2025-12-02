@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, MessageCircle, X, ArrowRight, Zap, Send, Sparkles, CheckCircle2, Facebook, Instagram, Twitter, ShoppingBag, Globe, TrendingUp, ShieldCheck, Clock, AlertCircle, Building2 } from 'lucide-react';
+import { Menu, MessageCircle, X, ArrowRight, Zap, Send, Sparkles, CheckCircle2, Facebook, Instagram, Twitter, ShoppingBag, Globe, TrendingUp, ShieldCheck, Clock, AlertCircle, Building2, Headset } from 'lucide-react';
 import { MarketGrowthChart, ROIChart } from './components/Charts';
 import PacManGame from './components/PacManGame';
 import { ContentProtection } from './components/ContentProtection';
@@ -110,7 +110,7 @@ const FloatingTicker = () => {
     const [idx, setIdx] = useState(0);
     const [visible, setVisible] = useState(true);
     const messages = [
-        { role: "Online Seller", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix", q: "Hm sis? Pwede auto-reply?", a: "Matic yan! ₱10k monthly lang." },
+        { role: "Online Seller", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix", q: "Hm sis? Pwede auto-reply?", a: "Matic yan! One-time payment lang." },
         { role: "Dropshipper", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka", q: "Can you manage orders?", a: "Yes! Connected to Shopify & TikTok." },
         { role: "LGU Officer", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Bob", q: "Pwede sa constituents?", a: "Oo naman! 24/7 public service." },
         { role: "Hospital Staff", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Willow", q: "Can it triage patients?", a: "Yes, initial assessment ok!" }
@@ -123,15 +123,15 @@ const FloatingTicker = () => {
         return () => clearInterval(i);
     }, []);
     return (
-        <div className="fixed bottom-32 right-8 z-40 hidden md:flex flex-col gap-3 items-end pointer-events-none md:pointer-events-auto">
+        <div className="fixed bottom-32 right-8 z-[60] flex flex-col gap-3 items-end pointer-events-none md:pointer-events-auto">
             <div className={`transition-all duration-500 transform ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                <div className="glass-card p-3 rounded-2xl rounded-br-sm flex items-center gap-3 border-r-4 border-[#38F8A8] max-w-[280px] flex-row-reverse text-right">
+                <div className="glass-card p-3 rounded-2xl rounded-br-sm flex items-center gap-3 border-r-4 border-[#38F8A8] max-w-[280px] flex-row-reverse text-right bg-black/80 backdrop-blur-md">
                     <img src={messages[idx].img} className="w-10 h-10 rounded-full bg-white/10 p-1" alt="avatar" />
                     <div><p className="text-[10px] text-gray-400 font-mono uppercase tracking-wider">{messages[idx].role}</p><p className="text-sm font-bold text-white">"{messages[idx].q}"</p></div>
                 </div>
             </div>
             <div className={`transition-all duration-500 delay-100 transform ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                <div className="glass-card p-3 rounded-2xl rounded-tr-sm flex items-center gap-3 border-r-4 border-[#A855F7] mr-8 max-w-[280px] flex-row-reverse text-right">
+                <div className="glass-card p-3 rounded-2xl rounded-tr-sm flex items-center gap-3 border-r-4 border-[#A855F7] mr-8 max-w-[280px] flex-row-reverse text-right bg-black/80 backdrop-blur-md">
                     <div className="w-10 h-10 rounded-full border border-[#38F8A8] overflow-hidden relative bg-black">
                          <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110" alt="orin" />
                     </div>
@@ -146,7 +146,7 @@ export default function App() {
     const [chatOpen, setChatOpen] = useState(false);
     const [gameOpen, setGameOpen] = useState(false);
     const [easterCount, setEasterCount] = useState(0);
-    const [messages, setMessages] = useState([{role: 'model', text: 'Uy boss! Ako si ORIN AI. ₱10,000 monthly lang. Integrated sa FB, TikTok, at Shopee mo. G?'}]);
+    const [messages, setMessages] = useState([{role: 'model', text: 'Uy boss! Ako si ORIN AI. ₱15,000 one-time payment lang. Integrated sa FB, TikTok, at Shopee mo. G?'}]);
     const [input, setInput] = useState('');
     const [isThinking, setIsThinking] = useState(false);
     const [ai, setAi] = useState<GoogleGenAI | null>(null);
@@ -189,12 +189,10 @@ export default function App() {
                 });
                 setMessages(p => [...p, {role: 'model', text: response.text || "Sorry boss, medyo loading ako ngayon."}]);
              } catch(e) {
-                 // Fallback if API fails (e.g. quota limit)
                  const fallbackText = await generateFallbackResponse(input);
                  setMessages(p => [...p, {role: 'model', text: fallbackText}]);
              }
         } else {
-             // Free Mode / Mock Response
              const fallbackText = await generateFallbackResponse(input);
              setMessages(p => [...p, {role: 'model', text: fallbackText}]);
         }
@@ -290,7 +288,7 @@ export default function App() {
                             {GALLERY_IMAGES.map((img, i) => (
                                 <MouseTilt key={i} intensity={10}>
                                     <div className="relative h-72 rounded-3xl overflow-hidden group border border-white/10">
-                                        <img src={img.url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 grayscale group-hover:grayscale-0" loading="lazy" />
+                                        <img src={img.url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 grayscale group-hover:grayscale-0" loading="lazy" referrerPolicy="no-referrer" />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90 group-hover:opacity-60 transition-opacity"></div>
                                         <div className="absolute bottom-6 left-6">
                                             <div className="text-[#38F8A8] text-xs font-black uppercase tracking-widest mb-1">Built For</div>
@@ -324,7 +322,7 @@ export default function App() {
                     <div className="flex flex-col md:flex-row gap-20">
                         <div className="w-full md:w-1/3 self-center">
                             <h2 className="text-7xl font-black tracking-tighter mb-8">WHY IT <span className="text-stroke">MAKES SENSE</span></h2>
-                            <p className="text-gray-400 text-xl">The math is simple. An employee costs ₱200k+/year. ORIN costs less and works more.</p>
+                            <p className="text-gray-400 text-xl">The math is simple. An employee costs ₱20k+/monthly. ORIN costs less and works more.</p>
                         </div>
                         <div className="w-full md:w-2/3 flex flex-col gap-12">
                             <MouseTilt>
@@ -348,15 +346,16 @@ export default function App() {
                         <MouseTilt intensity={25}>
                             <div className="glass-card rounded-[3rem] p-12 border border-white/20 bg-black/80 relative overflow-hidden group hover:border-[#38F8A8]/50 transition-colors duration-500">
                                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#38F8A8] to-transparent opacity-50"></div>
-                                <div className="bg-[#38F8A8] text-black text-xs font-black px-4 py-1 rounded-full inline-block mb-8 uppercase tracking-widest">All-In Access</div>
+                                <div className="bg-[#38F8A8] text-black text-xs font-black px-4 py-1 rounded-full inline-block mb-8 uppercase tracking-widest animate-pulse">Investment</div>
                                 <div className="flex justify-center items-baseline text-white mb-4">
                                     <span className="text-4xl font-bold text-gray-500 mr-2">₱</span>
-                                    <span className="text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500">10,000</span>
+                                    <span className="text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500">15,000</span>
                                 </div>
-                                <p className="text-gray-400 text-sm mb-8 uppercase tracking-widest font-mono">Monthly Subscription • Cancel Anytime</p>
-                                <div className="space-y-3 mb-10 text-left max-w-xs mx-auto">
-                                    <div className="flex items-center gap-3 text-sm text-gray-300"><CheckCircle2 size={16} className="text-[#38F8A8]"/> <span>Setup in Minutes</span></div>
-                                    <div className="flex items-center gap-3 text-sm text-gray-300"><CheckCircle2 size={16} className="text-[#38F8A8]"/> <span>No Training Needed</span></div>
+                                <p className="text-gray-400 text-sm mb-8 uppercase tracking-widest font-mono">One-Time Payment • Lifetime Service</p>
+                                <div className="space-y-4 mb-10 text-left max-w-xs mx-auto">
+                                    <div className="flex items-center gap-3 text-sm text-gray-300"><CheckCircle2 size={16} className="text-[#38F8A8]"/> <span>Full Setup & Hosting</span></div>
+                                    <div className="flex items-center gap-3 text-sm text-gray-300"><CheckCircle2 size={16} className="text-[#38F8A8]"/> <span>No Monthly Fees</span></div>
+                                    <div className="flex items-center gap-3 text-sm text-[#38F8A8] font-bold"><Headset size={16} className="text-[#38F8A8]"/> <span>Lifetime 24/7 Tech Support</span></div>
                                     <div className="flex items-center gap-3 text-sm text-white font-bold"><Globe size={16} className="text-[#38F8A8]"/> <span>Works With:</span></div>
                                     <div className="flex gap-4 justify-center py-2 text-gray-400">
                                         <Facebook size={20} className="hover:text-[#1877F2]"/>
@@ -364,7 +363,7 @@ export default function App() {
                                         <ShoppingBag size={20} className="hover:text-[#96BF48]"/>
                                     </div>
                                 </div>
-                                <button onClick={() => setChatOpen(true)} className="w-full bg-white text-black py-4 rounded-xl font-black uppercase hover:bg-[#38F8A8] hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)]">Start Now</button>
+                                <button onClick={() => setChatOpen(true)} className="w-full bg-white text-black py-4 rounded-xl font-black uppercase hover:bg-[#38F8A8] hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)]">Get Access Now</button>
                                 <p className="mt-4 text-[10px] text-gray-500 uppercase tracking-widest">Secure & Reliable</p>
                             </div>
                         </MouseTilt>
@@ -378,7 +377,7 @@ export default function App() {
                             <MouseTilt key={i}>
                                 <div className="group relative">
                                     <div className="aspect-[3/4] rounded-3xl bg-gray-900 relative overflow-hidden mb-4 border border-white/5">
-                                        <img src={m.image} className={`w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ${m.name === 'Marvin' ? 'object-left' : 'object-center'}`} loading="lazy" />
+                                        <img src={m.image} className={`w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ${m.name === 'Marvin' ? 'object-left' : 'object-center'}`} loading="lazy" referrerPolicy="no-referrer" />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80"></div>
                                         <div className="absolute bottom-0 left-0 p-6 w-full">
                                             <div className="text-white font-black text-xl uppercase mb-1">{m.name}</div>
