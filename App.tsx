@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Menu, MessageCircle, X, ArrowRight, Zap, Send, Sparkles, CheckCircle2, Facebook, Instagram, Twitter, ShoppingBag, Globe, TrendingUp, ShieldCheck, Clock, AlertCircle, Building2, Headset, Cpu } from 'lucide-react';
 import { MarketGrowthChart, ROIChart } from './components/Charts';
@@ -6,6 +7,34 @@ import { ContentProtection } from './components/ContentProtection';
 import { TEAM, FEATURES, GALLERY_IMAGES } from './constants';
 import { GoogleGenAI } from "@google/genai";
 import { systemInstruction, generateFallbackResponse } from './services/geminiService';
+
+// --- UTILS ---
+function useInView(options = { threshold: 0.3 }) {
+    const [isInView, setIsInView] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(([entry]) => {
+            if (entry.isIntersecting) {
+                setIsInView(true);
+                // Optional: Unobserve if you only want it to trigger once
+                // observer.unobserve(entry.target); 
+            } else {
+                setIsInView(false);
+            }
+        }, options);
+
+        if (ref.current) {
+            observer.observe(ref.current);
+        }
+
+        return () => {
+            if (ref.current) observer.unobserve(ref.current);
+        };
+    }, []);
+
+    return [ref, isInView] as const;
+}
 
 // --- VISUAL COMPONENTS ---
 
@@ -50,7 +79,7 @@ const ParticleBackground = () => {
 };
 
 // --- TESSERACT CIRCUIT COMPONENT ---
-const TesseractCircuit = () => {
+const TesseractCircuit = ({ isActive }: { isActive: boolean }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -63,6 +92,7 @@ const TesseractCircuit = () => {
         const size = 150;
         let angleX = 0;
         let angleY = 0;
+        let animationId: number;
 
         // Init 3D points
         for(let i=0; i<pointCount; i++) {
@@ -110,7 +140,7 @@ const TesseractCircuit = () => {
 
             // Draw Connections
             ctx.lineWidth = 0.5;
-            ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)'; // Gold line
+            ctx.strokeStyle = isActive ? 'rgba(212, 175, 55, 0.6)' : 'rgba(212, 175, 55, 0.1)'; 
             
             for(let i=0; i<projectedPoints.length; i++) {
                 for(let j=i+1; j<projectedPoints.length; j++) {
@@ -130,18 +160,19 @@ const TesseractCircuit = () => {
             // Draw Nodes
             projectedPoints.forEach(p => {
                 ctx.beginPath();
-                ctx.fillStyle = `rgba(212, 175, 55, ${p.scale})`;
+                ctx.fillStyle = isActive ? `rgba(212, 175, 55, ${p.scale})` : `rgba(212, 175, 55, ${p.scale * 0.2})`;
                 ctx.arc(p.x, p.y, 2 * p.scale, 0, Math.PI * 2);
                 ctx.fill();
             });
 
-            requestAnimationFrame(draw);
+            animationId = requestAnimationFrame(draw);
         };
         
         draw();
-    }, []);
+        return () => cancelAnimationFrame(animationId);
+    }, [isActive]);
 
-    return <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />;
+    return <canvas ref={canvasRef} className={`absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000 ${isActive ? 'opacity-100' : 'opacity-30'}`} />;
 };
 
 const VelocityScrollProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -200,31 +231,30 @@ const MouseTilt: React.FC<{ children: React.ReactNode; intensity?: number }> = (
     return <div ref={ref} onMouseMove={onMove} onMouseLeave={onLeave} className="transition-transform duration-300 ease-out will-change-transform" style={{ transformStyle: 'preserve-3d' }}>{children}</div>;
 };
 
-// --- Gallery Card with Slideshow ---
+// --- Gallery Card with Scroll Trigger ---
 const GalleryCard: React.FC<{ urls: string[], caption: string, description: string }> = ({ urls, caption, description }) => {
     const [current, setCurrent] = useState(0);
-    const [hovering, setHovering] = useState(false);
+    const [ref, isInView] = useInView({ threshold: 0.4 });
 
     useEffect(() => {
-        if (!hovering) return;
+        if (!isInView) return;
         const interval = setInterval(() => {
             setCurrent(prev => (prev + 1) % urls.length);
         }, 2000);
         return () => clearInterval(interval);
-    }, [hovering, urls.length]);
+    }, [isInView, urls.length]);
 
     return (
         <MouseTilt intensity={10}>
             <div 
-                className="relative h-96 rounded-3xl overflow-hidden group border border-white/10 bg-gray-900"
-                onMouseEnter={() => setHovering(true)}
-                onMouseLeave={() => setHovering(false)}
+                ref={ref}
+                className={`relative h-96 rounded-3xl overflow-hidden border border-white/10 bg-gray-900 transition-all duration-700 ${isInView ? 'shadow-[0_10px_40px_rgba(56,248,168,0.2)]' : ''}`}
             >
                 {urls.map((src, i) => (
                      <img 
                         key={i}
                         src={src} 
-                        className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-in-out ${i === current ? 'opacity-100 scale-105' : 'opacity-0 scale-100'} grayscale group-hover:grayscale-0`} 
+                        className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-in-out ${i === current ? 'opacity-100 scale-105' : 'opacity-0 scale-100'} ${isInView ? 'grayscale-0' : 'grayscale'}`} 
                         loading="lazy" 
                         decoding="async"
                         referrerPolicy="no-referrer" 
@@ -235,12 +265,12 @@ const GalleryCard: React.FC<{ urls: string[], caption: string, description: stri
                 {/* Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-90 transition-opacity"></div>
                 
-                {/* Content */}
-                <div className="absolute bottom-0 left-0 w-full p-8 z-10 transition-transform duration-500 group-hover:translate-y-[-10px]">
+                {/* Content - Auto reveal on scroll */}
+                <div className={`absolute bottom-0 left-0 w-full p-8 z-10 transition-transform duration-700 ${isInView ? 'translate-y-0' : 'translate-y-[20px]'}`}>
                     <div className="text-[#38F8A8] text-xs font-black uppercase tracking-widest mb-2 font-grotesk">Built For</div>
                     <div className="text-3xl font-black uppercase drop-shadow-lg text-white mb-4 font-grotesk">{caption}</div>
                     
-                    <div className="h-0 group-hover:h-auto overflow-hidden transition-all duration-500 opacity-0 group-hover:opacity-100">
+                    <div className={`overflow-hidden transition-all duration-700 ${isInView ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}>
                         <p className="text-sm font-medium text-gray-200 whitespace-pre-line leading-relaxed border-l-2 border-[#38F8A8] pl-3 font-mono">
                             {description}
                         </p>
@@ -268,8 +298,6 @@ const FloatingTicker = ({ chatOpen }: { chatOpen: boolean }) => {
         return () => clearInterval(i);
     }, []);
 
-    // Logic: Slide to Top-Right when chat is open, Bottom-Right otherwise
-    // If chat is open, hide ticker to reduce clutter as per new request (or move to top if preferred, but hiding is cleaner for mobile)
     if (chatOpen) return null;
 
     return (
@@ -292,11 +320,62 @@ const FloatingTicker = ({ chatOpen }: { chatOpen: boolean }) => {
     );
 };
 
+// --- PRICING CARD WITH SCROLL TRIGGER ---
+const PricingCard = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
+    const [ref, isInView] = useInView({ threshold: 0.4 });
+    
+    return (
+        <div ref={ref} className={`max-w-3xl mx-auto glass-card p-12 rounded-[3rem] text-center border relative overflow-hidden group transition-all duration-1000 ${isInView ? 'border-[#D4AF37] shadow-[0_0_100px_rgba(212,175,55,0.4)] scale-[1.02]' : 'border-[#38F8A8]'}`}>
+             {/* The Chip Pattern Overlay */}
+             <div className={`absolute inset-0 bg-chip-pattern transition-opacity duration-1000 ${isInView ? 'opacity-10' : 'opacity-0'}`}></div>
+             
+             {/* The TESSERACT 3D Animation */}
+             <TesseractCircuit isActive={isInView} />
+
+             {/* The Metallic Glint Animation */}
+             <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-[#D4AF37]/20 to-transparent translate-x-[-100%] z-0 ${isInView ? 'animate-shimmer' : ''}`}></div>
+
+             {/* Border Glow */}
+             <div className={`chip-border transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}></div>
+
+             <div className={`absolute inset-0 transition-colors z-0 ${isInView ? 'bg-black/80' : 'bg-[#38F8A8]/5'}`}></div>
+             
+             <div className="relative z-10">
+                 <div className={`inline-flex items-center gap-2 text-black px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest transition-colors duration-1000 mb-8 font-grotesk ${isInView ? 'bg-[#D4AF37]' : 'bg-[#38F8A8]'}`}>
+                     <Cpu className="w-4 h-4" /> Founder's Chip - Tesseract
+                 </div>
+                 
+                 <h2 className={`text-7xl md:text-9xl font-black mt-4 tracking-tighter font-grotesk transition-colors duration-1000 ${isInView ? 'text-[#D4AF37]' : ''}`}>₱15,000</h2>
+                 <p className={`text-2xl font-medium mt-4 font-grotesk transition-colors duration-1000 ${isInView ? 'text-white' : 'text-gray-300'}`}>Monthly Subscription</p>
+                 
+                 <div className={`my-12 h-px bg-gradient-to-r from-transparent to-transparent transition-all duration-1000 ${isInView ? 'via-[#D4AF37]/50' : 'via-white/20'}`}></div>
+                 
+                 <ul className="text-left max-w-md mx-auto space-y-4 mb-12 font-grotesk">
+                     <li className="flex items-center gap-3"><CheckCircle2 className={`transition-colors ${isInView ? 'text-[#D4AF37]' : 'text-[#38F8A8]'}`} /> Lifetime 24/7 Unlimited Tech Support</li>
+                     <li className="flex items-center gap-3"><CheckCircle2 className={`transition-colors ${isInView ? 'text-[#D4AF37]' : 'text-[#38F8A8]'}`} /> Full Facebook, IG, TikTok, Shopify Integration</li>
+                     <li className="flex items-center gap-3"><CheckCircle2 className={`transition-colors ${isInView ? 'text-[#D4AF37]' : 'text-[#38F8A8]'}`} /> Voice Note & Image Recognition</li>
+                     <li className="flex items-center gap-3"><CheckCircle2 className={`transition-colors ${isInView ? 'text-[#D4AF37]' : 'text-[#38F8A8]'}`} /> Custom Training for Your Business</li>
+                 </ul>
+                 
+                 <button onClick={() => setChatOpen(true)} className={`w-full py-6 text-black font-black text-2xl transition-all rounded-xl font-grotesk shadow-lg ${isInView ? 'bg-white hover:bg-[#D4AF37] shadow-[0_0_40px_rgba(212,175,55,0.6)]' : 'bg-white hover:bg-[#38F8A8]'}`}>
+                     HIRE ORIN NOW
+                 </button>
+                 
+                 <p className="mt-6 text-sm text-gray-500 font-mono">Limited chip supply. Secure yours today.</p>
+             </div>
+        </div>
+    );
+};
+
 export default function App() {
     const [chatOpen, setChatOpen] = useState(false);
     const [gameOpen, setGameOpen] = useState(false);
     const [easterCount, setEasterCount] = useState(0);
-    const [messages, setMessages] = useState([{role: 'model', text: 'Uy boss! Ako si ORIN AI. ₱15,000 monthly lang. Integrated sa FB, TikTok, at Shopee mo. G?'}]);
+    // Modified initial state for Orin V9 Persona (Conyo/Sales)
+    const [messages, setMessages] = useState([
+        {role: 'model', text: 'Hello! Ako nga pala si Orin 👋. Advanced AI Employee na parang tao kausap. ₱15k Monthly lang for Premium Access. Sulit diba? 🚀'},
+        {role: 'model', text: 'Para ma-setup natin business mo, paki-fill up lang nito boss:\n\n1. Name:\n2. Business Name:\n3. Contact #:\n4. Anong klaseng AI Employee need mo?'}
+    ]);
     const [input, setInput] = useState('');
     const [isThinking, setIsThinking] = useState(false);
     const [ai, setAi] = useState<GoogleGenAI | null>(null);
@@ -373,9 +452,9 @@ export default function App() {
                 </nav>
 
                 <VelocityScrollProvider>
-                    {/* Hero Section */}
-                    <header className="relative pt-40 pb-32 px-4 flex flex-col items-center justify-center min-h-[90vh]">
-                         <div className="mb-6 flex items-center gap-2 border border-[#38F8A8]/30 bg-[#38F8A8]/10 px-4 py-1 rounded-full animate-pulse">
+                    {/* Hero Section - Super Compact */}
+                    <header className="relative pt-24 pb-12 px-4 flex flex-col items-center justify-center min-h-[85vh]">
+                         <div className="mb-4 flex items-center gap-2 border border-[#38F8A8]/30 bg-[#38F8A8]/10 px-4 py-1 rounded-full animate-pulse">
                              <span className="relative flex h-2 w-2">
                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#38F8A8] opacity-75"></span>
                                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#38F8A8]"></span>
@@ -389,12 +468,12 @@ export default function App() {
                              IS HERE.
                          </h1>
                          
-                         <p className="mt-8 text-lg md:text-2xl text-gray-400 max-w-2xl text-center leading-relaxed font-grotesk">
+                         <p className="mt-6 text-lg md:text-2xl text-gray-400 max-w-2xl text-center leading-relaxed font-grotesk">
                             Stop replying manually. Start automating your empire.
                             <br/><span className="text-[#38F8A8]">24/7. Multilingual. Never Tired.</span>
                          </p>
 
-                         <div className="mt-12 flex flex-col md:flex-row gap-4 items-center">
+                         <div className="mt-8 flex flex-col md:flex-row gap-4 items-center">
                              <button onClick={() => setChatOpen(true)} className="group relative px-8 py-4 bg-[#38F8A8] text-black font-black text-lg hover:scale-105 transition-transform flex items-center gap-2 font-grotesk">
                                  HIRE ORIN NOW <MessageCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
                              </button>
@@ -402,17 +481,17 @@ export default function App() {
                          </div>
                     </header>
 
-                    {/* Marquee */}
-                    <div className="py-8 bg-[#38F8A8] text-black overflow-hidden rotate-[-2deg] scale-110 border-y-4 border-black mb-32">
+                    {/* Marquee - Reduced margin */}
+                    <div className="py-6 bg-[#38F8A8] text-black overflow-hidden rotate-[-2deg] scale-110 border-y-4 border-black mb-12">
                         <div className="animate-marquee whitespace-nowrap flex gap-12 text-4xl font-black italic tracking-tighter font-grotesk">
                             <span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span><span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span>
                              <span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span><span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span>
                         </div>
                     </div>
 
-                    {/* Sales Psychology Section */}
-                    <section className="py-32 px-4 max-w-7xl mx-auto">
-                        <div className="grid md:grid-cols-2 gap-16 items-center">
+                    {/* Sales Psychology Section - Reduced padding */}
+                    <section className="py-16 px-4 max-w-7xl mx-auto">
+                        <div className="grid md:grid-cols-2 gap-8 items-center">
                             <ParallaxElement speed={0.2} rotation={5}>
                                 <MouseTilt>
                                     <div className="glass-card p-12 rounded-[3rem] relative overflow-hidden">
@@ -443,8 +522,8 @@ export default function App() {
                         </div>
                     </section>
 
-                    {/* Stats */}
-                    <section className="py-20 px-4">
+                    {/* Stats - Reduced padding */}
+                    <section className="py-12 px-4">
                         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8">
                              <div className="glass-card p-8 rounded-3xl">
                                  <h4 className="text-2xl font-bold mb-6 font-grotesk">Market Domination</h4>
@@ -457,9 +536,9 @@ export default function App() {
                         </div>
                     </section>
 
-                    {/* Gallery Grid */}
-                    <section id="features" className="py-32 px-4 max-w-7xl mx-auto">
-                        <h2 className="text-6xl md:text-8xl font-black text-center mb-24 tracking-tighter font-grotesk">
+                    {/* Gallery Grid - Reduced padding */}
+                    <section id="features" className="py-16 px-4 max-w-7xl mx-auto">
+                        <h2 className="text-6xl md:text-8xl font-black text-center mb-12 tracking-tighter font-grotesk">
                             BUILT FOR<br/><span className="text-[#38F8A8]">EVERYONE.</span>
                         </h2>
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -472,8 +551,8 @@ export default function App() {
                     </section>
                     
                     {/* Team Section */}
-                    <section className="py-32 px-4 border-t border-white/10">
-                        <div className="max-w-4xl mx-auto text-center mb-20">
+                    <section className="py-16 px-4 border-t border-white/10">
+                        <div className="max-w-4xl mx-auto text-center mb-12">
                             <h2 className="text-5xl font-black mb-6 font-grotesk">MEET THE MINDS</h2>
                             <p className="text-gray-400 font-mono">The architects behind the intelligence.</p>
                         </div>
@@ -495,51 +574,13 @@ export default function App() {
                         </div>
                     </section>
 
-                    {/* Pricing with TESSERACT EFFECT */}
-                    <section id="pricing" className="py-32 px-4 relative">
-                        <div className="max-w-3xl mx-auto glass-card p-12 rounded-[3rem] text-center border border-[#38F8A8] relative overflow-hidden group transition-all duration-700 hover:border-[#D4AF37] hover:shadow-[0_0_100px_rgba(212,175,55,0.4)] hover:scale-[1.02]">
-                             {/* The Chip Pattern Overlay */}
-                             <div className="absolute inset-0 bg-chip-pattern opacity-0 group-hover:opacity-10 transition-opacity duration-700"></div>
-                             
-                             {/* The TESSERACT 3D Animation */}
-                             <TesseractCircuit />
-
-                             {/* The Metallic Glint Animation */}
-                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#D4AF37]/20 to-transparent translate-x-[-100%] group-hover:animate-shimmer z-0"></div>
-
-                             {/* Border Glow */}
-                             <div className="chip-border group-hover:opacity-100"></div>
-
-                             <div className="absolute inset-0 bg-[#38F8A8]/5 group-hover:bg-black/80 transition-colors z-0"></div>
-                             
-                             <div className="relative z-10">
-                                 <div className="inline-flex items-center gap-2 bg-[#38F8A8] group-hover:bg-[#D4AF37] text-black px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest transition-colors duration-500 mb-8 font-grotesk">
-                                     <Cpu className="w-4 h-4" /> Founder's Chip - Tesseract
-                                 </div>
-                                 
-                                 <h2 className="text-7xl md:text-9xl font-black mt-4 tracking-tighter font-grotesk group-hover:text-[#D4AF37] transition-colors duration-500">₱15,000</h2>
-                                 <p className="text-2xl font-medium text-gray-300 mt-4 font-grotesk group-hover:text-white">Monthly Subscription</p>
-                                 
-                                 <div className="my-12 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:via-[#D4AF37]/50"></div>
-                                 
-                                 <ul className="text-left max-w-md mx-auto space-y-4 mb-12 font-grotesk">
-                                     <li className="flex items-center gap-3"><CheckCircle2 className="text-[#38F8A8] group-hover:text-[#D4AF37] transition-colors" /> Lifetime 24/7 Unlimited Tech Support</li>
-                                     <li className="flex items-center gap-3"><CheckCircle2 className="text-[#38F8A8] group-hover:text-[#D4AF37] transition-colors" /> Full Facebook, IG, TikTok, Shopify Integration</li>
-                                     <li className="flex items-center gap-3"><CheckCircle2 className="text-[#38F8A8] group-hover:text-[#D4AF37] transition-colors" /> Voice Note & Image Recognition</li>
-                                     <li className="flex items-center gap-3"><CheckCircle2 className="text-[#38F8A8] group-hover:text-[#D4AF37] transition-colors" /> Custom Training for Your Business</li>
-                                 </ul>
-                                 
-                                 <button onClick={() => setChatOpen(true)} className="w-full py-6 bg-white text-black font-black text-2xl hover:bg-[#D4AF37] hover:text-black transition-all rounded-xl font-grotesk shadow-lg group-hover:shadow-[0_0_40px_rgba(212,175,55,0.6)]">
-                                     HIRE ORIN NOW
-                                 </button>
-                                 
-                                 <p className="mt-6 text-sm text-gray-500 font-mono">Limited chip supply. Secure yours today.</p>
-                             </div>
-                        </div>
+                    {/* Pricing with SCROLL TRIGGERED TESSERACT EFFECT */}
+                    <section id="pricing" className="py-20 px-4 relative">
+                        <PricingCard setChatOpen={setChatOpen} />
                     </section>
                 </VelocityScrollProvider>
 
-                <footer className="py-12 text-center text-gray-600 text-sm border-t border-white/5 relative z-10 bg-black font-mono">
+                <footer className="py-8 text-center text-gray-600 text-sm border-t border-white/5 relative z-10 bg-black font-mono">
                     <p className="mb-2">© 2025 Organic Intelligence AI • OASIS Inc.</p>
                     <div className="flex justify-center gap-4 mt-4">
                         <a href="#" className="hover:text-white transition-colors">Terms</a>
@@ -562,31 +603,29 @@ export default function App() {
                     </button>
                 </div>
 
-                {/* Chat Widget */}
-                <div className={`fixed bottom-0 right-0 md:bottom-8 md:right-8 z-[70] transition-all duration-500 transform ${chatOpen ? 'translate-y-0 opacity-100' : 'translate-y-[120%] opacity-0'}`}>
-                    <div className="w-full md:w-[400px] h-[100vh] md:h-[600px] glass-card md:rounded-3xl flex flex-col overflow-hidden border border-[#38F8A8]/30 shadow-2xl bg-black">
+                {/* Chat Widget - Small FB Style */}
+                <div className={`fixed bottom-0 right-0 z-[70] transition-all duration-500 transform ${chatOpen ? 'translate-y-0 opacity-100' : 'translate-y-[120%] opacity-0'} w-full md:w-[320px] md:bottom-0 md:right-8`}>
+                    <div className="w-full h-[50dvh] md:h-[450px] glass-card rounded-t-2xl flex flex-col overflow-hidden border border-[#38F8A8]/30 shadow-2xl bg-black">
                         {/* Header */}
-                        <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#38F8A8]/5">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full border border-[#38F8A8] overflow-hidden bg-black relative">
+                        <div className="p-3 border-b border-white/10 flex justify-between items-center bg-[#38F8A8]/10 cursor-pointer" onClick={() => setChatOpen(false)}>
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-full border border-[#38F8A8] overflow-hidden bg-black relative">
                                     <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110" alt="Orin" loading="lazy" />
-                                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#38F8A8] rounded-full border-2 border-black animate-pulse"></div>
+                                    <div className="absolute bottom-0 right-0 w-2 h-2 bg-[#38F8A8] rounded-full border border-black animate-pulse"></div>
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-white font-grotesk">ORIN AI</h3>
-                                    <p className="text-[10px] text-[#38F8A8] uppercase tracking-wider font-mono">V9 Online • 24/7</p>
+                                    <h3 className="font-bold text-white text-sm font-grotesk">ORIN AI</h3>
+                                    <p className="text-[9px] text-[#38F8A8] uppercase tracking-wider font-mono">Active Now</p>
                                 </div>
                             </div>
-                            <button onClick={() => setChatOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-                                <X className="w-5 h-5 text-gray-400" />
-                            </button>
+                            <X className="w-4 h-4 text-gray-400 hover:text-white" />
                         </div>
 
                         {/* Messages */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth">
+                        <div className="flex-1 overflow-y-auto p-3 space-y-3 scroll-smooth">
                             {messages.map((m, i) => (
                                 <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed ${
+                                    <div className={`max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed whitespace-pre-wrap ${
                                         m.role === 'user' 
                                             ? 'bg-[#38F8A8] text-black chat-bubble-user font-bold font-grotesk' 
                                             : 'bg-white/10 text-gray-200 chat-bubble-bot border border-white/5 font-grotesk'
@@ -597,40 +636,38 @@ export default function App() {
                             ))}
                             {isThinking && (
                                 <div className="flex justify-start">
-                                    <div className="bg-white/5 p-4 rounded-2xl rounded-bl-sm flex gap-1 items-center">
-                                        <div className="w-2 h-2 bg-[#38F8A8] rounded-full animate-bounce"></div>
-                                        <div className="w-2 h-2 bg-[#38F8A8] rounded-full animate-bounce delay-100"></div>
-                                        <div className="w-2 h-2 bg-[#38F8A8] rounded-full animate-bounce delay-200"></div>
+                                    <div className="bg-white/5 p-3 rounded-2xl rounded-bl-sm flex gap-1 items-center">
+                                        <div className="w-1.5 h-1.5 bg-[#38F8A8] rounded-full animate-bounce"></div>
+                                        <div className="w-1.5 h-1.5 bg-[#38F8A8] rounded-full animate-bounce delay-100"></div>
+                                        <div className="w-1.5 h-1.5 bg-[#38F8A8] rounded-full animate-bounce delay-200"></div>
                                     </div>
                                 </div>
                             )}
                         </div>
 
                         {/* Input */}
-                        <form onSubmit={sendChat} className="p-4 border-t border-white/10 bg-black/50">
+                        <form onSubmit={sendChat} className="p-3 border-t border-white/10 bg-black/80 backdrop-blur-md">
                             <div className="relative">
                                 <input 
                                     type="text" 
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
-                                    placeholder="Ask about pricing, features..." 
-                                    className="w-full bg-white/5 border border-white/10 rounded-full py-4 pl-6 pr-14 text-white focus:outline-none focus:border-[#38F8A8] transition-colors placeholder:text-gray-600 font-mono text-sm"
+                                    placeholder="Type details..." 
+                                    className="w-full bg-white/5 border border-white/10 rounded-full py-2.5 pl-4 pr-10 text-white focus:outline-none focus:border-[#38F8A8] transition-colors placeholder:text-gray-500 font-mono text-xs"
                                 />
-                                <button type="submit" className="absolute right-2 top-2 p-2 bg-[#38F8A8] rounded-full text-black hover:scale-105 transition-transform">
-                                    <Send className="w-5 h-5" />
+                                <button type="submit" className="absolute right-1.5 top-1.5 p-1.5 bg-[#38F8A8] rounded-full text-black hover:scale-105 transition-transform">
+                                    <Send className="w-4 h-4" />
                                 </button>
                             </div>
-                            <div className="text-center mt-2">
-                                <p className="text-[10px] text-gray-600 flex items-center justify-center gap-1 font-mono">
-                                    <ShieldCheck className="w-3 h-3" /> Secured by O.A.S.I.S Inc.
+                            <div className="text-center mt-1.5">
+                                <p className="text-[8px] text-gray-600 flex items-center justify-center gap-1 font-mono">
+                                    <ShieldCheck className="w-2.5 h-2.5" /> Secured by O.A.S.I.S
                                 </p>
                             </div>
                         </form>
                     </div>
                 </div>
 
-                {/* Floating Action Button (Only visible when chat is closed) removed redundunt button as requested */}
-                
                 {/* Game Modal */}
                 {gameOpen && (
                     <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center backdrop-blur-xl">
