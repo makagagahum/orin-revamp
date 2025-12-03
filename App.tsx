@@ -257,7 +257,7 @@ const DynamicShowcase = () => {
                 setIndex((prev) => (prev + 1) % GALLERY_IMAGES.length);
                 setFade(true); // Start fade in
             }, 500); // Wait for fade out
-        }, 4000); // Change every 4s
+        }, 6000); // 6 Seconds for reading
         return () => clearInterval(interval);
     }, []);
 
@@ -313,16 +313,16 @@ const FloatingTicker = ({ chatOpen }: { chatOpen: boolean }) => {
     const [idx, setIdx] = useState(0);
     const [visible, setVisible] = useState(true);
     const messages = [
-        { role: "Online Seller", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix", q: "Hm sis? Pwede auto-reply?", a: "Matic yan! One-time payment lang." },
-        { role: "Dropshipper", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka", q: "Can you manage orders?", a: "Yes! Connected to Shopify & TikTok." },
-        { role: "LGU Officer", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Bob", q: "Pwede sa constituents?", a: "Oo naman! 24/7 public service." },
-        { role: "Hospital Staff", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Willow", q: "Can it triage patients?", a: "Yes, initial assessment ok!" }
+        { role: "Online Seller", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix", q: "Hm sis? Pwede auto-reply? 😩", a: "Matic yan! One-time payment lang. 🚀" },
+        { role: "Dropshipper", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka", q: "Can you manage orders? 📦", a: "Yes! Connected to Shopify & TikTok. 🔗" },
+        { role: "LGU Officer", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Bob", q: "Pwede sa constituents? 🏛️", a: "Oo naman! 24/7 public service. 🫡" },
+        { role: "Hospital Staff", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Willow", q: "Can it triage patients? 🏥", a: "Yes, initial assessment ok! ✅" }
     ];
     useEffect(() => {
         const i = setInterval(() => {
             setVisible(false);
             setTimeout(() => { setIdx(p => (p + 1) % messages.length); setVisible(true); }, 500);
-        }, 4000);
+        }, 6000); // 6 SECONDS FOR READING
         return () => clearInterval(i);
     }, []);
 
@@ -357,19 +357,19 @@ const MobileHero = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
                  <div className="w-full h-full rounded-full overflow-hidden border-2 border-[#38F8A8] relative bg-black shadow-[0_0_40px_rgba(56,248,168,0.4)]">
                     <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110" alt="Orin Avatar" />
                  </div>
-                 <div className="absolute bottom-0 right-0 bg-black border border-[#38F8A8] px-2 py-0.5 rounded-full text-[10px] text-[#38F8A8] font-bold">V9 ONLINE</div>
+                 {/* Removed V9 ONLINE Badge */}
              </div>
 
-             <h1 className="text-5xl font-black tracking-tighter font-grotesk text-white mb-2 leading-none">
-                MEET <span className="text-[#38F8A8]">ORIN</span>
+             <h1 className="text-6xl font-black tracking-tighter font-grotesk text-white mb-2 leading-none">
+                ORIN AI
              </h1>
              <p className="text-sm text-gray-400 font-mono mb-6 max-w-xs">
                 Your 24/7 AI Employee. <br/>Reads. Listens. Sells.
              </p>
              
-             {/* Persistent Glitch Text - Outlined */}
+             {/* FIXED READABILITY: Solid White + Glow */}
              <div className="relative group mb-8">
-                <h1 className="text-xl font-black text-transparent text-stroke tracking-tighter font-grotesk leading-none relative z-10 text-center glitch-text" data-text="YOUR NEW EMPLOYEE IS HERE">
+                <h1 className="text-xl font-black text-white tracking-tighter font-grotesk leading-none relative z-10 text-center animate-pulse drop-shadow-lg">
                    YOUR NEW EMPLOYEE IS HERE
                 </h1>
              </div>
@@ -412,16 +412,10 @@ const HeroReveal = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
                 <div className="absolute inset-0 flex flex-col items-center justify-center transition-all duration-300 will-change-transform" 
                      style={{ opacity: fadeOut, transform: `scale(${1 + progress * 0.5}) blur(${progress * 20}px)`, pointerEvents: fadeOut <= 0.1 ? 'none' : 'auto', zIndex: 10 }}>
                      
-                     <div className="mb-6 flex items-center gap-2 border border-[#38F8A8]/30 bg-[#38F8A8]/10 px-4 py-1 rounded-full animate-pulse">
-                         <span className="relative flex h-2 w-2">
-                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#38F8A8] opacity-75"></span>
-                           <span className="relative inline-flex rounded-full h-2 w-2 bg-[#38F8A8]"></span>
-                         </span>
-                         <span className="text-[#38F8A8] text-xs font-bold tracking-widest uppercase font-mono">System Online</span>
-                     </div>
+                     {/* Removed System Online Badge */}
                      
-                     {/* RESTORED OUTLINED GLITCH */}
-                     <h1 className="text-[8vw] leading-[0.85] font-black text-center tracking-tighter mix-blend-screen font-grotesk glitch-text text-transparent text-stroke" data-text="YOUR NEW EMPLOYEE IS HERE">
+                     {/* FIXED READABILITY: Solid White + Strong Glow */}
+                     <h1 className="text-[8vw] leading-[0.85] font-black text-center tracking-tighter font-grotesk text-white animate-pulse drop-shadow-[0_0_25px_rgba(255,255,255,0.4)]">
                          YOUR NEW<br/>
                          EMPLOYEE<br/>
                          IS HERE.
@@ -433,7 +427,12 @@ const HeroReveal = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
                 <div className="absolute inset-0 flex flex-col items-center justify-center will-change-transform" 
                      style={{ opacity: fadeIn, transform: `scale(${scale})`, pointerEvents: fadeIn < 0.5 ? 'none' : 'auto', zIndex: 20 }}>
                      
-                     <div className="relative w-96 h-96 mb-8">
+                     {/* MASSIVE BACKGROUND TEXT */}
+                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center z-0 pointer-events-none mix-blend-overlay opacity-30 select-none">
+                         <h1 className="text-[25vw] font-black text-white tracking-tighter leading-none opacity-20">ORIN</h1>
+                     </div>
+
+                     <div className="relative w-96 h-96 mb-8 z-10">
                          {/* Spinning Rings */}
                          <div className="absolute inset-[-40px] rounded-full border border-[#38F8A8]/20 animate-spin-slow"></div>
                          <div className="absolute inset-[-20px] rounded-full border-2 border-[#D4AF37]/40 animate-spin-slow" style={{ animationDirection: 'reverse', animationDuration: '30s' }}></div>
@@ -444,21 +443,21 @@ const HeroReveal = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
                          </div>
                      </div>
 
-                     <h2 className="text-9xl font-black text-center tracking-tighter font-grotesk text-white drop-shadow-[0_0_30px_rgba(56,248,168,0.5)]">
+                     <h2 className="text-9xl font-black text-center tracking-tighter font-grotesk text-white drop-shadow-[0_0_30px_rgba(56,248,168,0.5)] z-10">
                         ORIN AI
                      </h2>
-                     <p className="mt-4 text-xl font-bold text-[#38F8A8] tracking-[0.3em] uppercase drop-shadow-md">
+                     <p className="mt-4 text-xl font-bold text-[#38F8A8] tracking-[0.3em] uppercase drop-shadow-md z-10">
                         24/7. NEVER TIRED. ALWAYS SELLING.
                      </p>
                      
-                     {/* Persistent Glitch Text - Outlined */}
-                     <div className="relative group mt-8">
-                        <h1 className="text-4xl font-black text-transparent text-stroke tracking-tighter font-grotesk leading-none relative z-10 text-center glitch-text" data-text="YOUR NEW EMPLOYEE IS HERE">
+                     {/* Persistent Text - Soft Breathe */}
+                     <div className="relative group mt-8 z-10">
+                        <h1 className="text-4xl font-black text-white tracking-tighter font-grotesk leading-none relative z-10 text-center animate-pulse opacity-90 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
                            YOUR NEW EMPLOYEE IS HERE
                         </h1>
                      </div>
                      
-                     <button onClick={() => setChatOpen(true)} className="mt-12 group relative px-10 py-5 bg-[#38F8A8] text-black font-black text-xl hover:scale-110 transition-transform flex items-center gap-3 font-grotesk rounded-full shadow-[0_0_40px_rgba(56,248,168,0.6)]">
+                     <button onClick={() => setChatOpen(true)} className="mt-12 group relative px-10 py-5 bg-[#38F8A8] text-black font-black text-xl hover:scale-110 transition-transform flex items-center gap-3 font-grotesk rounded-full shadow-[0_0_40px_rgba(56,248,168,0.6)] z-10">
                          HIRE ORIN <MessageCircle className="w-6 h-6" />
                      </button>
                 </div>
@@ -472,7 +471,7 @@ const PricingCard = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => 
     const [ref, isInView] = useInView({ threshold: 0.1 });
     
     return (
-        <div ref={ref} className={`max-w-4xl mx-auto p-12 rounded-[1.5rem] text-center relative overflow-hidden group transition-all duration-1000 transform ${isInView ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'} shadow-[0_20px_60px_rgba(0,0,0,0.8)]`}>
+        <div ref={ref} className={`max-w-4xl mx-auto p-12 rounded-[1.5rem] text-center relative overflow-hidden group transition-all duration-1000 transform ${isInView ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'} shadow-[0_20px_100px_rgba(212,175,55,0.3)]`}>
              
              {/* GLOSSY OBSIDIAN BACKGROUND */}
              <div className="absolute inset-0 bg-[#050505] z-0"></div>
@@ -484,8 +483,8 @@ const PricingCard = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => 
              {/* SCATTERED TESSERACT (Bright Gold Nodes) */}
              <TesseractCircuit isActive={true} />
 
-             {/* GOLD BORDER */}
-             <div className="absolute inset-0 rounded-[1.5rem] border border-[#D4AF37]/60 pointer-events-none z-10 shadow-[inset_0_0_20px_rgba(212,175,55,0.2)]"></div>
+             {/* GOLD BORDER - INCREASED GLOW */}
+             <div className="absolute inset-0 rounded-[1.5rem] border-2 border-[#D4AF37] pointer-events-none z-10 shadow-[0_0_60px_rgba(212,175,55,0.4),inset_0_0_30px_rgba(212,175,55,0.2)] animate-pulse"></div>
              
              {/* CONTENT - BRUTALIST TYPOGRAPHY */}
              <div className="relative z-20">
@@ -544,7 +543,8 @@ const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
             { t: 3000, s: 1 }, // "DO YOU REPLY AT 2AM?"
             { t: 6000, s: 2 }, // "LOSING SALES?"
             { t: 9000, s: 3 }, // "STOP DOING IT MANUALLY"
-            { t: 11000, s: 4 } // DONE (Reveal)
+            { t: 11000, s: 4 }, // "MEET ORIN AI" (New Step)
+            { t: 13000, s: 5 } // DONE (Reveal)
         ];
 
         let timeouts: ReturnType<typeof setTimeout>[] = [];
@@ -552,12 +552,12 @@ const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
             timeouts.push(setTimeout(() => setStep(s), t));
         });
         
-        timeouts.push(setTimeout(onComplete, 12000));
+        timeouts.push(setTimeout(onComplete, 14000));
 
         return () => timeouts.forEach(clearTimeout);
     }, [onComplete]);
 
-    if (step >= 4) return null;
+    if (step >= 5) return null;
 
     return (
         <div className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center overflow-hidden font-grotesk text-center px-4">
@@ -577,10 +577,15 @@ const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
                 STOP DOING IT MANUALLY.
             </h1>
 
-            {/* Step 3: Reveal Pre-Loader */}
-            <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-500 ${step === 3 ? 'opacity-100' : 'opacity-0'}`}>
+            {/* Step 3: MEET ORIN AI */}
+            <h1 className={`absolute text-6xl md:text-9xl font-black text-[#38F8A8] tracking-tighter transition-all duration-500 ${step === 3 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
+                MEET ORIN AI.
+            </h1>
+
+            {/* Step 4: Reveal Pre-Loader */}
+            <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-500 ${step === 4 ? 'opacity-100' : 'opacity-0'}`}>
                  <div className="relative group">
-                    <h1 className="text-6xl md:text-9xl font-black text-transparent text-stroke tracking-tighter glitch-text" data-text="YOUR NEW EMPLOYEE IS HERE">
+                    <h1 className="text-6xl md:text-9xl font-black text-transparent text-stroke tracking-tighter animate-pulse" data-text="YOUR NEW EMPLOYEE IS HERE">
                         YOUR NEW EMPLOYEE IS HERE
                     </h1>
                  </div>
@@ -755,26 +760,29 @@ export default function App() {
                         <PricingCard setChatOpen={setChatOpen} />
                     </section>
                     
-                    {/* Team Section (Trust) */}
+                    {/* Team Section (Respectful Remaster) */}
                     <section className="py-12 md:py-20 px-4"> 
-                        <div className="max-w-2xl mx-auto text-center mb-6"> 
-                            <h2 className="text-2xl md:text-4xl font-black mb-2 font-grotesk">MEET THE MINDS</h2>
-                            <p className="text-gray-500 text-xs font-mono uppercase tracking-widest">The architects</p>
+                        <div className="max-w-6xl mx-auto text-center mb-16"> 
+                            <h2 className="text-4xl md:text-6xl font-black mb-4 font-grotesk tracking-tighter">THE ARCHITECTS</h2>
+                            <p className="text-gray-400 text-lg font-mono">Building the future of intelligence.</p>
                         </div>
-                        <div className="max-w-2xl mx-auto grid grid-cols-4 gap-4">
+                        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
                             {TEAM.map((member, i) => (
-                                <div key={i} className="group relative text-center">
-                                    <div className="aspect-square rounded-full overflow-hidden mb-2 border border-white/10 bg-gray-900 grayscale group-hover:grayscale-0 transition-all duration-500 w-12 h-12 mx-auto">
-                                        <img src={member.image} className={`w-full h-full object-cover ${member.name === 'Marvin' ? 'object-left' : 'object-center'}`} alt={member.name} loading="lazy" />
+                                <MouseTilt key={i} intensity={5}>
+                                    <div className="glass-card p-6 rounded-2xl text-center group h-full flex flex-col items-center">
+                                        <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-[#38F8A8]/30 mb-6 bg-black relative group-hover:border-[#38F8A8] transition-colors">
+                                            <img src={member.image} className={`w-full h-full object-cover ${member.name === 'Marvin' ? 'object-left' : 'object-center'} scale-110`} alt={member.name} loading="lazy" />
+                                        </div>
+                                        <h4 className="font-bold text-2xl font-grotesk mb-2">{member.name}</h4>
+                                        <p className="text-xs text-[#38F8A8] uppercase font-mono tracking-widest mb-4">{member.role}</p>
+                                        
+                                        {member.name === 'Marvin' && (
+                                            <a href={member.link} target="_blank" rel="noreferrer" className="mt-auto inline-block text-xs bg-white text-black py-2 px-4 rounded-full font-bold hover:bg-[#38F8A8] transition-colors font-mono">
+                                                HIRE MARVIN
+                                            </a>
+                                        )}
                                     </div>
-                                    <h4 className="font-bold text-xs font-grotesk">{member.name}</h4>
-                                    <p className="text-[7px] text-[#38F8A8] uppercase font-mono mt-0.5 leading-tight truncate">{member.role}</p>
-                                    {member.name === 'Marvin' && (
-                                        <a href={member.link} target="_blank" rel="noreferrer" className="mt-1 block text-[7px] bg-white text-black py-0.5 px-1.5 rounded font-bold hover:bg-[#38F8A8] transition-colors font-mono">
-                                            HIRE
-                                        </a>
-                                    )}
-                                </div>
+                                </MouseTilt>
                             ))}
                         </div>
                     </section>
