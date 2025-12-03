@@ -46,7 +46,7 @@ export const ContentProtection: React.FC<{ children: React.ReactNode }> = ({ chi
         };
 
         // 3. Detect DevTools (Debugger Trap)
-        // This is the "Kodigo" method: an aggressive loop that freezes execution if devtools is open
+        // Optimization: Increased interval from 1000ms to 4000ms to reduce main thread blocking
         const devToolsCheck = setInterval(() => {
             const widthThreshold = window.outerWidth - window.innerWidth > 160;
             const heightThreshold = window.outerHeight - window.innerHeight > 160;
@@ -64,7 +64,7 @@ export const ContentProtection: React.FC<{ children: React.ReactNode }> = ({ chi
                 // If execution paused (due to debugger), DevTools is likely open
                 setIsDevToolsOpen(true);
             }
-        }, 1000);
+        }, 4000);
 
         // Attach Listeners
         document.addEventListener('contextmenu', handleContextMenu);

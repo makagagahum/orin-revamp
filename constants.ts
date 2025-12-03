@@ -1,5 +1,4 @@
 
-
 export const FEATURES = [
     { title: 'Answers & Sells', description: 'Replies instantly to "Hm?", "Avail?", and closes deals while you sleep.' },
     { title: 'Reads Photos', description: 'Understand receipts, IDs, and product screenshots instantly.' },
@@ -16,45 +15,38 @@ export const TEAM = [
     { name: 'Roe', role: 'Investor', image: 'https://preview.redd.it/taro-sakamoto-icon-cleaned-edit-and-remastered-by-me-two-v0-kgpamdq4m0rb1.png?width=640&crop=smart&auto=webp&s=405967562d8822280c7ed17334574e3e238720dc', link: '#' }
 ];
 
+// UPDATED WITH HD UNSPLASH IMAGES FOR CRISP VISUALS
 export const GALLERY_IMAGES = [
     { 
         urls: [
-            "https://expat.com.ph/wp-content/uploads/sites/277/2021/10/Blog-Images-86.jpg",
-            "https://www.speed.ph/wp-content/uploads/2022/07/TikTok-Shop-1024x576.jpg"
+            "https://images.unsplash.com/photo-1556740714-a8395b3bf30f?q=80&w=1600&auto=format&fit=crop", // Payment/Seller
+            "https://images.unsplash.com/photo-1580894732444-8ecded7900cd?q=80&w=1600&auto=format&fit=crop"  // Asian Business Woman
         ], 
         caption: "Online Seller",
         description: "Miss 3AM sales? Orin never sleeps. Catches every inquiry while you're resting. 🚀"
     },
     { 
         urls: [
-            "https://media.philstar.com/photos/2023/03/02/airbnb-women_2023-03-02_19-38-34.jpg",
-            "https://media.philstar.com/photos/2023/03/02/airbnb-women_2023-03-02_19-38-34.jpg" 
-        ], 
-        caption: "Airbnb Host",
-        description: "Slow replies = lost bookings. Orin responds instantly. Always on point."
-    },
-    { 
-        urls: [
-            "https://cfw51.rabbitloader.xyz/eyJjIjp0cnVlLCJoIjoid3d3Lm9sZXJuLmNvbSIsInYiOjMxNTUxNjgxMjcsInIiOjEsImkiOiI5MjIwM2Y1Zi1iNWMzLTQ2NjQtZTkyOC1hY2U0YzY4ZWNmMDAifQ/wp-content/uploads/2025/01/employee-engagement-significance-for-SMEs-1.jpg",
-            "https://static01.nyt.com/images/2011/11/26/business/Callcenterjp2/Callcenterjp2-jumbo.jpg?quality=75&auto=webp"
+            "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1600&auto=format&fit=crop", // Modern Work
+            "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=1600&auto=format&fit=crop"  // Corporate Asian
         ], 
         caption: "Corporate",
         description: "Hiring costs ₱226,857/year. Orin costs ₱15,000 monthly. Math doesn't lie. 💡"
     },
     { 
         urls: [
-            "https://www.upou.edu.ph/wp-content/uploads/2024/03/UPOU-FMDS-and-PESO-Laguna-Conducted-a-Courtesy-Visit-with-the-Local-Government-Unit-of-Los-Banos-Laguna-for-Barangay-Digital-Transformation-Project_1-600x338.jpg",
-            "https://www.gsis.gov.ph/downloads/images/gfal/Active-Employees_Compensation.jpg"
+            "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1600&auto=format&fit=crop", // Hotel/Airbnb
+            "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=1600&auto=format&fit=crop"  // Luxury Home
         ], 
-        caption: "LGU/Govt",
-        description: "Constituents waiting in line? Orin triages 24/7. Zero delays. Period."
+        caption: "Airbnb Host",
+        description: "Slow replies = lost bookings. Orin responds instantly. Always on point."
     },
     { 
         urls: [
-            "https://www.itnonline.com/sites/default/files/styles/content_large/public/Makati%20Radiologists%201.JPG?itok=rKSuESSy",
-            "https://files01.pna.gov.ph/source/2024/08/19/pnp-command-center-crame-08162024jb.jpg"
+            "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=1600&auto=format&fit=crop", // Medical/Lab
+            "https://images.unsplash.com/photo-1581056771107-24ca5f033842?q=80&w=1600&auto=format&fit=crop"  // Hospital
         ], 
-        caption: "Hospitals/Police",
+        caption: "Hospitals",
         description: "Critical info delays cost lives. Orin prioritizes instantly. Every time."
     },
 ];

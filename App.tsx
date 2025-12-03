@@ -17,8 +17,6 @@ function useInView(options = { threshold: 0.3 }) {
         const observer = new IntersectionObserver(([entry]) => {
             if (entry.isIntersecting) {
                 setIsInView(true);
-                // Optional: Unobserve if you only want it to trigger once
-                // observer.unobserve(entry.target); 
             } else {
                 setIsInView(false);
             }
@@ -36,6 +34,9 @@ function useInView(options = { threshold: 0.3 }) {
     return [ref, isInView] as const;
 }
 
+// Check for mobile to optimize performance
+const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
 // --- VISUAL COMPONENTS ---
 
 const ParticleBackground = () => {
@@ -43,143 +44,158 @@ const ParticleBackground = () => {
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { alpha: false }); // Optimization
         if (!ctx) return;
         let particles: any[] = [];
         let animationFrameId: number;
-        const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; initParticles(); };
+        
         const initParticles = () => {
             particles = [];
-            const count = Math.min(60, Math.floor((window.innerWidth * window.innerHeight) / 25000));
+            // PERFORMANCE: Drastically reduce particles on mobile to keep FPS high
+            const count = isMobile ? 15 : 40;
             for (let i = 0; i < count; i++) particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4, size: Math.random() * 2 + 0.5 });
         };
+
+        const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; initParticles(); };
+
         const draw = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Draw background manually since we turned alpha off for perf
             const gradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, canvas.width);
-            gradient.addColorStop(0, 'rgba(5,5,5,0)'); gradient.addColorStop(1, 'rgba(0,0,0,0.8)');
+            gradient.addColorStop(0, '#050505'); gradient.addColorStop(1, '#000000');
             ctx.fillStyle = gradient; ctx.fillRect(0,0,canvas.width, canvas.height);
+
             ctx.globalCompositeOperation = 'screen'; ctx.beginPath(); ctx.strokeStyle = 'rgba(56, 248, 168, 0.15)'; ctx.lineWidth = 0.5;
-            particles.forEach((p, i) => {
+            
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
                 p.x += p.vx; p.y += p.vy;
                 if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
                 if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                
+                // PERFORMANCE: Simplified distance check
                 for (let j = i + 1; j < particles.length; j++) {
                     const p2 = particles[j];
-                    if ((p.x - p2.x)**2 + (p.y - p2.y)**2 < 15000) { ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); }
+                    const dx = p.x - p2.x;
+                    const dy = p.y - p2.y;
+                    // Pre-check square distance to avoid sqrt
+                    if (Math.abs(dx) < 120 && Math.abs(dy) < 120) {
+                        if (dx*dx + dy*dy < 14400) { ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); }
+                    }
                 }
-            });
-            ctx.stroke(); ctx.fillStyle = '#38F8A8';
-            particles.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill(); });
+            }
+            ctx.stroke(); 
+            ctx.fillStyle = '#38F8A8';
+            ctx.beginPath();
+            for (const p of particles) {
+                ctx.moveTo(p.x + p.size, p.y);
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); 
+            }
+            ctx.fill();
             animationFrameId = requestAnimationFrame(draw);
         };
         window.addEventListener('resize', resize); resize(); draw();
         return () => { window.removeEventListener('resize', resize); cancelAnimationFrame(animationFrameId); };
     }, []);
-    return <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none bg-[#020202]" />;
+    return <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none" />;
 };
 
 // --- TESSERACT CIRCUIT COMPONENT ---
 const TesseractCircuit = ({ isActive }: { isActive: boolean }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const pointsRef = useRef<{x: number, y: number, z: number}[]>([]);
+    
     useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        let points: {x: number, y: number, z: number}[] = [];
-        const pointCount = 40;
+        const pointCount = isMobile ? 20 : 40; // Less points on mobile
         const size = 150;
-        let angleX = 0;
-        let angleY = 0;
-        let animationId: number;
-
-        // Init 3D points
         for(let i=0; i<pointCount; i++) {
-            points.push({
+            pointsRef.current.push({
                 x: (Math.random() - 0.5) * size * 2,
                 y: (Math.random() - 0.5) * size * 2,
                 z: (Math.random() - 0.5) * size * 2
             });
         }
+    }, []);
 
-        const project = (p: {x: number, y: number, z: number}) => {
-            // Rotate X
-            let y = p.y * Math.cos(angleX) - p.z * Math.sin(angleX);
-            let z = p.y * Math.sin(angleX) + p.z * Math.cos(angleX);
-            let x = p.x;
+    useEffect(() => {
+        if (!isActive) return;
 
-            // Rotate Y
-            let x2 = x * Math.cos(angleY) - z * Math.sin(angleY);
-            let z2 = x * Math.sin(angleY) + z * Math.cos(angleY);
-            
-            // Perspective
-            const scale = 400 / (400 + z2);
-            return {
-                x: x2 * scale + canvas.width/2,
-                y: y * scale + canvas.height/2,
-                scale: scale
-            };
-        };
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        let angleX = 0;
+        let angleY = 0;
+        let animationId: number;
 
         const draw = () => {
             if (!canvas) return;
-            // Resize logic
-            const rect = canvas.parentElement?.getBoundingClientRect();
-            if(rect) {
-                canvas.width = rect.width;
-                canvas.height = rect.height;
+            // Cheap resize check
+            if(canvas.width !== canvas.offsetWidth || canvas.height !== canvas.offsetHeight) {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
             }
             
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            angleX += 0.005;
-            angleY += 0.007;
+            angleX += 0.005; angleY += 0.007;
 
-            const projectedPoints = points.map(project);
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
 
-            // Draw Connections
             ctx.lineWidth = 0.5;
-            ctx.strokeStyle = isActive ? 'rgba(212, 175, 55, 0.6)' : 'rgba(212, 175, 55, 0.1)'; 
-            
-            for(let i=0; i<projectedPoints.length; i++) {
-                for(let j=i+1; j<projectedPoints.length; j++) {
-                    const d = Math.sqrt(
-                        (projectedPoints[i].x - projectedPoints[j].x)**2 + 
-                        (projectedPoints[i].y - projectedPoints[j].y)**2
-                    );
-                    if(d < 100) {
-                        ctx.beginPath();
-                        ctx.moveTo(projectedPoints[i].x, projectedPoints[i].y);
-                        ctx.lineTo(projectedPoints[j].x, projectedPoints[j].y);
-                        ctx.stroke();
+            ctx.strokeStyle = 'rgba(212, 175, 55, 0.6)';
+
+            const projected = [];
+            for(const p of pointsRef.current) {
+                let y = p.y * Math.cos(angleX) - p.z * Math.sin(angleX);
+                let z = p.y * Math.sin(angleX) + p.z * Math.cos(angleX);
+                let x = p.x;
+                let x2 = x * Math.cos(angleY) - z * Math.sin(angleY);
+                let z2 = x * Math.sin(angleY) + z * Math.cos(angleY);
+                const scale = 400 / (400 + z2);
+                projected.push({ x: x2 * scale + cx, y: y * scale + cy, scale });
+            }
+
+            ctx.beginPath();
+            for(let i=0; i<projected.length; i++) {
+                for(let j=i+1; j<projected.length; j++) {
+                    const dx = projected[i].x - projected[j].x;
+                    const dy = projected[i].y - projected[j].y;
+                    if(dx*dx + dy*dy < 10000) {
+                        ctx.moveTo(projected[i].x, projected[i].y);
+                        ctx.lineTo(projected[j].x, projected[j].y);
                     }
                 }
             }
+            ctx.stroke();
 
-            // Draw Nodes
-            projectedPoints.forEach(p => {
+            for(const p of projected) {
                 ctx.beginPath();
-                ctx.fillStyle = isActive ? `rgba(212, 175, 55, ${p.scale})` : `rgba(212, 175, 55, ${p.scale * 0.2})`;
+                ctx.fillStyle = `rgba(212, 175, 55, ${p.scale})`;
                 ctx.arc(p.x, p.y, 2 * p.scale, 0, Math.PI * 2);
                 ctx.fill();
-            });
+            }
 
             animationId = requestAnimationFrame(draw);
         };
-        
         draw();
         return () => cancelAnimationFrame(animationId);
     }, [isActive]);
 
-    return <canvas ref={canvasRef} className={`absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000 ${isActive ? 'opacity-100' : 'opacity-30'}`} />;
+    return <canvas ref={canvasRef} className={`absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000 ${isActive ? 'opacity-100' : 'opacity-0'}`} style={{ width: '100%', height: '100%' }} />;
 };
 
 const VelocityScrollProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    // CRITICAL FIX: On mobile, skew transform causes massive jitter with sticky/fixed elements.
+    // We disable the visual skew effect on mobile for "Blazing Fast" smooth scrolling.
+    if (isMobile) return <div className="relative z-10">{children}</div>;
+
     const contentRef = useRef<HTMLDivElement>(null);
     const lastScrollY = useRef(0);
     const currentSkew = useRef(0);
     const requestRef = useRef(0);
+    
     useEffect(() => {
         const update = () => {
             const velocity = window.scrollY - lastScrollY.current;
@@ -197,6 +213,7 @@ const VelocityScrollProvider: React.FC<{ children: React.ReactNode }> = ({ child
 };
 
 const ParallaxElement: React.FC<{ speed?: number; rotation?: number; children: React.ReactNode }> = ({ speed = 0.5, rotation = 0, children }) => {
+    // FIX: Wonky scroll. On mobile, we reduce complexity.
     const ref = useRef<HTMLDivElement>(null);
     useEffect(() => {
         let ticking = false;
@@ -206,7 +223,9 @@ const ParallaxElement: React.FC<{ speed?: number; rotation?: number; children: R
             const viewHeight = window.innerHeight;
             if (rect.top < viewHeight + 100 && rect.bottom > -100) {
                 const dist = (rect.top + rect.height / 2) - (viewHeight / 2);
-                ref.current.style.transform = `translate3d(0, ${(dist * speed * -1).toFixed(2)}px, 0) rotateX(${((dist / viewHeight) * rotation).toFixed(2)}deg)`;
+                // Reduce rotation on mobile to stop jitter
+                const rot = isMobile ? 0 : ((dist / viewHeight) * rotation).toFixed(2);
+                ref.current.style.transform = `translate3d(0, ${(dist * speed * -1).toFixed(2)}px, 0) rotateX(${rot}deg)`;
             }
             ticking = false;
         };
@@ -214,10 +233,13 @@ const ParallaxElement: React.FC<{ speed?: number; rotation?: number; children: R
         window.addEventListener('scroll', onScroll, { passive: true });
         return () => window.removeEventListener('scroll', onScroll);
     }, [speed, rotation]);
-    return <div ref={ref} style={{ perspective: '1000px' }}>{children}</div>;
+    return <div ref={ref} className="gpu-accel" style={{ perspective: '1000px' }}>{children}</div>;
 };
 
 const MouseTilt: React.FC<{ children: React.ReactNode; intensity?: number }> = ({ children, intensity = 15 }) => {
+    // PERFORMANCE: Disable tilt on mobile. It conflicts with touch scrolling.
+    if (isMobile) return <div className="h-full w-full">{children}</div>;
+
     const ref = useRef<HTMLDivElement>(null);
     const onMove = (e: React.MouseEvent) => {
         if (!ref.current) return;
@@ -228,13 +250,13 @@ const MouseTilt: React.FC<{ children: React.ReactNode; intensity?: number }> = (
         ref.current.style.transform = `perspective(1000px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) scale3d(1.02, 1.02, 1.02)`;
     };
     const onLeave = () => { if (ref.current) ref.current.style.transform = `perspective(1000px) rotateX(0) rotateY(0) scale3d(1,1,1)`; };
-    return <div ref={ref} onMouseMove={onMove} onMouseLeave={onLeave} className="transition-transform duration-300 ease-out will-change-transform" style={{ transformStyle: 'preserve-3d' }}>{children}</div>;
+    return <div ref={ref} onMouseMove={onMove} onMouseLeave={onLeave} className="transition-transform duration-300 ease-out will-change-transform h-full w-full" style={{ transformStyle: 'preserve-3d' }}>{children}</div>;
 };
 
 // --- Gallery Card with Scroll Trigger ---
 const GalleryCard: React.FC<{ urls: string[], caption: string, description: string }> = ({ urls, caption, description }) => {
     const [current, setCurrent] = useState(0);
-    const [ref, isInView] = useInView({ threshold: 0.4 });
+    const [ref, isInView] = useInView({ threshold: 0.2 });
 
     useEffect(() => {
         if (!isInView) return;
@@ -248,7 +270,7 @@ const GalleryCard: React.FC<{ urls: string[], caption: string, description: stri
         <MouseTilt intensity={10}>
             <div 
                 ref={ref}
-                className={`relative h-96 rounded-3xl overflow-hidden border border-white/10 bg-gray-900 transition-all duration-700 ${isInView ? 'shadow-[0_10px_40px_rgba(56,248,168,0.2)]' : ''}`}
+                className={`relative h-96 rounded-3xl overflow-hidden border border-white/10 bg-gray-900 transition-all duration-700 gpu-accel ${isInView ? 'shadow-[0_10px_40px_rgba(56,248,168,0.2)]' : ''}`}
             >
                 {urls.map((src, i) => (
                      <img 
@@ -257,15 +279,12 @@ const GalleryCard: React.FC<{ urls: string[], caption: string, description: stri
                         className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-in-out ${i === current ? 'opacity-100 scale-105' : 'opacity-0 scale-100'} ${isInView ? 'grayscale-0' : 'grayscale'}`} 
                         loading="lazy" 
                         decoding="async"
-                        referrerPolicy="no-referrer" 
                         alt={caption}
                     />
                 ))}
                 
-                {/* Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-90 transition-opacity"></div>
                 
-                {/* Content - Auto reveal on scroll */}
                 <div className={`absolute bottom-0 left-0 w-full p-8 z-10 transition-transform duration-700 ${isInView ? 'translate-y-0' : 'translate-y-[20px]'}`}>
                     <div className="text-[#38F8A8] text-xs font-black uppercase tracking-widest mb-2 font-grotesk">Built For</div>
                     <div className="text-3xl font-black uppercase drop-shadow-lg text-white mb-4 font-grotesk">{caption}</div>
@@ -320,26 +339,84 @@ const FloatingTicker = ({ chatOpen }: { chatOpen: boolean }) => {
     );
 };
 
+// --- HERO REVEAL SECTION (Freestyle) ---
+const HeroReveal = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
+    const [scrollY, setScrollY] = useState(0);
+
+    useEffect(() => {
+        const handleScroll = () => setScrollY(window.scrollY);
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // 0 to 1 as you scroll first 300px
+    const progress = Math.min(scrollY / 300, 1);
+    const fadeOut = Math.max(1 - scrollY / 200, 0);
+    const fadeIn = Math.min(Math.max((scrollY - 100) / 200, 0), 1);
+    
+    return (
+        <header className="relative h-[85vh] flex flex-col items-center justify-center overflow-hidden">
+            {/* Phase 1: The Initial Hook */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-300" style={{ opacity: fadeOut, pointerEvents: fadeOut <= 0 ? 'none' : 'auto' }}>
+                 <div className="mb-4 flex items-center gap-2 border border-[#38F8A8]/30 bg-[#38F8A8]/10 px-4 py-1 rounded-full">
+                     <span className="relative flex h-2 w-2">
+                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#38F8A8] opacity-75"></span>
+                       <span className="relative inline-flex rounded-full h-2 w-2 bg-[#38F8A8]"></span>
+                     </span>
+                     <span className="text-[#38F8A8] text-xs font-bold tracking-widest uppercase font-mono">Orin V9 Online</span>
+                 </div>
+                 
+                 <h1 className="text-[12vw] md:text-[8vw] leading-[0.85] font-black text-center tracking-tighter mix-blend-screen animate-glitch font-grotesk">
+                     YOUR NEW<br/>
+                     <span className="text-stroke">EMPLOYEE</span><br/>
+                     IS HERE.
+                 </h1>
+                 <p className="mt-6 text-sm text-gray-500 font-mono animate-bounce">SCROLL TO MEET HIM ↓</p>
+            </div>
+
+            {/* Phase 2: The Reveal */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-10" style={{ opacity: fadeIn, pointerEvents: fadeIn < 0.5 ? 'none' : 'auto', transform: `translateY(${50 - fadeIn * 50}px)` }}>
+                 <div className="relative w-40 h-40 md:w-64 md:h-64 mb-8">
+                     {/* Glowing Ring */}
+                     <div className="absolute inset-0 rounded-full border-2 border-[#38F8A8] animate-spin-slow" style={{ opacity: fadeIn }}></div>
+                     <div className="absolute inset-2 rounded-full border-2 border-dashed border-[#A855F7] animate-spin-slow" style={{ animationDirection: 'reverse', opacity: fadeIn }}></div>
+                     
+                     <div className="w-full h-full rounded-full overflow-hidden border-4 border-[#38F8A8] relative bg-black shadow-[0_0_50px_rgba(56,248,168,0.5)]">
+                        <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110" alt="Orin Avatar" />
+                     </div>
+                 </div>
+
+                 <h2 className="text-5xl md:text-7xl font-black text-center tracking-tighter font-grotesk text-white drop-shadow-lg">
+                    MEET <span className="text-[#38F8A8]">ORIN AI</span>
+                 </h2>
+                 <p className="mt-4 text-xl text-gray-300 max-w-xl text-center font-grotesk px-4">
+                    24/7 Sales. Multilingual Support. <br/> Zero Complaints.
+                 </p>
+
+                 <button onClick={() => setChatOpen(true)} className="mt-8 group relative px-8 py-4 bg-[#38F8A8] text-black font-black text-lg hover:scale-105 transition-transform flex items-center gap-2 font-grotesk rounded-full shadow-xl">
+                     HIRE ORIN NOW <MessageCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                 </button>
+                 <p className="mt-2 text-xs text-gray-500 font-mono uppercase">₱15,000 / Month • Premium SaaS</p>
+            </div>
+        </header>
+    );
+};
+
 // --- PRICING CARD WITH SCROLL TRIGGER ---
 const PricingCard = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
-    const [ref, isInView] = useInView({ threshold: 0.4 });
+    const [ref, isInView] = useInView({ threshold: 0.3 });
     
     return (
         <div ref={ref} className={`max-w-3xl mx-auto glass-card p-12 rounded-[3rem] text-center border relative overflow-hidden group transition-all duration-1000 ${isInView ? 'border-[#D4AF37] shadow-[0_0_100px_rgba(212,175,55,0.4)] scale-[1.02]' : 'border-[#38F8A8]'}`}>
-             {/* The Chip Pattern Overlay */}
-             <div className={`absolute inset-0 bg-chip-pattern transition-opacity duration-1000 ${isInView ? 'opacity-10' : 'opacity-0'}`}></div>
-             
-             {/* The TESSERACT 3D Animation */}
+             {/* The TESSERACT 3D Animation - BEHIND text */}
              <TesseractCircuit isActive={isInView} />
 
-             {/* The Metallic Glint Animation */}
-             <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-[#D4AF37]/20 to-transparent translate-x-[-100%] z-0 ${isInView ? 'animate-shimmer' : ''}`}></div>
+             {/* Dark overlay to ensure text readability over the gold circuit */}
+             <div className="absolute inset-0 bg-black/80 z-0"></div>
 
              {/* Border Glow */}
              <div className={`chip-border transition-opacity duration-1000 ${isInView ? 'opacity-100' : 'opacity-0'}`}></div>
 
-             <div className={`absolute inset-0 transition-colors z-0 ${isInView ? 'bg-black/80' : 'bg-[#38F8A8]/5'}`}></div>
-             
              <div className="relative z-10">
                  <div className={`inline-flex items-center gap-2 text-black px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest transition-colors duration-1000 mb-8 font-grotesk ${isInView ? 'bg-[#D4AF37]' : 'bg-[#38F8A8]'}`}>
                      <Cpu className="w-4 h-4" /> Founder's Chip - Tesseract
@@ -371,7 +448,6 @@ export default function App() {
     const [chatOpen, setChatOpen] = useState(false);
     const [gameOpen, setGameOpen] = useState(false);
     const [easterCount, setEasterCount] = useState(0);
-    // Modified initial state for Orin V9 Persona (Conyo/Sales)
     const [messages, setMessages] = useState([
         {role: 'model', text: 'Hello! Ako nga pala si Orin 👋. Advanced AI Employee na parang tao kausap. ₱15k Monthly lang for Premium Access. Sulit diba? 🚀'},
         {role: 'model', text: 'Para ma-setup natin business mo, paki-fill up lang nito boss:\n\n1. Name:\n2. Business Name:\n3. Contact #:\n4. Anong klaseng AI Employee need mo?'}
@@ -390,7 +466,7 @@ export default function App() {
         const handleScroll = () => {
             setShowFloat(window.scrollY > 600);
         };
-        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
@@ -452,34 +528,8 @@ export default function App() {
                 </nav>
 
                 <VelocityScrollProvider>
-                    {/* Hero Section - Super Compact */}
-                    <header className="relative pt-24 pb-12 px-4 flex flex-col items-center justify-center min-h-[85vh]">
-                         <div className="mb-4 flex items-center gap-2 border border-[#38F8A8]/30 bg-[#38F8A8]/10 px-4 py-1 rounded-full animate-pulse">
-                             <span className="relative flex h-2 w-2">
-                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#38F8A8] opacity-75"></span>
-                               <span className="relative inline-flex rounded-full h-2 w-2 bg-[#38F8A8]"></span>
-                             </span>
-                             <span className="text-[#38F8A8] text-xs font-bold tracking-widest uppercase font-mono">Orin V9 Online</span>
-                         </div>
-                         
-                         <h1 className="text-[12vw] md:text-[8vw] leading-[0.85] font-black text-center tracking-tighter mix-blend-screen animate-glitch font-grotesk">
-                             YOUR NEW<br/>
-                             <span className="text-stroke">EMPLOYEE</span><br/>
-                             IS HERE.
-                         </h1>
-                         
-                         <p className="mt-6 text-lg md:text-2xl text-gray-400 max-w-2xl text-center leading-relaxed font-grotesk">
-                            Stop replying manually. Start automating your empire.
-                            <br/><span className="text-[#38F8A8]">24/7. Multilingual. Never Tired.</span>
-                         </p>
-
-                         <div className="mt-8 flex flex-col md:flex-row gap-4 items-center">
-                             <button onClick={() => setChatOpen(true)} className="group relative px-8 py-4 bg-[#38F8A8] text-black font-black text-lg hover:scale-105 transition-transform flex items-center gap-2 font-grotesk">
-                                 HIRE ORIN NOW <MessageCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                             </button>
-                             <p className="text-xs text-gray-500 font-mono uppercase">₱15,000 / Month • Premium Access</p>
-                         </div>
-                    </header>
+                    {/* Replaced old header with new Scroll Reveal Hero */}
+                    <HeroReveal setChatOpen={setChatOpen} />
 
                     {/* Marquee - Reduced margin */}
                     <div className="py-6 bg-[#38F8A8] text-black overflow-hidden rotate-[-2deg] scale-110 border-y-4 border-black mb-12">
@@ -489,12 +539,12 @@ export default function App() {
                         </div>
                     </div>
 
-                    {/* Sales Psychology Section - Reduced padding */}
+                    {/* Sales Psychology Section - Reduced padding & fixed parallax on mobile */}
                     <section className="py-16 px-4 max-w-7xl mx-auto">
                         <div className="grid md:grid-cols-2 gap-8 items-center">
                             <ParallaxElement speed={0.2} rotation={5}>
                                 <MouseTilt>
-                                    <div className="glass-card p-12 rounded-[3rem] relative overflow-hidden">
+                                    <div className="glass-card p-12 rounded-[3rem] relative overflow-hidden gpu-accel">
                                         <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/20 blur-[80px] rounded-full"></div>
                                         <h3 className="text-4xl font-black mb-6 font-grotesk">STOP DOING IT<br/>MANUALLY.</h3>
                                         <ul className="space-y-6 text-xl text-gray-300 font-grotesk">
@@ -508,7 +558,7 @@ export default function App() {
 
                             <ParallaxElement speed={0.4} rotation={-5}>
                                 <MouseTilt>
-                                    <div className="glass-card p-12 rounded-[3rem] border border-[#38F8A8]/30 relative overflow-hidden">
+                                    <div className="glass-card p-12 rounded-[3rem] border border-[#38F8A8]/30 relative overflow-hidden gpu-accel">
                                         <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#38F8A8]/20 blur-[80px] rounded-full"></div>
                                         <h3 className="text-4xl font-black mb-6 text-[#38F8A8] font-grotesk">THE UPGRADE.</h3>
                                         <ul className="space-y-6 text-xl text-white font-grotesk">
@@ -590,10 +640,8 @@ export default function App() {
 
                 {/* --- FLOATING UI ELEMENTS --- */}
 
-                {/* Floating Ticker (Hides when chat is open) */}
                 <FloatingTicker chatOpen={chatOpen} />
 
-                {/* Scroll-triggered Floating Hire Button (Bottom Right) */}
                 <div className={`fixed bottom-8 right-4 md:right-8 z-50 transition-all duration-500 ${showFloat ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
                     <button 
                         onClick={() => setChatOpen(true)}
@@ -668,13 +716,11 @@ export default function App() {
                     </div>
                 </div>
 
-                {/* Game Modal */}
                 {gameOpen && (
                     <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center backdrop-blur-xl">
                         <PacManGame onClose={() => setGameOpen(false)} />
                     </div>
                 )}
-
             </div>
         </ContentProtection>
     );
