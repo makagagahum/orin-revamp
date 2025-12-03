@@ -97,7 +97,7 @@ const TesseractCircuit = ({ isActive }: { isActive: boolean }) => {
     
     useEffect(() => {
         if (pointsRef.current.length === 0) {
-            // OPTIMIZATION: Low point count for performance
+            // OPTIMIZATION: Reduced point count for faster load
             const pointCount = isMobile ? 20 : 40; 
             const spreadX = isMobile ? 200 : 500;
             const spreadY = isMobile ? 300 : 400;
@@ -138,7 +138,6 @@ const TesseractCircuit = ({ isActive }: { isActive: boolean }) => {
             const cy = canvas.height / 2;
 
             ctx.lineWidth = 0.3; 
-            // Deep Ancient Gold
             ctx.strokeStyle = 'rgba(212, 175, 55, 0.15)'; 
 
             const projected = [];
@@ -171,9 +170,9 @@ const TesseractCircuit = ({ isActive }: { isActive: boolean }) => {
 
             for(const p of projected) {
                 ctx.beginPath();
-                // Subtler Gold Nodes
-                ctx.fillStyle = `rgba(212, 175, 55, ${p.scale * 0.6})`; 
-                ctx.arc(p.x, p.y, 1.5 * p.scale, 0, Math.PI * 2);
+                // Bright Gold Nodes
+                ctx.fillStyle = `rgba(255, 215, 0, ${p.scale * 0.8})`; 
+                ctx.arc(p.x, p.y, 2 * p.scale, 0, Math.PI * 2);
                 ctx.fill();
             }
 
@@ -368,15 +367,9 @@ const MobileHero = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
                 Your 24/7 AI Employee. <br/>Reads. Listens. Sells.
              </p>
              
-             {/* Persistent Glitch Text */}
+             {/* Persistent Glitch Text - Outlined */}
              <div className="relative group mb-8">
-                <h1 className="text-xl font-black text-white tracking-tighter font-grotesk leading-none relative z-10 mix-blend-difference text-center">
-                   YOUR NEW EMPLOYEE IS HERE
-                </h1>
-                <h1 className="absolute top-0 left-0 text-xl font-black text-red-500 tracking-tighter font-grotesk leading-none opacity-50 animate-glitch text-center w-full" style={{ animationDelay: '0.1s', marginLeft: '-1px' }}>
-                   YOUR NEW EMPLOYEE IS HERE
-                </h1>
-                <h1 className="absolute top-0 left-0 text-xl font-black text-cyan-500 tracking-tighter font-grotesk leading-none opacity-50 animate-glitch text-center w-full" style={{ animationDelay: '-0.1s', marginLeft: '1px' }}>
+                <h1 className="text-xl font-black text-transparent text-stroke tracking-tighter font-grotesk leading-none relative z-10 text-center glitch-text" data-text="YOUR NEW EMPLOYEE IS HERE">
                    YOUR NEW EMPLOYEE IS HERE
                 </h1>
              </div>
@@ -427,9 +420,10 @@ const HeroReveal = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
                          <span className="text-[#38F8A8] text-xs font-bold tracking-widest uppercase font-mono">System Online</span>
                      </div>
                      
-                     <h1 className="text-[8vw] leading-[0.85] font-black text-center tracking-tighter mix-blend-screen animate-glitch font-grotesk">
+                     {/* RESTORED OUTLINED GLITCH */}
+                     <h1 className="text-[8vw] leading-[0.85] font-black text-center tracking-tighter mix-blend-screen font-grotesk glitch-text text-transparent text-stroke" data-text="YOUR NEW EMPLOYEE IS HERE">
                          YOUR NEW<br/>
-                         <span className="text-stroke">EMPLOYEE</span><br/>
+                         EMPLOYEE<br/>
                          IS HERE.
                      </h1>
                      <p className="mt-8 text-sm text-gray-500 font-mono animate-bounce">SCROLL TO INITIALIZE ↓</p>
@@ -450,22 +444,16 @@ const HeroReveal = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
                          </div>
                      </div>
 
-                     <h2 className="text-9xl font-black text-center tracking-tighter font-grotesk text-white drop-shadow-[0_0_30px_rgba(56,248,168,0.5)] animate-glitch">
+                     <h2 className="text-9xl font-black text-center tracking-tighter font-grotesk text-white drop-shadow-[0_0_30px_rgba(56,248,168,0.5)]">
                         ORIN AI
                      </h2>
                      <p className="mt-4 text-xl font-bold text-[#38F8A8] tracking-[0.3em] uppercase drop-shadow-md">
                         24/7. NEVER TIRED. ALWAYS SELLING.
                      </p>
                      
-                     {/* Persistent Glitch Text */}
+                     {/* Persistent Glitch Text - Outlined */}
                      <div className="relative group mt-8">
-                        <h1 className="text-4xl font-black text-white tracking-tighter font-grotesk leading-none relative z-10 mix-blend-difference text-center">
-                           YOUR NEW EMPLOYEE IS HERE
-                        </h1>
-                        <h1 className="absolute top-0 left-0 text-4xl font-black text-red-500 tracking-tighter font-grotesk leading-none opacity-50 animate-glitch text-center w-full" style={{ animationDelay: '0.1s', marginLeft: '-2px' }}>
-                           YOUR NEW EMPLOYEE IS HERE
-                        </h1>
-                        <h1 className="absolute top-0 left-0 text-4xl font-black text-cyan-500 tracking-tighter font-grotesk leading-none opacity-50 animate-glitch text-center w-full" style={{ animationDelay: '-0.1s', marginLeft: '2px' }}>
+                        <h1 className="text-4xl font-black text-transparent text-stroke tracking-tighter font-grotesk leading-none relative z-10 text-center glitch-text" data-text="YOUR NEW EMPLOYEE IS HERE">
                            YOUR NEW EMPLOYEE IS HERE
                         </h1>
                      </div>
@@ -591,9 +579,11 @@ const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
 
             {/* Step 3: Reveal Pre-Loader */}
             <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-500 ${step === 3 ? 'opacity-100' : 'opacity-0'}`}>
-                 <h1 className="text-6xl md:text-9xl font-black text-[#38F8A8] tracking-tighter animate-pulse">
-                    MEET ORIN.
-                 </h1>
+                 <div className="relative group">
+                    <h1 className="text-6xl md:text-9xl font-black text-transparent text-stroke tracking-tighter glitch-text" data-text="YOUR NEW EMPLOYEE IS HERE">
+                        YOUR NEW EMPLOYEE IS HERE
+                    </h1>
+                 </div>
             </div>
         </div>
     );
@@ -695,16 +685,16 @@ export default function App() {
                 )}
 
                 <VelocityScrollProvider>
-                    {/* Marquee */}
-                    <div className="py-4 md:py-6 bg-[#38F8A8] text-black overflow-hidden rotate-[-2deg] scale-110 border-y-4 border-black mb-8 md:mb-12 relative z-10">
+                    {/* Marquee - STRAIGHTENED */}
+                    <div className="py-6 bg-[#38F8A8] text-black overflow-hidden border-y-4 border-black mb-8 md:mb-12 relative z-10">
                         <div className="animate-marquee whitespace-nowrap flex gap-12 text-2xl md:text-4xl font-black italic tracking-tighter font-grotesk">
                             <span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span><span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span>
                              <span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span><span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span>
                         </div>
                     </div>
 
-                    {/* Sales Psychology Section */}
-                    <section className="py-8 md:py-16 px-4 max-w-7xl mx-auto">
+                    {/* Sales Psychology Section - MOVED UP AS REQUESTED (Pain -> Solution) */}
+                    <section className="py-12 md:py-20 px-4 max-w-7xl mx-auto">
                         <div className="grid md:grid-cols-2 gap-8 items-center">
                             <ParallaxElement speed={0.2} rotation={5}>
                                 <MouseTilt>
@@ -736,13 +726,18 @@ export default function App() {
                         </div>
                     </section>
 
-                    {/* PRICING (Relocated HERE for better flow) */}
-                    <section id="pricing" className="py-8 md:py-16 px-4 relative z-20">
-                        <PricingCard setChatOpen={setChatOpen} />
+                    {/* Gallery Grid - PROOF (Moved Up) */}
+                    <section id="features" className="py-12 md:py-20 px-4 max-w-7xl mx-auto">
+                        <h2 className="text-4xl md:text-8xl font-black text-center mb-8 tracking-tighter font-grotesk">
+                            BUILT FOR<br/><span className="text-[#38F8A8]">EVERYONE.</span>
+                        </h2>
+                        <div className="w-full">
+                            <DynamicShowcase />
+                        </div>
                     </section>
 
-                    {/* Stats */}
-                    <section className="py-8 px-4">
+                    {/* Stats - LOGIC */}
+                    <section className="py-12 md:py-20 px-4">
                         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8">
                              <div className="glass-card p-6 md:p-8 rounded-3xl">
                                  <h4 className="text-xl md:text-2xl font-bold mb-6 font-grotesk">Market Domination</h4>
@@ -755,21 +750,14 @@ export default function App() {
                         </div>
                     </section>
 
-                    {/* Gallery Grid */}
-                    <section id="features" className="pt-8 pb-0 px-4 max-w-7xl mx-auto">
-                        <h2 className="text-4xl md:text-8xl font-black text-center mb-8 tracking-tighter font-grotesk">
-                            BUILT FOR<br/><span className="text-[#38F8A8]">EVERYONE.</span>
-                        </h2>
-                        
-                        {/* Dynamic Single-Block Showcase */}
-                        <div className="w-full">
-                            <DynamicShowcase />
-                        </div>
+                    {/* PRICING (The CLIMAX - moved near bottom) */}
+                    <section id="pricing" className="py-12 md:py-20 px-4 relative z-20">
+                        <PricingCard setChatOpen={setChatOpen} />
                     </section>
                     
-                    {/* Team Section (COMPACTED) */}
-                    <section className="pt-4 pb-8 px-4"> {/* Removed border-t and reduced padding */}
-                        <div className="max-w-2xl mx-auto text-center mb-6"> {/* Reduced width */}
+                    {/* Team Section (Trust) */}
+                    <section className="py-12 md:py-20 px-4"> 
+                        <div className="max-w-2xl mx-auto text-center mb-6"> 
                             <h2 className="text-2xl md:text-4xl font-black mb-2 font-grotesk">MEET THE MINDS</h2>
                             <p className="text-gray-500 text-xs font-mono uppercase tracking-widest">The architects</p>
                         </div>
@@ -782,7 +770,7 @@ export default function App() {
                                     <h4 className="font-bold text-xs font-grotesk">{member.name}</h4>
                                     <p className="text-[7px] text-[#38F8A8] uppercase font-mono mt-0.5 leading-tight truncate">{member.role}</p>
                                     {member.name === 'Marvin' && (
-                                        <a href={member.link} target="_blank" rel="noreferrer" className="mt-1 block text-[7px] bg-white text-black py-0.5 px-1 rounded font-bold hover:bg-[#38F8A8] transition-colors font-mono">
+                                        <a href={member.link} target="_blank" rel="noreferrer" className="mt-1 block text-[7px] bg-white text-black py-0.5 px-1.5 rounded font-bold hover:bg-[#38F8A8] transition-colors font-mono">
                                             HIRE
                                         </a>
                                     )}
@@ -793,7 +781,7 @@ export default function App() {
                 </VelocityScrollProvider>
 
                 {/* BOTTOM MARQUEE */}
-                <div className="py-4 md:py-6 bg-[#38F8A8] text-black overflow-hidden scale-105 border-y-4 border-black relative z-10">
+                <div className="py-6 bg-[#38F8A8] text-black overflow-hidden border-y-4 border-black relative z-10">
                     <div className="animate-marquee whitespace-nowrap flex gap-12 text-2xl md:text-4xl font-black italic tracking-tighter font-grotesk">
                         <span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span><span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span>
                          <span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span><span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span>
