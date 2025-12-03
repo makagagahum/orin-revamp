@@ -329,7 +329,7 @@ const FloatingTicker = ({ chatOpen }: { chatOpen: boolean }) => {
     if (chatOpen) return null;
 
     return (
-        <div className={`fixed z-[60] flex flex-col gap-3 items-end pointer-events-none md:pointer-events-auto transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)] bottom-32 right-4 md:right-8 origin-bottom-right scale-75 md:scale-100`}>
+        <div className={`fixed z-[60] flex flex-col gap-3 items-end pointer-events-none md:pointer-events-auto transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)] bottom-24 right-4 md:right-8 origin-bottom-right scale-65 md:scale-100`}>
             <div className={`transition-all duration-500 transform ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                 <div className="glass-card p-3 rounded-2xl rounded-br-sm flex items-center gap-3 border-r-4 border-[#38F8A8] max-w-[280px] flex-row-reverse text-right bg-black/80 backdrop-blur-md">
                     <img src={messages[idx].img} className="w-10 h-10 rounded-full bg-white/10 p-1" alt="avatar" />
@@ -357,10 +357,10 @@ const MobileHero = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
                  <div className="w-full h-full rounded-full overflow-hidden border-2 border-[#38F8A8] relative bg-black shadow-[0_0_40px_rgba(56,248,168,0.4)]">
                     <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110" alt="Orin Avatar" />
                  </div>
-                 {/* Removed V9 ONLINE Badge */}
              </div>
 
-             <h1 className="text-6xl font-black tracking-tighter font-grotesk text-white mb-2 leading-none">
+             {/* MASSIVE ORIN AI TITLE */}
+             <h1 className="text-6xl font-black tracking-tighter font-grotesk text-white mb-2 leading-none drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
                 ORIN AI
              </h1>
              <p className="text-sm text-gray-400 font-mono mb-6 max-w-xs">
@@ -412,8 +412,6 @@ const HeroReveal = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
                 <div className="absolute inset-0 flex flex-col items-center justify-center transition-all duration-300 will-change-transform" 
                      style={{ opacity: fadeOut, transform: `scale(${1 + progress * 0.5}) blur(${progress * 20}px)`, pointerEvents: fadeOut <= 0.1 ? 'none' : 'auto', zIndex: 10 }}>
                      
-                     {/* Removed System Online Badge */}
-                     
                      {/* FIXED READABILITY: Solid White + Strong Glow */}
                      <h1 className="text-[8vw] leading-[0.85] font-black text-center tracking-tighter font-grotesk text-white animate-pulse drop-shadow-[0_0_25px_rgba(255,255,255,0.4)]">
                          YOUR NEW<br/>
@@ -443,6 +441,7 @@ const HeroReveal = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
                          </div>
                      </div>
 
+                     {/* MASSIVE ORIN AI TITLE */}
                      <h2 className="text-9xl font-black text-center tracking-tighter font-grotesk text-white drop-shadow-[0_0_30px_rgba(56,248,168,0.5)] z-10">
                         ORIN AI
                      </h2>
@@ -471,7 +470,7 @@ const PricingCard = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => 
     const [ref, isInView] = useInView({ threshold: 0.1 });
     
     return (
-        <div ref={ref} className={`max-w-4xl mx-auto p-12 rounded-[1.5rem] text-center relative overflow-hidden group transition-all duration-1000 transform ${isInView ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'} shadow-[0_20px_100px_rgba(212,175,55,0.3)]`}>
+        <div ref={ref} className={`max-w-4xl mx-auto p-12 rounded-[1.5rem] text-center relative overflow-hidden group transition-all duration-1000 transform ${isInView ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'} shadow-[0_20px_60px_rgba(0,0,0,0.8)]`}>
              
              {/* GLOSSY OBSIDIAN BACKGROUND */}
              <div className="absolute inset-0 bg-[#050505] z-0"></div>
@@ -483,12 +482,12 @@ const PricingCard = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => 
              {/* SCATTERED TESSERACT (Bright Gold Nodes) */}
              <TesseractCircuit isActive={true} />
 
-             {/* GOLD BORDER - INCREASED GLOW */}
-             <div className="absolute inset-0 rounded-[1.5rem] border-2 border-[#D4AF37] pointer-events-none z-10 shadow-[0_0_60px_rgba(212,175,55,0.4),inset_0_0_30px_rgba(212,175,55,0.2)] animate-pulse"></div>
+             {/* ELECTRIC GOLD BORDER */}
+             <div className="absolute inset-0 rounded-[1.5rem] border-2 border-[#D4AF37] pointer-events-none z-10 animate-electric"></div>
              
              {/* CONTENT - BRUTALIST TYPOGRAPHY */}
              <div className="relative z-20">
-                 <div className="inline-flex items-center gap-3 bg-black text-[#D4AF37] px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.3em] mb-12 font-grotesk shadow-md border border-[#D4AF37]/50">
+                 <div className="inline-flex items-center gap-3 bg-black text-[#D4AF37] px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.3em] mb-12 font-grotesk shadow-md border border-[#D4AF37]/50 animate-electric" style={{animationDuration: '3s'}}>
                      <Cpu className="w-3 h-3" /> Founder's Chip — Tesseract
                  </div>
                  

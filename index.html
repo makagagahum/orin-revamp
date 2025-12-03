@@ -29,8 +29,14 @@
               'marquee': 'marquee 25s linear infinite',
               'shimmer': 'shimmer 2s linear infinite',
               'float': 'float 6s ease-in-out infinite',
+              'electric': 'electric-pulse 0.15s infinite',
             },
             keyframes: {
+              'electric-pulse': {
+                '0%, 100%': { boxShadow: '0 0 5px #D4AF37, 0 0 10px #D4AF37, inset 0 0 5px #D4AF37', opacity: '1' },
+                '50%': { boxShadow: '0 0 20px #F7EF8A, 0 0 35px #D4AF37, inset 0 0 10px #D4AF37', opacity: '0.8' },
+                '25%, 75%': { boxShadow: '0 0 2px #D4AF37, 0 0 5px #D4AF37', opacity: '0.9' }
+              },
               'glitch-skew': {
                 '0%': { transform: 'skew(0deg)' },
                 '20%': { transform: 'skew(-20deg)' },
