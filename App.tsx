@@ -368,6 +368,19 @@ const MobileHero = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
                 Your 24/7 AI Employee. <br/>Reads. Listens. Sells.
              </p>
              
+             {/* Persistent Glitch Text */}
+             <div className="relative group mb-8">
+                <h1 className="text-xl font-black text-white tracking-tighter font-grotesk leading-none relative z-10 mix-blend-difference text-center">
+                   YOUR NEW EMPLOYEE IS HERE
+                </h1>
+                <h1 className="absolute top-0 left-0 text-xl font-black text-red-500 tracking-tighter font-grotesk leading-none opacity-50 animate-glitch text-center w-full" style={{ animationDelay: '0.1s', marginLeft: '-1px' }}>
+                   YOUR NEW EMPLOYEE IS HERE
+                </h1>
+                <h1 className="absolute top-0 left-0 text-xl font-black text-cyan-500 tracking-tighter font-grotesk leading-none opacity-50 animate-glitch text-center w-full" style={{ animationDelay: '-0.1s', marginLeft: '1px' }}>
+                   YOUR NEW EMPLOYEE IS HERE
+                </h1>
+             </div>
+             
              <button onClick={() => setChatOpen(true)} className="group relative px-8 py-3 bg-[#38F8A8] text-black font-black text-lg flex items-center gap-2 font-grotesk rounded-full shadow-[0_0_20px_rgba(56,248,168,0.4)]">
                  HIRE ORIN <MessageCircle className="w-5 h-5" />
              </button>
@@ -444,6 +457,19 @@ const HeroReveal = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
                         24/7. NEVER TIRED. ALWAYS SELLING.
                      </p>
                      
+                     {/* Persistent Glitch Text */}
+                     <div className="relative group mt-8">
+                        <h1 className="text-4xl font-black text-white tracking-tighter font-grotesk leading-none relative z-10 mix-blend-difference text-center">
+                           YOUR NEW EMPLOYEE IS HERE
+                        </h1>
+                        <h1 className="absolute top-0 left-0 text-4xl font-black text-red-500 tracking-tighter font-grotesk leading-none opacity-50 animate-glitch text-center w-full" style={{ animationDelay: '0.1s', marginLeft: '-2px' }}>
+                           YOUR NEW EMPLOYEE IS HERE
+                        </h1>
+                        <h1 className="absolute top-0 left-0 text-4xl font-black text-cyan-500 tracking-tighter font-grotesk leading-none opacity-50 animate-glitch text-center w-full" style={{ animationDelay: '-0.1s', marginLeft: '2px' }}>
+                           YOUR NEW EMPLOYEE IS HERE
+                        </h1>
+                     </div>
+                     
                      <button onClick={() => setChatOpen(true)} className="mt-12 group relative px-10 py-5 bg-[#38F8A8] text-black font-black text-xl hover:scale-110 transition-transform flex items-center gap-3 font-grotesk rounded-full shadow-[0_0_40px_rgba(56,248,168,0.6)]">
                          HIRE ORIN <MessageCircle className="w-6 h-6" />
                      </button>
@@ -453,25 +479,25 @@ const HeroReveal = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
     );
 };
 
-// --- PRICING CARD (AMEX BLACK / ANCIENT ALIEN / MATTE) ---
+// --- PRICING CARD (EMBOSSED MAGAZINE STYLE) ---
 const PricingCard = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
     const [ref, isInView] = useInView({ threshold: 0.1 });
     
     return (
         <div ref={ref} className={`max-w-4xl mx-auto p-12 rounded-[1.5rem] text-center relative overflow-hidden group transition-all duration-1000 transform ${isInView ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'} shadow-[0_20px_60px_rgba(0,0,0,0.8)]`}>
              
-             {/* MATTE BLACK OBSIDIAN BACKGROUND */}
+             {/* GLOSSY OBSIDIAN BACKGROUND */}
              <div className="absolute inset-0 bg-[#050505] z-0"></div>
-             {/* Subtle Texture */}
-             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/black-scales.png')] opacity-20 mix-blend-overlay z-0"></div>
+             {/* Reflective Sheen */}
+             <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-transparent opacity-50 z-0"></div>
              {/* Frosted Glass Effect */}
-             <div className="absolute inset-0 backdrop-blur-3xl bg-white/5 z-0"></div>
+             <div className="absolute inset-0 backdrop-blur-2xl bg-white/5 z-0"></div>
              
-             {/* SCATTERED TESSERACT (Deep Gold Nodes) */}
+             {/* SCATTERED TESSERACT (Bright Gold Nodes) */}
              <TesseractCircuit isActive={true} />
 
-             {/* GOLD BORDER - REFINED */}
-             <div className="absolute inset-0 rounded-[1.5rem] border border-[#D4AF37]/40 pointer-events-none z-10 shadow-[inset_0_0_30px_rgba(212,175,55,0.1)]"></div>
+             {/* GOLD BORDER */}
+             <div className="absolute inset-0 rounded-[1.5rem] border border-[#D4AF37]/60 pointer-events-none z-10 shadow-[inset_0_0_20px_rgba(212,175,55,0.2)]"></div>
              
              {/* CONTENT - BRUTALIST TYPOGRAPHY */}
              <div className="relative z-20">
@@ -521,32 +547,16 @@ const PricingCard = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => 
     );
 };
 
-// --- ORIN'S AWAKENING INTRO (AI BOOT SEQUENCE) ---
+// --- PAIN-POINT INTRO SEQUENCE ---
 const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
     const [step, setStep] = useState(0);
-    const [log, setLog] = useState<string[]>([]);
 
     useEffect(() => {
-        // Phase 1: Boot Logs (0-4s)
-        const bootLogs = [
-            "INITIALIZING KERNEL...",
-            "LOADING NEURAL PATHWAYS...",
-            "CONNECTING TO GLOBAL NET...",
-            "OPTIMIZING SALES PROTOCOLS...",
-            "SYNCING LANGUAGE MODULES...",
-            "SYSTEM READY."
-        ];
-
-        let delay = 0;
-        bootLogs.forEach((text, i) => {
-            delay += 400;
-            setTimeout(() => setLog(prev => [...prev, text]), delay);
-        });
-
         const sequence = [
-            { t: 3000, s: 1 }, // ANALYSIS
-            { t: 6000, s: 2 }, // AWAKENING
-            { t: 9000, s: 3 }  // DONE
+            { t: 3000, s: 1 }, // "DO YOU REPLY AT 2AM?"
+            { t: 6000, s: 2 }, // "LOSING SALES?"
+            { t: 9000, s: 3 }, // "STOP DOING IT MANUALLY"
+            { t: 11000, s: 4 } // DONE (Reveal)
         ];
 
         let timeouts: ReturnType<typeof setTimeout>[] = [];
@@ -554,53 +564,36 @@ const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
             timeouts.push(setTimeout(() => setStep(s), t));
         });
         
-        timeouts.push(setTimeout(onComplete, 10000));
+        timeouts.push(setTimeout(onComplete, 12000));
 
         return () => timeouts.forEach(clearTimeout);
     }, [onComplete]);
 
-    if (step >= 3) return null;
+    if (step >= 4) return null;
 
     return (
-        <div className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center overflow-hidden font-mono">
-            {/* Phase 1: Terminal Boot */}
-            <div className={`absolute inset-0 p-8 flex flex-col justify-end pb-32 transition-opacity duration-500 ${step === 0 ? 'opacity-100' : 'opacity-0'}`}>
-                {log.map((l, i) => (
-                    <div key={i} className="text-[#38F8A8] text-xs md:text-sm mb-1">
-                        <span className="opacity-50">[{new Date().toLocaleTimeString()}]</span> {l}
-                    </div>
-                ))}
-                <div className="w-4 h-6 bg-[#38F8A8] animate-pulse mt-2"></div>
-            </div>
+        <div className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center overflow-hidden font-grotesk text-center px-4">
+            
+            {/* Step 0: Pain 1 */}
+            <h1 className={`absolute text-5xl md:text-8xl font-black text-red-600 tracking-tighter transition-all duration-500 ${step === 0 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
+                DO YOU REPLY AT 2AM?
+            </h1>
 
-            {/* Phase 2: Analysis */}
-            <div className={`absolute transition-all duration-1000 ${step === 1 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
-                <div className="flex flex-col items-center">
-                    <div className="w-24 h-24 rounded-full border-t-4 border-[#38F8A8] animate-spin mb-8"></div>
-                    <h1 className="text-4xl md:text-6xl font-black font-grotesk tracking-tighter text-white">ANALYZING EFFICIENCY...</h1>
-                    <p className="text-[#38F8A8] mt-4 font-mono">HUMAN LIMITS DETECTED.</p>
-                </div>
-            </div>
+            {/* Step 1: Pain 2 */}
+            <h1 className={`absolute text-5xl md:text-8xl font-black text-red-500 tracking-tighter transition-all duration-500 ${step === 1 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
+                LOSING SALES WHILE YOU SLEEP?
+            </h1>
 
-            {/* Phase 3: Awakening */}
-            <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-1000 ${step === 2 ? 'opacity-100' : 'opacity-0'}`}>
-                 <div className="relative w-64 h-64 md:w-96 md:h-96 mb-8 animate-float">
-                     <div className="w-full h-full rounded-full overflow-hidden border-4 border-[#D4AF37] relative bg-black shadow-[0_0_150px_#38F8A8]">
-                        <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110" alt="Orin" />
-                     </div>
-                 </div>
-                 {/* AGGRESSIVE CHROMATIC GLITCH INTRO */}
-                 <div className="relative group">
-                    <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter font-grotesk leading-none relative z-10 mix-blend-difference text-center px-4">
-                       YOUR NEW EMPLOYEE IS HERE
-                    </h1>
-                    <h1 className="absolute top-0 left-0 text-6xl md:text-8xl font-black text-red-500 tracking-tighter font-grotesk leading-none opacity-50 animate-glitch text-center px-4 w-full" style={{ animationDelay: '0.1s', marginLeft: '-2px' }}>
-                       YOUR NEW EMPLOYEE IS HERE
-                    </h1>
-                    <h1 className="absolute top-0 left-0 text-6xl md:text-8xl font-black text-cyan-500 tracking-tighter font-grotesk leading-none opacity-50 animate-glitch text-center px-4 w-full" style={{ animationDelay: '-0.1s', marginLeft: '2px' }}>
-                       YOUR NEW EMPLOYEE IS HERE
-                    </h1>
-                 </div>
+            {/* Step 2: Pivot */}
+            <h1 className={`absolute text-5xl md:text-8xl font-black text-white tracking-tighter transition-all duration-500 ${step === 2 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
+                STOP DOING IT MANUALLY.
+            </h1>
+
+            {/* Step 3: Reveal Pre-Loader */}
+            <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-500 ${step === 3 ? 'opacity-100' : 'opacity-0'}`}>
+                 <h1 className="text-6xl md:text-9xl font-black text-[#38F8A8] tracking-tighter animate-pulse">
+                    MEET ORIN.
+                 </h1>
             </div>
         </div>
     );
@@ -775,15 +768,15 @@ export default function App() {
                     </section>
                     
                     {/* Team Section (COMPACTED) */}
-                    <section className="pt-4 pb-8 px-4"> 
-                        <div className="max-w-xl mx-auto text-center mb-4">
-                            <h2 className="text-xl md:text-2xl font-black mb-1 font-grotesk uppercase">Meet The Minds</h2>
-                            <p className="text-gray-600 text-[10px] font-mono uppercase tracking-widest">Architects of Intelligence</p>
+                    <section className="pt-4 pb-8 px-4"> {/* Removed border-t and reduced padding */}
+                        <div className="max-w-2xl mx-auto text-center mb-6"> {/* Reduced width */}
+                            <h2 className="text-2xl md:text-4xl font-black mb-2 font-grotesk">MEET THE MINDS</h2>
+                            <p className="text-gray-500 text-xs font-mono uppercase tracking-widest">The architects</p>
                         </div>
-                        <div className="max-w-xl mx-auto grid grid-cols-4 gap-2">
+                        <div className="max-w-2xl mx-auto grid grid-cols-4 gap-4">
                             {TEAM.map((member, i) => (
                                 <div key={i} className="group relative text-center">
-                                    <div className="aspect-square rounded-full overflow-hidden mb-1 border border-white/10 bg-gray-900 grayscale group-hover:grayscale-0 transition-all duration-500 w-12 h-12 mx-auto">
+                                    <div className="aspect-square rounded-full overflow-hidden mb-2 border border-white/10 bg-gray-900 grayscale group-hover:grayscale-0 transition-all duration-500 w-12 h-12 mx-auto">
                                         <img src={member.image} className={`w-full h-full object-cover ${member.name === 'Marvin' ? 'object-left' : 'object-center'}`} alt={member.name} loading="lazy" />
                                     </div>
                                     <h4 className="font-bold text-xs font-grotesk">{member.name}</h4>
