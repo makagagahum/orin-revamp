@@ -15,38 +15,54 @@ export const TEAM = [
     { name: 'Roe', role: 'Investor', image: 'https://preview.redd.it/taro-sakamoto-icon-cleaned-edit-and-remastered-by-me-two-v0-kgpamdq4m0rb1.png?width=640&crop=smart&auto=webp&s=405967562d8822280c7ed17334574e3e238720dc', link: '#' }
 ];
 
-// UPDATED WITH HD UNSPLASH IMAGES FOR CRISP VISUALS
+// UPDATED WITH LGU, POLICE, AND ASIAN CONTEXT
 export const GALLERY_IMAGES = [
     { 
         urls: [
-            "https://images.unsplash.com/photo-1556740714-a8395b3bf30f?q=80&w=1600&auto=format&fit=crop", // Payment/Seller
-            "https://images.unsplash.com/photo-1580894732444-8ecded7900cd?q=80&w=1600&auto=format&fit=crop"  // Asian Business Woman
+            "https://images.unsplash.com/photo-1556740714-a8395b3bf30f?q=80&w=1600&auto=format&fit=crop", // Asian Seller
+            "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1600&auto=format&fit=crop"  // Store
         ], 
-        caption: "Online Seller",
+        caption: "Online Sellers",
         description: "Miss 3AM sales? Orin never sleeps. Catches every inquiry while you're resting. 🚀"
     },
     { 
         urls: [
-            "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1600&auto=format&fit=crop", // Modern Work
-            "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=1600&auto=format&fit=crop"  // Corporate Asian
+            "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1600&auto=format&fit=crop", // Corporate Team
+            "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1600&auto=format&fit=crop"  // Meeting
         ], 
         caption: "Corporate",
         description: "Hiring costs ₱226,857/year. Orin costs ₱15,000 monthly. Math doesn't lie. 💡"
     },
     { 
         urls: [
-            "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1600&auto=format&fit=crop", // Hotel/Airbnb
-            "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=1600&auto=format&fit=crop"  // Luxury Home
+            "https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=1600&auto=format&fit=crop", // Kitchen/Home
+            "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=1600&auto=format&fit=crop"  // Luxury
         ], 
         caption: "Airbnb Host",
         description: "Slow replies = lost bookings. Orin responds instantly. Always on point."
     },
     { 
         urls: [
-            "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=1600&auto=format&fit=crop", // Medical/Lab
-            "https://images.unsplash.com/photo-1581056771107-24ca5f033842?q=80&w=1600&auto=format&fit=crop"  // Hospital
+            "https://images.unsplash.com/photo-1577962917302-cd874c4e31d2?q=80&w=1600&auto=format&fit=crop", // Office Work
+            "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=1600&auto=format&fit=crop"  // Discussion
+        ], 
+        caption: "LGU & Government",
+        description: "Constituents waiting in line? Orin triages 24/7. Zero delays. Efficient Public Service."
+    },
+    { 
+        urls: [
+            "https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?q=80&w=1600&auto=format&fit=crop", // Asian Doctor
+            "https://images.unsplash.com/photo-1581056771107-24ca5f033842?q=80&w=1600&auto=format&fit=crop"  // Medical
         ], 
         caption: "Hospitals",
         description: "Critical info delays cost lives. Orin prioritizes instantly. Every time."
     },
+    { 
+        urls: [
+            "https://images.unsplash.com/photo-1586289886326-1b06d871787f?q=80&w=1600&auto=format&fit=crop", // Tech Command Center
+            "https://images.unsplash.com/photo-1555529775-996452ba7115?q=80&w=1600&auto=format&fit=crop"  // Security
+        ], 
+        caption: "Police Stations",
+        description: "Emergency response needs speed. Orin handles intake and routing instantly."
+    }
 ];
