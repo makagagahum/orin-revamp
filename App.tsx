@@ -525,16 +525,17 @@ const MobileHero = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
              <h1 className="text-6xl font-black tracking-tighter font-grotesk text-white mb-2 leading-none drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
                 ORIN AI
              </h1>
-             <p className="text-sm text-gray-400 font-mono mb-6 max-w-xs">
-                Your 24/7 AI Employee. <br/>Reads. Listens. Sells.
-             </p>
-             
-             {/* FIXED READABILITY: Solid White + Glow */}
-             <div className="relative group mb-8">
+
+             {/* FIXED READABILITY: Solid White + Glow - MOVED UP */}
+             <div className="relative group mb-4">
                 <h1 className="text-xl font-black text-white tracking-tighter font-grotesk leading-none relative z-10 text-center animate-pulse drop-shadow-lg">
                    YOUR NEW EMPLOYEE IS HERE
                 </h1>
              </div>
+
+             <p className="text-sm text-gray-400 font-mono mb-8 max-w-xs">
+                Your 24/7 AI Employee. <br/>Reads. Listens. Sells.
+             </p>
              
              <button onClick={() => setChatOpen(true)} className="group relative px-8 py-3 bg-[#38F8A8] text-black font-black text-lg flex items-center gap-2 font-grotesk rounded-full shadow-[0_0_20px_rgba(56,248,168,0.4)]">
                  HIRE ORIN <MessageCircle className="w-5 h-5" />
@@ -606,18 +607,19 @@ const HeroReveal = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
                      <h2 className="text-9xl font-black text-center tracking-tighter font-grotesk text-white drop-shadow-[0_0_30px_rgba(56,248,168,0.5)] z-10">
                         ORIN AI
                      </h2>
-                     <p className="mt-4 text-xl font-bold text-[#38F8A8] tracking-[0.3em] uppercase drop-shadow-md z-10">
-                        24/7. NEVER TIRED. ALWAYS SELLING.
-                     </p>
-                     
-                     {/* Persistent Text - Soft Breathe */}
-                     <div className="relative group mt-8 z-10">
+
+                     {/* Persistent Text - Soft Breathe - MOVED UP & CLOSER */}
+                     <div className="relative group mt-2 z-10">
                         <h1 className="text-4xl font-black text-transparent text-stroke tracking-tighter font-grotesk leading-none relative z-10 text-center animate-pulse opacity-70">
                            YOUR NEW EMPLOYEE IS HERE
                         </h1>
                      </div>
+
+                     <p className="mt-6 text-xl font-bold text-[#38F8A8] tracking-[0.3em] uppercase drop-shadow-md z-10">
+                        24/7. NEVER TIRED. ALWAYS SELLING.
+                     </p>
                      
-                     <button onClick={() => setChatOpen(true)} className="mt-12 group relative px-10 py-5 bg-[#38F8A8] text-black font-black text-xl hover:scale-110 transition-transform flex items-center gap-3 font-grotesk rounded-full shadow-[0_0_40px_rgba(56,248,168,0.6)] z-10">
+                     <button onClick={() => setChatOpen(true)} className="mt-8 group relative px-10 py-5 bg-[#38F8A8] text-black font-black text-xl hover:scale-110 transition-transform flex items-center gap-3 font-grotesk rounded-full shadow-[0_0_40px_rgba(56,248,168,0.6)] z-10">
                          HIRE ORIN <MessageCircle className="w-6 h-6" />
                      </button>
                 </div>
