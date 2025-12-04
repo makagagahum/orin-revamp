@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, MessageCircle, X, ArrowRight, Zap, Send, Sparkles, CheckCircle2, Facebook, Instagram, Twitter, ShoppingBag, Globe, TrendingUp, ShieldCheck, Clock, AlertCircle, Building2, Headset, Cpu, Triangle } from 'lucide-react';
+import { Menu, MessageCircle, X, ArrowRight, Zap, Send, Sparkles, CheckCircle2, Facebook, Instagram, Twitter, ShoppingBag, Globe, TrendingUp, ShieldCheck, Clock, AlertCircle, Building2, Headset, Cpu, Triangle, ChevronLeft, ChevronRight, Pause, Play, Crown } from 'lucide-react';
 import { MarketGrowthChart, ROIChart } from './components/Charts';
 import PacManGame from './components/PacManGame';
 import { ContentProtection } from './components/ContentProtection';
 import { TEAM, FEATURES, GALLERY_IMAGES } from './constants';
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Chat } from "@google/genai";
 import { systemInstruction, generateFallbackResponse } from './services/geminiService';
 
 // --- UTILS ---
-function useInView(options = { threshold: 0.3 }) {
+function useInView(options = { threshold: 0.1 }) {
     const [isInView, setIsInView] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
 
@@ -29,7 +29,17 @@ function useInView(options = { threshold: 0.3 }) {
     return [ref, isInView] as const;
 }
 
-const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+// Robust Mobile Hook
+function useIsMobile() {
+    const [isMobile, setIsMobile] = useState(false);
+    useEffect(() => {
+        const check = () => setIsMobile(window.innerWidth < 768);
+        check();
+        window.addEventListener('resize', check);
+        return () => window.removeEventListener('resize', check);
+    }, []);
+    return isMobile;
+}
 
 // --- VISUAL COMPONENTS ---
 
@@ -45,7 +55,8 @@ const ParticleBackground = () => {
         
         const initParticles = () => {
             particles = [];
-            const count = isMobile ? 15 : 40;
+            const isMobile = window.innerWidth < 768;
+            const count = isMobile ? 12 : 35;
             for (let i = 0; i < count; i++) particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4, size: Math.random() * 2 + 0.5 });
         };
 
@@ -59,6 +70,9 @@ const ParticleBackground = () => {
 
             ctx.globalCompositeOperation = 'screen'; ctx.beginPath(); ctx.strokeStyle = 'rgba(56, 248, 168, 0.15)'; ctx.lineWidth = 0.5;
             
+            const isMobile = window.innerWidth < 768;
+            const connectDistance = isMobile ? 80 : 120;
+
             for (let i = 0; i < particles.length; i++) {
                 const p = particles[i];
                 p.x += p.vx; p.y += p.vy;
@@ -69,8 +83,8 @@ const ParticleBackground = () => {
                     const p2 = particles[j];
                     const dx = p.x - p2.x;
                     const dy = p.y - p2.y;
-                    if (Math.abs(dx) < 120 && Math.abs(dy) < 120) {
-                        if (dx*dx + dy*dy < 14400) { ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); }
+                    if (Math.abs(dx) < connectDistance && Math.abs(dy) < connectDistance) {
+                        if (dx*dx + dy*dy < (connectDistance * connectDistance)) { ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); }
                     }
                 }
             }
@@ -87,7 +101,7 @@ const ParticleBackground = () => {
         window.addEventListener('resize', resize); resize(); draw();
         return () => { window.removeEventListener('resize', resize); cancelAnimationFrame(animationFrameId); };
     }, []);
-    return <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none" />;
+    return <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none will-change-transform" />;
 };
 
 // --- TESSERACT CIRCUIT COMPONENT ---
@@ -97,8 +111,8 @@ const TesseractCircuit = ({ isActive }: { isActive: boolean }) => {
     
     useEffect(() => {
         if (pointsRef.current.length === 0) {
-            // OPTIMIZATION: Reduced point count for faster load
-            const pointCount = isMobile ? 20 : 40; 
+            const isMobile = window.innerWidth < 768;
+            const pointCount = isMobile ? 15 : 40; 
             const spreadX = isMobile ? 200 : 500;
             const spreadY = isMobile ? 300 : 400;
             for(let i=0; i<pointCount; i++) {
@@ -114,6 +128,8 @@ const TesseractCircuit = ({ isActive }: { isActive: boolean }) => {
     }, []);
 
     useEffect(() => {
+        if (!isActive) return;
+
         const canvas = canvasRef.current;
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
@@ -139,11 +155,14 @@ const TesseractCircuit = ({ isActive }: { isActive: boolean }) => {
 
             ctx.lineWidth = 0.3; 
             ctx.strokeStyle = 'rgba(212, 175, 55, 0.15)'; 
+            
+            const isMobile = window.innerWidth < 768;
+            const limit = isMobile ? 200 : 500;
+            const distLimit = isMobile ? 3000 : 15000;
 
             const projected = [];
             for(const p of pointsRef.current) {
                 p.x += p.vx; p.y += p.vy;
-                const limit = isMobile ? 200 : 500;
                 if(Math.abs(p.x) > limit) p.vx *= -1;
                 if(Math.abs(p.y) > limit * 0.75) p.vy *= -1;
 
@@ -160,7 +179,7 @@ const TesseractCircuit = ({ isActive }: { isActive: boolean }) => {
                 for(let j=i+1; j<projected.length; j++) {
                     const dx = projected[i].x - projected[j].x;
                     const dy = projected[i].y - projected[j].y;
-                    if(dx*dx + dy*dy < (isMobile ? 5000 : 15000)) { 
+                    if(dx*dx + dy*dy < distLimit) { 
                         ctx.moveTo(projected[i].x, projected[i].y);
                         ctx.lineTo(projected[j].x, projected[j].y);
                     }
@@ -170,7 +189,6 @@ const TesseractCircuit = ({ isActive }: { isActive: boolean }) => {
 
             for(const p of projected) {
                 ctx.beginPath();
-                // Bright Gold Nodes
                 ctx.fillStyle = `rgba(255, 215, 0, ${p.scale * 0.8})`; 
                 ctx.arc(p.x, p.y, 2 * p.scale, 0, Math.PI * 2);
                 ctx.fill();
@@ -185,13 +203,86 @@ const TesseractCircuit = ({ isActive }: { isActive: boolean }) => {
     return <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none mix-blend-screen" style={{ width: '100%', height: '100%' }} />;
 };
 
+// --- TYPING GLITCH TEXT COMPONENT (FOR MARVIN) ---
+const TypingGlitchText: React.FC<{ text: string, hoverText: string, isActive: boolean }> = ({ text, hoverText, isActive }) => {
+    const [displayedText, setDisplayedText] = useState(text);
+    const [fontFamily, setFontFamily] = useState("'Space Grotesk', sans-serif");
+    const fonts = ["'Courier New', monospace", "'VT323', monospace", "'Press Start 2P', cursive", "'Space Mono', monospace"];
+    
+    useEffect(() => {
+        if (!isActive) {
+            // Reset when not hovering
+            setDisplayedText(text);
+            setFontFamily("'Space Grotesk', sans-serif");
+            return;
+        }
+
+        // Start typing effect on hover
+        setDisplayedText("");
+        let i = 0;
+        const targetText = hoverText;
+        const typingInterval = setInterval(() => {
+            if (i <= targetText.length) {
+                setDisplayedText(targetText.slice(0, i));
+                // Randomly switch font during typing
+                setFontFamily(fonts[Math.floor(Math.random() * fonts.length)]);
+                i++;
+            } else {
+                clearInterval(typingInterval);
+                setFontFamily("'Space Grotesk', sans-serif");
+            }
+        }, 80); // Fast typing speed
+
+        return () => clearInterval(typingInterval);
+    }, [text, hoverText, isActive]);
+
+    return (
+        <div className="relative inline-block h-8 min-w-[120px] text-center whitespace-nowrap">
+            <span 
+                style={{ fontFamily: fontFamily }} 
+                className={`font-bold text-2xl transition-all duration-100 ${isActive ? 'text-[#D4AF37] animate-glitch-skew' : 'text-gray-400 group-hover:text-white'}`}
+            >
+                {displayedText}
+            </span>
+            {/* Removed Cursor as requested */}
+        </div>
+    );
+};
+
+// --- GOLD PARTICLE EMITTER (FOR BOSS MODE) ---
+const GoldParticleEmitter: React.FC<{ isActive: boolean }> = ({ isActive }) => {
+    if (!isActive) return null;
+    
+    return (
+        <div className="absolute inset-0 overflow-hidden rounded-[2.5rem] pointer-events-none z-20">
+            {Array.from({ length: 20 }).map((_, i) => (
+                <div 
+                    key={i}
+                    className="absolute w-1 h-1 bg-[#D4AF37] rounded-full animate-float opacity-0"
+                    style={{
+                        left: `${Math.random() * 100}%`,
+                        top: `${50 + Math.random() * 50}%`, // Start from bottom half
+                        animationDuration: `${0.5 + Math.random()}s`,
+                        animationDelay: `${Math.random() * 0.5}s`,
+                        boxShadow: '0 0 6px #D4AF37'
+                    }}
+                ></div>
+            ))}
+        </div>
+    );
+};
+
 const VelocityScrollProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    if (isMobile) return <div className="relative z-10">{children}</div>;
+    const isMobile = useIsMobile();
+    // Hook calls must be unconditional
     const contentRef = useRef<HTMLDivElement>(null);
     const lastScrollY = useRef(0);
     const currentSkew = useRef(0);
     const requestRef = useRef(0);
+
     useEffect(() => {
+        if (isMobile) return;
+        
         const update = () => {
             const velocity = window.scrollY - lastScrollY.current;
             lastScrollY.current = window.scrollY;
@@ -203,14 +294,21 @@ const VelocityScrollProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
         update();
         return () => cancelAnimationFrame(requestRef.current);
-    }, []);
+    }, [isMobile]);
+
+    if (isMobile) return <div className="relative z-10">{children}</div>;
+    
     return <div ref={contentRef} className="will-change-transform relative z-10 origin-center backface-hidden">{children}</div>;
 };
 
 const ParallaxElement: React.FC<{ speed?: number; rotation?: number; children: React.ReactNode }> = ({ speed = 0.5, rotation = 0, children }) => {
-    if (isMobile) return <div className="w-full">{children}</div>;
+    const isMobile = useIsMobile();
+    // Hook calls must be unconditional
     const ref = useRef<HTMLDivElement>(null);
+    
     useEffect(() => {
+        if (isMobile) return;
+
         let ticking = false;
         const update = () => {
             if (!ref.current) return;
@@ -226,13 +324,19 @@ const ParallaxElement: React.FC<{ speed?: number; rotation?: number; children: R
         const onScroll = () => { if (!ticking) { window.requestAnimationFrame(update); ticking = true; } };
         window.addEventListener('scroll', onScroll, { passive: true });
         return () => window.removeEventListener('scroll', onScroll);
-    }, [speed, rotation]);
+    }, [speed, rotation, isMobile]);
+
+    if (isMobile) return <div className="w-full">{children}</div>;
     return <div ref={ref} className="gpu-accel" style={{ perspective: '1000px' }}>{children}</div>;
 };
 
 const MouseTilt: React.FC<{ children: React.ReactNode; intensity?: number }> = ({ children, intensity = 15 }) => {
-    if (isMobile) return <div className="h-full w-full">{children}</div>;
+    const isMobile = useIsMobile();
+    // Hook calls must be unconditional
     const ref = useRef<HTMLDivElement>(null);
+
+    if (isMobile) return <div className="h-full w-full">{children}</div>;
+
     const onMove = (e: React.MouseEvent) => {
         if (!ref.current) return;
         const rect = ref.current.getBoundingClientRect();
@@ -245,67 +349,126 @@ const MouseTilt: React.FC<{ children: React.ReactNode; intensity?: number }> = (
     return <div ref={ref} onMouseMove={onMove} onMouseLeave={onLeave} className="transition-transform duration-300 ease-out will-change-transform h-full w-full" style={{ transformStyle: 'preserve-3d' }}>{children}</div>;
 };
 
-// --- SINGLE DYNAMIC SHOWCASE CARD ---
+// --- SINGLE DYNAMIC SHOWCASE CARD (INTERACTIVE) ---
 const DynamicShowcase = () => {
     const [index, setIndex] = useState(0);
     const [fade, setFade] = useState(true);
+    const [isPlaying, setIsPlaying] = useState(true);
+    const [ref, isInView] = useInView({ threshold: 0.1 });
+    const [tapFeedback, setTapFeedback] = useState<'left' | 'right' | 'pause' | null>(null);
     
+    // Auto-Play
     useEffect(() => {
+        if (!isInView || !isPlaying) return;
+
         const interval = setInterval(() => {
-            setFade(false); // Start fade out
+            setFade(false); 
             setTimeout(() => {
                 setIndex((prev) => (prev + 1) % GALLERY_IMAGES.length);
-                setFade(true); // Start fade in
-            }, 500); // Wait for fade out
-        }, 6000); // 6 Seconds for reading
+                setFade(true); 
+            }, 500); 
+        }, 6000); 
         return () => clearInterval(interval);
-    }, []);
+    }, [isInView, isPlaying]);
+
+    // Tap Handling
+    const handleTap = (e: React.MouseEvent) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const width = rect.width;
+
+        // Left 30% -> Previous
+        if (x < width * 0.3) {
+            setTapFeedback('left');
+            setFade(false);
+            setTimeout(() => {
+                setIndex(prev => (prev - 1 + GALLERY_IMAGES.length) % GALLERY_IMAGES.length);
+                setFade(true);
+                setTapFeedback(null);
+            }, 300);
+        } 
+        // Right 30% -> Next
+        else if (x > width * 0.7) {
+            setTapFeedback('right');
+            setFade(false);
+            setTimeout(() => {
+                setIndex(prev => (prev + 1) % GALLERY_IMAGES.length);
+                setFade(true);
+                setTapFeedback(null);
+            }, 300);
+        } 
+        // Center 40% -> Toggle Pause
+        else {
+            setIsPlaying(!isPlaying);
+            setTapFeedback('pause');
+            setTimeout(() => setTapFeedback(null), 600);
+        }
+    };
 
     const item = GALLERY_IMAGES[index];
 
     return (
-        <MouseTilt intensity={8}>
-            <div className="relative w-full max-w-5xl mx-auto h-[500px] md:h-[600px] rounded-[2.5rem] overflow-hidden border border-white/10 bg-black shadow-2xl group">
-                
-                {/* Dynamic Image Background */}
-                <div className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${fade ? 'opacity-100' : 'opacity-0'}`}>
-                    <img 
-                        src={item.urls[0]} 
-                        className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-700"
-                        alt={item.caption}
-                        loading="lazy"
-                    />
-                </div>
-                
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
-
-                {/* Content */}
-                <div className="absolute bottom-0 left-0 w-full p-8 md:p-16 flex flex-col items-start justify-end h-full">
-                    <div className={`transition-all duration-500 transform ${fade ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-                        <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full border border-[#38F8A8] bg-[#38F8A8]/10 text-[#38F8A8] text-xs font-black uppercase tracking-widest mb-4 font-grotesk">
-                            <span className="w-2 h-2 rounded-full bg-[#38F8A8] animate-pulse"></span>
-                            Active Deployment
+        <div ref={ref} className="h-full w-full relative">
+            <MouseTilt intensity={8}>
+                <div 
+                    onClick={handleTap}
+                    className="relative w-full max-w-5xl mx-auto h-[500px] md:h-[600px] rounded-[2.5rem] overflow-hidden border border-white/10 bg-black shadow-2xl group content-visibility-auto cursor-pointer"
+                >
+                    
+                    {/* Visual Feedback Overlay */}
+                    {tapFeedback && (
+                        <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none animate-ping">
+                            {tapFeedback === 'left' && <ChevronLeft className="w-24 h-24 text-white opacity-50" />}
+                            {tapFeedback === 'right' && <ChevronRight className="w-24 h-24 text-white opacity-50" />}
+                            {tapFeedback === 'pause' && (isPlaying ? <Play className="w-24 h-24 text-white opacity-50" /> : <Pause className="w-24 h-24 text-white opacity-50" />)}
                         </div>
-                        <h2 className="text-5xl md:text-8xl font-black text-white mb-6 tracking-tighter font-grotesk leading-none">
-                            {item.caption.toUpperCase()}
-                        </h2>
-                        <div className="max-w-xl border-l-4 border-[#38F8A8] pl-6">
-                            <p className="text-xl md:text-2xl text-gray-200 font-medium font-grotesk leading-relaxed">
-                                {item.description}
-                            </p>
+                    )}
+
+                    {/* Dynamic Image Background */}
+                    <div className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${fade ? 'opacity-100' : 'opacity-0'}`}>
+                        <img 
+                            src={item.urls[0]} 
+                            className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-700"
+                            alt={item.caption}
+                            loading="eager" // Force eager load for smoother transitions
+                            decoding="async"
+                        />
+                    </div>
+                    
+                    {/* Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+
+                    {/* Content */}
+                    <div className="absolute bottom-0 left-0 w-full p-8 md:p-16 flex flex-col items-start justify-end h-full pointer-events-none">
+                        <div className={`transition-all duration-500 transform ${fade ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+                            <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full border border-[#38F8A8] bg-[#38F8A8]/10 text-[#38F8A8] text-xs font-black uppercase tracking-widest mb-4 font-grotesk">
+                                <span className={`w-2 h-2 rounded-full bg-[#38F8A8] ${isPlaying ? 'animate-pulse' : 'opacity-50'}`}></span>
+                                {isPlaying ? 'Active Deployment' : 'Paused'}
+                            </div>
+                            <h2 className="text-5xl md:text-8xl font-black text-white mb-6 tracking-tighter font-grotesk leading-none">
+                                {item.caption.toUpperCase()}
+                            </h2>
+                            <div className="max-w-xl border-l-4 border-[#38F8A8] pl-6">
+                                <p className="text-xl md:text-2xl text-gray-200 font-medium font-grotesk leading-relaxed">
+                                    {item.description}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        {/* Progress Indicator */}
+                        <div className="absolute bottom-8 right-8 flex gap-2">
+                            {GALLERY_IMAGES.map((_, i) => (
+                                <div key={i} className={`h-1 rounded-full transition-all duration-300 ${i === index ? 'w-8 bg-[#38F8A8]' : 'w-2 bg-white/20'}`}></div>
+                            ))}
                         </div>
                     </div>
                     
-                    {/* Progress Indicator */}
-                    <div className="absolute bottom-8 right-8 flex gap-2">
-                        {GALLERY_IMAGES.map((_, i) => (
-                            <div key={i} className={`h-1 rounded-full transition-all duration-300 ${i === index ? 'w-8 bg-[#38F8A8]' : 'w-2 bg-white/20'}`}></div>
-                        ))}
-                    </div>
+                    {/* Tap Hints (Fade in on hover/touch) */}
+                    <div className="absolute inset-y-0 left-0 w-[30%] bg-gradient-to-r from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="absolute inset-y-0 right-0 w-[30%] bg-gradient-to-l from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </div>
-            </div>
-        </MouseTilt>
+            </MouseTilt>
+        </div>
     );
 };
 
@@ -321,8 +484,8 @@ const FloatingTicker = ({ chatOpen }: { chatOpen: boolean }) => {
     useEffect(() => {
         const i = setInterval(() => {
             setVisible(false);
-            setTimeout(() => { setIdx(p => (p + 1) % messages.length); setVisible(true); }, 500);
-        }, 6000); // 6 SECONDS FOR READING
+            setTimeout(() => { setIdx(p => (p + 1) % messages.length); setVisible(true); }, 6000); 
+        }, 6000); 
         return () => clearInterval(i);
     }, []);
 
@@ -348,7 +511,7 @@ const FloatingTicker = ({ chatOpen }: { chatOpen: boolean }) => {
     );
 };
 
-// --- MOBILE HERO (Static, Instant, Compact) ---
+// --- MOBILE HERO ---
 const MobileHero = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
     return (
         <div className="pt-24 pb-8 px-4 flex flex-col items-center justify-center text-center">
@@ -359,7 +522,6 @@ const MobileHero = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
                  </div>
              </div>
 
-             {/* MASSIVE ORIN AI TITLE */}
              <h1 className="text-6xl font-black tracking-tighter font-grotesk text-white mb-2 leading-none drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
                 ORIN AI
              </h1>
@@ -441,7 +603,6 @@ const HeroReveal = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
                          </div>
                      </div>
 
-                     {/* MASSIVE ORIN AI TITLE */}
                      <h2 className="text-9xl font-black text-center tracking-tighter font-grotesk text-white drop-shadow-[0_0_30px_rgba(56,248,168,0.5)] z-10">
                         ORIN AI
                      </h2>
@@ -451,7 +612,7 @@ const HeroReveal = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
                      
                      {/* Persistent Text - Soft Breathe */}
                      <div className="relative group mt-8 z-10">
-                        <h1 className="text-4xl font-black text-white tracking-tighter font-grotesk leading-none relative z-10 text-center animate-pulse opacity-90 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+                        <h1 className="text-4xl font-black text-transparent text-stroke tracking-tighter font-grotesk leading-none relative z-10 text-center animate-pulse opacity-70">
                            YOUR NEW EMPLOYEE IS HERE
                         </h1>
                      </div>
@@ -533,17 +694,18 @@ const PricingCard = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => 
     );
 };
 
-// --- PAIN-POINT INTRO SEQUENCE ---
+// --- PAIN-POINT INTRO SEQUENCE (INSTANT LOAD) ---
 const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
     const [step, setStep] = useState(0);
 
     useEffect(() => {
+        // INSTANT START - No "Initializing" delay
         const sequence = [
-            { t: 3000, s: 1 }, // "DO YOU REPLY AT 2AM?"
-            { t: 6000, s: 2 }, // "LOSING SALES?"
-            { t: 9000, s: 3 }, // "STOP DOING IT MANUALLY"
-            { t: 11000, s: 4 }, // "MEET ORIN AI" (New Step)
-            { t: 13000, s: 5 } // DONE (Reveal)
+            { t: 2000, s: 1 }, // "DO YOU REPLY AT 2AM?"
+            { t: 4000, s: 2 }, // "LOSING SALES?"
+            { t: 6000, s: 3 }, // "STOP DOING IT MANUALLY"
+            { t: 8000, s: 4 }, // "MEET ORIN AI"
+            { t: 10000, s: 5 } // DONE
         ];
 
         let timeouts: ReturnType<typeof setTimeout>[] = [];
@@ -551,7 +713,7 @@ const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
             timeouts.push(setTimeout(() => setStep(s), t));
         });
         
-        timeouts.push(setTimeout(onComplete, 14000));
+        timeouts.push(setTimeout(onComplete, 11000));
 
         return () => timeouts.forEach(clearTimeout);
     }, [onComplete]);
@@ -594,10 +756,12 @@ const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
 };
 
 export default function App() {
+    const isMobile = useIsMobile();
     const [chatOpen, setChatOpen] = useState(false);
     const [gameOpen, setGameOpen] = useState(false);
     const [easterCount, setEasterCount] = useState(0);
     const [introFinished, setIntroFinished] = useState(false);
+    const [hoveredMember, setHoveredMember] = useState<number | null>(null); // Track hovered team member for Boss Mode
     
     const [messages, setMessages] = useState([
         {role: 'model', text: 'Hello! Ako nga pala si Orin 👋. Advanced AI Employee na parang tao kausap. ₱15k Monthly lang for Premium Access. Sulit diba? 🚀'},
@@ -605,13 +769,18 @@ export default function App() {
     ]);
     const [input, setInput] = useState('');
     const [isThinking, setIsThinking] = useState(false);
-    const [ai, setAi] = useState<GoogleGenAI | null>(null);
+    const [chatSession, setChatSession] = useState<Chat | null>(null);
     const [showFloat, setShowFloat] = useState(false);
 
     useEffect(() => {
         if(typeof process !== 'undefined' && process.env && process.env.API_KEY) {
              const client = new GoogleGenAI({ apiKey: process.env.API_KEY });
-             setAi(client);
+             // Initialize chat session with history capability
+             const session = client.chats.create({
+                 model: 'gemini-2.5-flash',
+                 config: { systemInstruction: systemInstruction }
+             });
+             setChatSession(session);
         }
 
         const handleScroll = () => {
@@ -637,13 +806,10 @@ export default function App() {
         setInput('');
         setIsThinking(true);
 
-        if (ai) {
+        if (chatSession) {
              try {
-                const response = await ai.models.generateContent({
-                  model: 'gemini-2.5-flash',
-                  contents: input,
-                  config: { systemInstruction: systemInstruction }
-                });
+                // Use Chat Session for memory
+                const response = await chatSession.sendMessage({ message: input });
                 setMessages(p => [...p, {role: 'model', text: response.text || "Sorry boss, medyo loading ako ngayon."}]);
              } catch(e) {
                  const fallbackText = await generateFallbackResponse(input);
@@ -698,7 +864,7 @@ export default function App() {
                     </div>
 
                     {/* Sales Psychology Section - MOVED UP AS REQUESTED (Pain -> Solution) */}
-                    <section className="py-12 md:py-20 px-4 max-w-7xl mx-auto">
+                    <section className="py-8 md:py-16 px-4 max-w-7xl mx-auto">
                         <div className="grid md:grid-cols-2 gap-8 items-center">
                             <ParallaxElement speed={0.2} rotation={5}>
                                 <MouseTilt>
@@ -731,7 +897,7 @@ export default function App() {
                     </section>
 
                     {/* Gallery Grid - PROOF (Moved Up) */}
-                    <section id="features" className="py-12 md:py-20 px-4 max-w-7xl mx-auto">
+                    <section id="features" className="py-8 md:py-12 px-4 max-w-7xl mx-auto">
                         <h2 className="text-4xl md:text-8xl font-black text-center mb-8 tracking-tighter font-grotesk">
                             BUILT FOR<br/><span className="text-[#38F8A8]">EVERYONE.</span>
                         </h2>
@@ -741,7 +907,7 @@ export default function App() {
                     </section>
 
                     {/* Stats - LOGIC */}
-                    <section className="py-12 md:py-20 px-4">
+                    <section className="py-8 md:py-12 px-4">
                         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8">
                              <div className="glass-card p-6 md:p-8 rounded-3xl">
                                  <h4 className="text-xl md:text-2xl font-bold mb-6 font-grotesk">Market Domination</h4>
@@ -755,33 +921,64 @@ export default function App() {
                     </section>
 
                     {/* PRICING (The CLIMAX - moved near bottom) */}
-                    <section id="pricing" className="py-12 md:py-20 px-4 relative z-20">
+                    <section id="pricing" className="py-8 md:py-16 px-4 relative z-20">
                         <PricingCard setChatOpen={setChatOpen} />
                     </section>
                     
-                    {/* Team Section (Respectful Remaster) */}
-                    <section className="py-12 md:py-20 px-4"> 
-                        <div className="max-w-6xl mx-auto text-center mb-16"> 
-                            <h2 className="text-4xl md:text-6xl font-black mb-4 font-grotesk tracking-tighter">THE ARCHITECTS</h2>
-                            <p className="text-gray-400 text-lg font-mono">Building the future of intelligence.</p>
+                    {/* Team Section (Modern Square & Boss Mode) */}
+                    <section className="py-8 px-4"> 
+                        <div className="max-w-6xl mx-auto text-center mb-10"> 
+                            <h2 className="text-3xl md:text-5xl font-black mb-4 font-grotesk">MEET THE MINDS</h2>
+                            <p className="text-gray-500 text-sm font-mono uppercase tracking-widest">The architects behind the intelligence.</p>
                         </div>
-                        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
+                        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
                             {TEAM.map((member, i) => (
-                                <MouseTilt key={i} intensity={5}>
-                                    <div className="glass-card p-6 rounded-2xl text-center group h-full flex flex-col items-center">
-                                        <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-[#38F8A8]/30 mb-6 bg-black relative group-hover:border-[#38F8A8] transition-colors">
-                                            <img src={member.image} className={`w-full h-full object-cover ${member.name === 'Marvin' ? 'object-left' : 'object-center'} scale-110`} alt={member.name} loading="lazy" />
+                                <div 
+                                    key={i} 
+                                    onMouseEnter={() => setHoveredMember(i)}
+                                    onMouseLeave={() => setHoveredMember(null)}
+                                >
+                                    <MouseTilt intensity={5}>
+                                        <div className={`glass-card p-6 rounded-[2.5rem] text-center group h-full flex flex-col items-center bg-black/80 transition-all duration-500 hover:bg-[#111] ${member.name === 'Marvin' ? 'border-2 border-transparent' : ''}`}>
+                                            {/* Modern Square Avatar (Squircle) */}
+                                            <div className={`w-56 h-56 rounded-[2rem] overflow-hidden mb-6 bg-black relative transition-all duration-700 ${member.name === 'Marvin' ? '' : 'border border-white/5 group-hover:border-[#38F8A8]/50'}`}>
+                                                <img 
+                                                    src={member.image} 
+                                                    className={`w-full h-full object-cover ${member.name === 'Marvin' ? 'object-left' : 'object-center'} transition-all duration-700 group-hover:scale-105 ${member.name === 'Marvin' ? 'opacity-50 grayscale group-hover:opacity-100 group-hover:grayscale-0 group-hover:opacity-100' : 'opacity-50 grayscale group-hover:grayscale-0 group-hover:opacity-100'}`} 
+                                                    alt={member.name} 
+                                                    loading="lazy" 
+                                                />
+                                                {/* Boss Mode Glow Animation for Marvin (On Hover) */}
+                                                {member.name === 'Marvin' && (
+                                                    <>
+                                                        <div className="absolute inset-0 border-4 border-[#D4AF37] rounded-[2rem] group-hover:animate-electric pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"><GoldParticleEmitter isActive={hoveredMember === i} /></div>
+                                                    </>
+                                                )}
+                                                
+                                                {/* Gradient Mask to fade into background */}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80 group-hover:opacity-20 transition-opacity duration-700"></div>
+                                            </div>
+                                            
+                                            <div className="flex items-center gap-2 mb-2 justify-center">
+                                                <div className="relative">
+                                                    <h4 className={`font-bold text-2xl font-grotesk ${member.name === 'Marvin' ? 'group-hover:text-[#D4AF37] text-gray-400' : 'text-gray-400 group-hover:text-white'} transition-colors`}>
+                                                        {member.name === 'Marvin' ? <TypingGlitchText text="Marvin" hoverText="Marvin Villanueva" isActive={hoveredMember === i} /> : member.name}
+                                                    </h4>
+                                                </div>
+                                                {member.name === 'Marvin' && <Crown className="w-5 h-5 text-[#D4AF37] fill-[#D4AF37] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />}
+                                            </div>
+                                            
+                                            <p className="text-xs text-gray-600 uppercase font-mono tracking-widest mb-4 group-hover:text-[#38F8A8] transition-colors">{member.role}</p>
+                                            
+                                            {member.name === 'Marvin' && (
+                                                <a href={member.link} target="_blank" rel="noreferrer" className="mt-auto inline-block text-xs bg-white text-black hover:bg-[#D4AF37] py-2 px-4 rounded-full font-bold hover:scale-105 transition-all font-mono shadow-lg hover:shadow-[#D4AF37]/50 hover:shadow-lg">
+                                                    HIRE MARVIN
+                                                </a>
+                                            )}
                                         </div>
-                                        <h4 className="font-bold text-2xl font-grotesk mb-2">{member.name}</h4>
-                                        <p className="text-xs text-[#38F8A8] uppercase font-mono tracking-widest mb-4">{member.role}</p>
-                                        
-                                        {member.name === 'Marvin' && (
-                                            <a href={member.link} target="_blank" rel="noreferrer" className="mt-auto inline-block text-xs bg-white text-black py-2 px-4 rounded-full font-bold hover:bg-[#38F8A8] transition-colors font-mono">
-                                                HIRE MARVIN
-                                            </a>
-                                        )}
-                                    </div>
-                                </MouseTilt>
+                                    </MouseTilt>
+                                </div>
                             ))}
                         </div>
                     </section>

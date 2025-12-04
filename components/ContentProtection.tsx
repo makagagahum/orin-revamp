@@ -1,4 +1,5 @@
 
+
 import React, { useEffect, useState } from 'react';
 
 export const ContentProtection: React.FC<{ children: React.ReactNode }> = ({ children }) => {
