@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from 'react';
 
 export const ContentProtection: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -48,6 +46,7 @@ export const ContentProtection: React.FC<{ children: React.ReactNode }> = ({ chi
 
         // 3. Detect DevTools (Debugger Trap)
         // Optimization: Increased interval from 1000ms to 4000ms to reduce main thread blocking
+        /*
         const devToolsCheck = setInterval(() => {
             const widthThreshold = window.outerWidth - window.innerWidth > 160;
             const heightThreshold = window.outerHeight - window.innerHeight > 160;
@@ -66,6 +65,7 @@ export const ContentProtection: React.FC<{ children: React.ReactNode }> = ({ chi
                 setIsDevToolsOpen(true);
             }
         }, 4000);
+        */
 
         // Attach Listeners
         document.addEventListener('contextmenu', handleContextMenu);
@@ -80,7 +80,7 @@ export const ContentProtection: React.FC<{ children: React.ReactNode }> = ({ chi
             document.removeEventListener('keydown', handleKeyDown);
             document.removeEventListener('dragstart', handleDragStart);
             document.onselectstart = null;
-            clearInterval(devToolsCheck);
+            // clearInterval(devToolsCheck);
         };
     }, []);
 
