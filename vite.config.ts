@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  // Use relative base path to support proxying via Cloudflare Worker (orin.work)
+  base: './',
   build: {
     // Build Speed Optimizations
     target: 'esnext',
