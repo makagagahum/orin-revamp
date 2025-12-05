@@ -512,12 +512,12 @@ const FloatingTicker = ({ chatOpen }: { chatOpen: boolean }) => {
 };
 
 // --- MOBILE HERO ---
-const MobileHero = ({ setChatOpen, onAvatarClick }: { setChatOpen: (v: boolean) => void, onAvatarClick: (e: React.MouseEvent) => void }) => {
+const MobileHero = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
     return (
         <div className="pt-24 pb-8 px-4 flex flex-col items-center justify-center text-center">
-             <div className="mb-6 relative w-40 h-40" onClick={onAvatarClick}>
-                 <div className="absolute inset-[-10px] rounded-full border border-[#38F8A8]/30 animate-spin-slow pointer-events-none"></div>
-                 <div className="w-full h-full rounded-full overflow-hidden border-2 border-[#38F8A8] relative bg-black shadow-[0_0_40px_rgba(56,248,168,0.4)] cursor-pointer active:scale-95 transition-transform">
+             <div className="mb-6 relative w-40 h-40">
+                 <div className="absolute inset-[-10px] rounded-full border border-[#38F8A8]/30 animate-spin-slow"></div>
+                 <div className="w-full h-full rounded-full overflow-hidden border-2 border-[#38F8A8] relative bg-black shadow-[0_0_40px_rgba(56,248,168,0.4)]">
                     <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110" alt="Orin Avatar" />
                  </div>
              </div>
@@ -545,7 +545,7 @@ const MobileHero = ({ setChatOpen, onAvatarClick }: { setChatOpen: (v: boolean) 
 };
 
 // --- DESKTOP HERO REVEAL (Sticky & Dramatic) ---
-const HeroReveal = ({ setChatOpen, onAvatarClick }: { setChatOpen: (v: boolean) => void, onAvatarClick: (e: React.MouseEvent) => void }) => {
+const HeroReveal = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
     const [scrollY, setScrollY] = useState(0);
 
     useEffect(() => {
@@ -593,13 +593,13 @@ const HeroReveal = ({ setChatOpen, onAvatarClick }: { setChatOpen: (v: boolean) 
                          <h1 className="text-[25vw] font-black text-white tracking-tighter leading-none opacity-20">ORIN</h1>
                      </div>
 
-                     <div className="relative w-96 h-96 mb-8 z-10" onClick={onAvatarClick}>
+                     <div className="relative w-96 h-96 mb-8 z-10">
                          {/* Spinning Rings */}
-                         <div className="absolute inset-[-40px] rounded-full border border-[#38F8A8]/20 animate-spin-slow pointer-events-none"></div>
-                         <div className="absolute inset-[-20px] rounded-full border-2 border-[#D4AF37]/40 animate-spin-slow pointer-events-none" style={{ animationDirection: 'reverse', animationDuration: '30s' }}></div>
+                         <div className="absolute inset-[-40px] rounded-full border border-[#38F8A8]/20 animate-spin-slow"></div>
+                         <div className="absolute inset-[-20px] rounded-full border-2 border-[#D4AF37]/40 animate-spin-slow" style={{ animationDirection: 'reverse', animationDuration: '30s' }}></div>
                          
                          {/* Avatar Container */}
-                         <div className="w-full h-full rounded-full overflow-hidden border-4 border-[#38F8A8] relative bg-black shadow-[0_0_100px_rgba(56,248,168,0.4)] cursor-pointer hover:scale-105 transition-transform active:scale-95">
+                         <div className="w-full h-full rounded-full overflow-hidden border-4 border-[#38F8A8] relative bg-black shadow-[0_0_100px_rgba(56,248,168,0.4)]">
                             <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110" alt="Orin Avatar" />
                          </div>
                      </div>
@@ -761,13 +761,10 @@ export default function App() {
     const isMobile = useIsMobile();
     const [chatOpen, setChatOpen] = useState(false);
     const [gameOpen, setGameOpen] = useState(false);
+    const [easterCount, setEasterCount] = useState(0);
     const [introFinished, setIntroFinished] = useState(false);
     const [hoveredMember, setHoveredMember] = useState<number | null>(null); // Track hovered team member for Boss Mode
     
-    // Easter Egg State
-    const [tapCount, setTapCount] = useState(0);
-    const [eggHint, setEggHint] = useState<string | null>(null);
-
     const [messages, setMessages] = useState([
         {role: 'model', text: 'Hello! Ako nga pala si Orin 👋. Advanced AI Employee na parang tao kausap. ₱15k Monthly lang for Premium Access. Sulit diba? 🚀'},
         {role: 'model', text: 'Para ma-setup natin business mo, paki-fill up lang nito boss:\n\n1. Name:\n2. Business Name:\n3. Contact #:\n4. Anong klaseng AI Employee need mo?'}
@@ -796,25 +793,11 @@ export default function App() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // New Easter Egg Handler for Hero Avatar
-    const handleAvatarTap = (e: React.MouseEvent) => {
+    const handleLogoClick = (e: React.MouseEvent) => {
         e.preventDefault();
-        e.stopPropagation();
-        
-        const newCount = tapCount + 1;
-        setTapCount(newCount);
-        
-        if (newCount === 3) {
-            setEggHint("Keep tapping! 🎮");
-            setTimeout(() => setEggHint(null), 2000);
-        } else if (newCount === 4) {
-            setEggHint("Almost there... Tap one more time! 🕹️");
-            setTimeout(() => setEggHint(null), 2000);
-        } else if (newCount === 5) {
-            setEggHint(null);
-            setGameOpen(true);
-            setTapCount(0);
-        }
+        const newC = easterCount + 1;
+        setEasterCount(newC);
+        if(newC === 5) { setGameOpen(true); setEasterCount(0); }
     };
 
     const sendChat = async (e: React.FormEvent) => {
@@ -845,19 +828,12 @@ export default function App() {
         <ContentProtection>
             {!introFinished && <IntroOverlay onComplete={() => setIntroFinished(true)} />}
             
-            {/* Global Easter Egg Hint Toast */}
-            {eggHint && (
-                <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-[100] bg-[#38F8A8] text-black font-bold px-6 py-3 rounded-full shadow-[0_0_20px_rgba(56,248,168,0.6)] animate-bounce font-grotesk text-center min-w-[200px]">
-                    {eggHint}
-                </div>
-            )}
-
             <div className={`min-h-screen text-white overflow-x-hidden selection:bg-[#38F8A8] selection:text-black ${!introFinished ? 'h-screen overflow-hidden' : ''}`}>
                 <ParticleBackground />
                 
                 {/* Optimized Blurred Nav */}
                 <nav className="fixed top-0 w-full z-50 py-4 px-6 flex justify-between items-center bg-black/50 backdrop-blur-xl border-b border-white/5 transition-all duration-300">
-                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo(0, 0)}>
+                    <div className="flex items-center gap-2 cursor-pointer" onClick={handleLogoClick}>
                         <div className="w-10 h-10 rounded-full border border-white/20 overflow-hidden bg-black relative group">
                             <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110 transition-transform duration-500 group-hover:scale-125" alt="ORIN Logo" loading="lazy" />
                         </div>
@@ -875,9 +851,9 @@ export default function App() {
 
                 {/* Conditional Hero: Static Mobile vs Sticky Desktop */}
                 {isMobile ? (
-                    <MobileHero setChatOpen={setChatOpen} onAvatarClick={handleAvatarTap} />
+                    <MobileHero setChatOpen={setChatOpen} />
                 ) : (
-                    <HeroReveal setChatOpen={setChatOpen} onAvatarClick={handleAvatarTap} />
+                    <HeroReveal setChatOpen={setChatOpen} />
                 )}
 
                 <VelocityScrollProvider>
@@ -1105,7 +1081,7 @@ export default function App() {
                 </div>
 
                 {gameOpen && (
-                    <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center backdrop-blur-xl p-4">
+                    <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center backdrop-blur-xl">
                         <PacManGame onClose={() => setGameOpen(false)} />
                     </div>
                 )}
