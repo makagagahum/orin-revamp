@@ -87,29 +87,6 @@ export const ContentProtection: React.FC<{ children: React.ReactNode }> = ({ chi
             return false;
         };
 
-        // 3. Detect DevTools (Debugger Trap)
-        // Optimization: Increased interval from 1000ms to 4000ms to reduce main thread blocking
-        /*
-        const devToolsCheck = setInterval(() => {
-            const widthThreshold = window.outerWidth - window.innerWidth > 160;
-            const heightThreshold = window.outerHeight - window.innerHeight > 160;
-            
-            if ((widthThreshold || heightThreshold) && (window as any).Firebug && (window as any).Firebug.chrome && (window as any).Firebug.chrome.isInitialized) {
-                setIsDevToolsOpen(true);
-            }
-            
-            // The "Debugger Trap" - Freezes the UI if inspection is attempted
-            const before = new Date().getTime();
-            // eslint-disable-next-line no-debugger
-            debugger; 
-            const after = new Date().getTime();
-            if (after - before > 100) {
-                // If execution paused (due to debugger), DevTools is likely open
-                setIsDevToolsOpen(true);
-            }
-        }, 4000);
-        */
-
         // Attach Listeners
         document.addEventListener('contextmenu', handleContextMenu);
         document.addEventListener('keydown', handleKeyDown);
@@ -123,7 +100,6 @@ export const ContentProtection: React.FC<{ children: React.ReactNode }> = ({ chi
             document.removeEventListener('keydown', handleKeyDown);
             document.removeEventListener('dragstart', handleDragStart);
             document.onselectstart = null;
-            // clearInterval(devToolsCheck);
         };
     }, []);
 
@@ -161,30 +137,30 @@ export const ContentProtection: React.FC<{ children: React.ReactNode }> = ({ chi
             {/* Flash Overlay for Screenshots */}
             <div id="screenshot-guard" className="fixed inset-0 bg-black opacity-0 pointer-events-none z-[10000] transition-opacity duration-200"></div>
 
-            {/* Anti-Scraping Easter Egg Modal */}
+            {/* Anti-Scraping Easter Egg Modal - Mobile Responsive */}
             {showScraperModal && (
-                <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/95 backdrop-blur-xl animate-in fade-in zoom-in duration-300 px-4">
-                    <div className="bg-[#111] border-2 border-[#38F8A8] p-8 md:p-12 rounded-[2rem] max-w-lg w-full text-center shadow-[0_0_100px_rgba(56,248,168,0.3)] relative overflow-hidden group">
+                <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/95 backdrop-blur-xl animate-in fade-in zoom-in duration-300 p-4">
+                    <div className="bg-[#111] border-2 border-[#38F8A8] p-6 md:p-12 rounded-[1.5rem] md:rounded-[2rem] max-w-[90vw] md:max-w-lg w-full text-center shadow-[0_0_100px_rgba(56,248,168,0.3)] relative overflow-hidden group">
                         
                         {/* Background Glitch Effect */}
                         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48ZyBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMzOEY4QTgiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTAgMGg0MHY0MEgwVjB6bTIwIDIwaDIwdjIwSDIwVjIwek0xMCAxMGgyMHYyMEgxMFYxMHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-20 pointer-events-none"></div>
                         
-                        <div className="relative z-10">
-                            <div className="text-7xl mb-6 animate-bounce">👀</div>
-                            <h2 className="text-3xl md:text-4xl font-black text-white mb-4 font-grotesk tracking-tighter drop-shadow-lg leading-none">
+                        <div className="relative z-10 flex flex-col items-center">
+                            <div className="text-6xl md:text-7xl mb-4 md:mb-6 animate-bounce">👀</div>
+                            <h2 className="text-2xl md:text-4xl font-black text-white mb-3 md:mb-4 font-grotesk tracking-tighter drop-shadow-lg leading-none">
                                 CAUGHT YOU<br/><span className="text-[#38F8A8]">RED-HANDED!</span>
                             </h2>
-                            <p className="text-gray-300 mb-8 font-mono text-sm md:text-base leading-relaxed">
+                            <p className="text-gray-300 mb-6 md:mb-8 font-mono text-xs md:text-base leading-relaxed max-w-[280px] md:max-w-none mx-auto">
                                 Trying to hack or scrape my site? <br/>
                                 Why struggle with the code when you can just hire the architect? 😎
                             </p>
                             
-                            <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-3 w-full max-w-xs md:max-w-sm">
                                 <a 
                                     href="https://marvin.orin.work" 
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="bg-[#38F8A8] text-black font-black py-4 px-8 rounded-full hover:scale-105 transition-transform font-grotesk uppercase tracking-wide flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(56,248,168,0.5)] text-sm md:text-base"
+                                    className="bg-[#38F8A8] text-black font-black py-3 px-6 rounded-full hover:scale-105 transition-transform font-grotesk uppercase tracking-wide flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(56,248,168,0.5)] text-xs md:text-base whitespace-nowrap"
                                 >
                                     Take Me to Marvin's Portfolio 🚀
                                 </a>
@@ -194,13 +170,13 @@ export const ContentProtection: React.FC<{ children: React.ReactNode }> = ({ chi
                                         setRightClickCount(0);
                                         setCopyAttemptCount(0);
                                     }}
-                                    className="bg-white/5 border border-white/10 text-gray-400 font-bold py-3 px-6 rounded-full hover:bg-white/10 hover:text-white transition-all font-mono text-xs uppercase tracking-widest"
+                                    className="bg-white/5 border border-white/10 text-gray-400 font-bold py-2.5 px-6 rounded-full hover:bg-white/10 hover:text-white transition-all font-mono text-[10px] md:text-xs uppercase tracking-widest"
                                 >
                                     I Promise to Behave 😇
                                 </button>
                             </div>
                             
-                            <div className="mt-8 text-[10px] text-gray-600 font-mono">
+                            <div className="mt-6 md:mt-8 text-[9px] md:text-[10px] text-gray-600 font-mono">
                                 SECURITY PROTOCOL: DETECTED_RAPID_INTERACTION
                             </div>
                         </div>
