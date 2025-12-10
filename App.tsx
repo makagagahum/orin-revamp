@@ -42,6 +42,32 @@ function useIsMobile() {
 
 // --- VISUAL COMPONENTS ---
 
+const LegalModal = ({ title, onClose, children }: { title: string, onClose: () => void, children?: React.ReactNode }) => {
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-200" onClick={onClose}>
+            <div className="bg-[#0a0a0a] border border-[#38F8A8]/20 w-full max-w-3xl max-h-[85vh] rounded-3xl flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.8)] relative overflow-hidden" onClick={e => e.stopPropagation()}>
+                <div className="p-6 border-b border-white/5 flex justify-between items-center bg-[#050505]">
+                    <h3 className="text-lg font-bold font-grotesk text-white tracking-widest uppercase flex items-center gap-2">
+                        <ShieldCheck className="w-5 h-5 text-[#38F8A8]" />
+                        {title}
+                    </h3>
+                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors group">
+                        <X className="w-5 h-5 text-gray-500 group-hover:text-white" />
+                    </button>
+                </div>
+                <div className="p-8 overflow-y-auto font-mono text-sm text-gray-400 space-y-6 leading-relaxed">
+                    {children}
+                </div>
+                <div className="p-4 border-t border-white/5 bg-[#050505] flex justify-end">
+                    <button onClick={onClose} className="px-8 py-3 bg-[#38F8A8] hover:bg-[#38F8A8]/90 text-black rounded-xl font-bold text-xs uppercase tracking-widest transition-colors">
+                        Acknowledge & Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const ParticleBackground = ({ theme }: { theme: 'dark' | 'light' }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     useEffect(() => {
@@ -831,6 +857,10 @@ export default function App() {
     const [hoveredMember, setHoveredMember] = useState<number | null>(null);
     const [theme, setTheme] = useState<'dark' | 'light'>('dark');
     
+    // Legal Modals State
+    const [showTos, setShowTos] = useState(false);
+    const [showPrivacy, setShowPrivacy] = useState(false);
+    
     const [messages, setMessages] = useState([
         {role: 'model', text: 'Hello! Ako nga pala si Orin 👋. Advanced AI Employee na parang tao kausap. ₱15,000 Monthly lang for Premium Access. Sulit diba? 🚀'},
         {role: 'model', text: 'Questions? Chat here. Ready to hire? Click the "Hire Application" button above!'}
@@ -1078,13 +1108,160 @@ export default function App() {
                     </div>
                 </div>
 
-                <footer className="py-8 text-center text-gray-500 dark:text-gray-600 text-sm relative z-10 bg-white dark:bg-black font-mono">
-                    <p className="mb-2">© 2025 Organic Intelligence AI • OASIS Inc.</p>
-                    <div className="flex justify-center gap-4 mt-4">
-                        <a href="#" className="hover:text-black dark:hover:text-white transition-colors">Terms</a>
-                        <a href="#" className="hover:text-black dark:hover:text-white transition-colors">Privacy</a>
+                <footer className="py-8 text-center text-gray-500 dark:text-gray-600 text-sm relative z-10 bg-white dark:bg-black font-mono border-t border-gray-200 dark:border-white/5">
+                    <p className="mb-4 font-bold tracking-widest text-xs">© 2025 Organic Intelligence AI • OASIS Inc.</p>
+                    <div className="flex justify-center gap-8">
+                        <button onClick={() => setShowTos(true)} className="hover:text-black dark:hover:text-[#38F8A8] transition-colors uppercase text-xs tracking-widest border-b border-transparent hover:border-[#38F8A8]">Terms of Service</button>
+                        <button onClick={() => setShowPrivacy(true)} className="hover:text-black dark:hover:text-[#38F8A8] transition-colors uppercase text-xs tracking-widest border-b border-transparent hover:border-[#38F8A8]">Privacy Policy</button>
                     </div>
                 </footer>
+
+                {showTos && (
+                    <LegalModal title="Terms of Service" onClose={() => setShowTos(false)}>
+                        <div className="space-y-8">
+                            <div>
+                                <h4 className="text-white font-bold mb-1 text-base">ORIN AI - PREMIUM SUBSCRIPTION TERMS OF SERVICE</h4>
+                                <p className="text-xs mb-6 text-gray-500">Last Updated: December 11, 2025</p>
+
+                                <div className="space-y-6">
+                                    <div>
+                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">1. ACCEPTANCE OF TERMS</h5>
+                                        <p>By subscribing to the "Orin AI Premium Plan" (hereinafter referred to as "the Service"), you (the "Client" or "User") agree to be bound by these Terms of Service. These terms govern your use of the Orin AI system and the accompanying technical support services.</p>
+                                    </div>
+                                    <div>
+                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">2. DESCRIPTION OF SERVICE</h5>
+                                        <p className="mb-2">Orin AI is a multimodal artificial intelligence agent designed to automate business processes.</p>
+                                        <ul className="list-disc pl-5 space-y-1">
+                                            <li><strong className="text-gray-300">Scope:</strong> The Service includes the continuous operation, hosting, and maintenance of the Orin AI agent on the Client's specified platforms.</li>
+                                            <li><strong className="text-gray-300">Premium Inclusions:</strong> This subscription tier includes priority processing, proactive system monitoring, and unlimited access to technical support.</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">3. SUBSCRIPTION AND PRICING</h5>
+                                        <ul className="list-disc pl-5 space-y-1">
+                                            <li><strong className="text-gray-300">Monthly Subscription Fee:</strong> The Client agrees to pay a recurring monthly fee of PHP 15,000.00.</li>
+                                            <li><strong className="text-gray-300">Billing Cycle:</strong> The fee will be billed automatically every 30 days from the date of the initial subscription activation.</li>
+                                            <li><strong className="text-gray-300">Inclusions:</strong> The monthly fee covers the software license, server costs, and the Unlimited Technical Support package described in Section 4.</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">4. UNLIMITED TECHNICAL SUPPORT (24/7)</h5>
+                                        <ul className="list-disc pl-5 space-y-1">
+                                            <li><strong className="text-gray-300">Coverage:</strong> The Client is entitled to unlimited technical support requests at no additional cost. This includes re-calibration of AI responses, troubleshooting integration issues, updating knowledge base information, and general system maintenance.</li>
+                                            <li><strong className="text-gray-300">Availability:</strong> Support is available 24 hours a day, 7 days a week.</li>
+                                            <li><strong className="text-gray-300">Response Time:</strong> Premium subscribers are granted priority status, ensuring expedited response times for all support tickets.</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">5. CANCELLATION AND TERMINATION</h5>
+                                        <ul className="list-disc pl-5 space-y-1">
+                                            <li><strong className="text-gray-300">Cancel Anytime Policy:</strong> The Client may cancel their subscription at any time without penalty. There are no lock-in periods or long-term contracts.</li>
+                                            <li><strong className="text-gray-300">Effect of Cancellation:</strong> Upon cancellation, the Service will remain active until the end of the current paid billing cycle. After the cycle ends, the Orin AI agent will be deactivated, and the Client will no longer be billed.</li>
+                                            <li><strong className="text-gray-300">Data Retrieval:</strong> The Client is responsible for exporting any necessary data prior to the final deactivation date.</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">6. AI LIMITATIONS AND LIABILITY</h5>
+                                        <ul className="list-disc pl-5 space-y-1">
+                                            <li><strong className="text-gray-300">Nature of AI:</strong> While Orin AI aims for high accuracy, the Client acknowledges that AI systems may occasionally produce errors. The Client retains responsibility for overseeing AI interactions.</li>
+                                            <li><strong className="text-gray-300">Liability Cap:</strong> Orin AI's liability for any claims arising out of this agreement shall not exceed the amount paid by the Client during the one (1) month period immediately preceding the event giving rise to the claim.</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">7. DATA PRIVACY AND CONFIDENTIALITY</h5>
+                                        <ul className="list-disc pl-5 space-y-1">
+                                            <li><strong className="text-gray-300">Compliance:</strong> We adhere to strict data privacy standards (GDPR/Data Privacy Act of 2012) to protect Client and customer information.</li>
+                                            <li><strong className="text-gray-300">Confidentiality:</strong> All business data shared for the purpose of configuring and maintaining the AI is treated as strictly confidential.</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">8. INTELLECTUAL PROPERTY</h5>
+                                        <p>The Client is granted a revocable, non-exclusive license to use the Orin AI software while the subscription is active. All intellectual property rights regarding the software code and algorithms remain with the provider.</p>
+                                    </div>
+                                    <div>
+                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">9. GOVERNING LAW</h5>
+                                        <p>These Terms shall be governed by the laws of the Republic of the Philippines.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </LegalModal>
+                )}
+
+                {showPrivacy && (
+                    <LegalModal title="Privacy Policy" onClose={() => setShowPrivacy(false)}>
+                        <div className="space-y-8">
+                            <div>
+                                <h4 className="text-white font-bold mb-1 text-base">ORIN AI - DATA PRIVACY POLICY</h4>
+                                <p className="text-xs mb-6 text-gray-500">Last Updated: December 11, 2025</p>
+
+                                <div className="space-y-6">
+                                    <div>
+                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">1. INTRODUCTION</h5>
+                                        <p>Orin AI ("We," "Us," or "Our") is committed to protecting the privacy and security of our Clients and their end-users. This Privacy Policy outlines how we collect, use, store, and protect data in the course of providing our AI automation services, in compliance with the Data Privacy Act of 2012 (Republic Act No. 10173) of the Philippines and applicable international standards such as GDPR and CCPA.</p>
+                                    </div>
+                                    <div>
+                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">2. INFORMATION WE COLLECT</h5>
+                                        <p className="mb-2">To provide our multimodal AI services, we may collect and process the following types of information:</p>
+                                        <ul className="list-disc pl-5 space-y-1">
+                                            <li><strong className="text-gray-300">Client Business Information:</strong> Contact details, billing information, and platform credentials (API keys) necessary for integration.</li>
+                                            <li><strong className="text-gray-300">Interaction Data:</strong> Data generated during interactions with end-users, including text logs, voice recordings (for speech-to-text processing), and images (for computer vision analysis).</li>
+                                            <li><strong className="text-gray-300">Integration Data:</strong> Information synced from connected third-party platforms (e.g., CRM, E-commerce, Messaging apps) as authorized by the Client.</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">3. HOW WE USE YOUR INFORMATION</h5>
+                                        <p className="mb-2">We use the collected data strictly for the following purposes:</p>
+                                        <ul className="list-disc pl-5 space-y-1">
+                                            <li><strong className="text-gray-300">Service Delivery:</strong> To automate responses, process orders, schedule appointments, and perform the functions of the Orin AI agent.</li>
+                                            <li><strong className="text-gray-300">Technical Support:</strong> To troubleshoot issues and optimize system performance as part of your unlimited 24/7 support package.</li>
+                                            <li><strong className="text-gray-300">System Improvement:</strong> To refine AI understanding and accuracy through machine learning algorithms. Note: Data used for training is anonymized and stripped of personally identifiable information (PII).</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">4. DATA SHARING AND DISCLOSURE</h5>
+                                        <p className="mb-2">We do not sell your business data to third parties. Data is only shared in the following circumstances:</p>
+                                        <ul className="list-disc pl-5 space-y-1">
+                                            <li><strong className="text-gray-300">Authorized Integrations:</strong> Data is transferred to the third-party platforms you have explicitly connected (e.g., sending an order detail to your Shopify dashboard or a lead to your Salesforce CRM).</li>
+                                            <li><strong className="text-gray-300">Legal Requirements:</strong> If required by law or in response to a valid legal process.</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">5. DATA SECURITY MEASURES</h5>
+                                        <p className="mb-2">We employ enterprise-grade security protocols to protect your data:</p>
+                                        <ul className="list-disc pl-5 space-y-1">
+                                            <li><strong className="text-gray-300">Encryption:</strong> All data is encrypted both in transit and at rest using industry-standard protocols.</li>
+                                            <li><strong className="text-gray-300">Access Control:</strong> We utilize strict Role-Based Access Control (RBAC) and Multi-Factor Authentication (MFA) to ensure only authorized personnel can access administrative tools.</li>
+                                            <li><strong className="text-gray-300">Monitoring:</strong> Real-time security monitoring and threat detection systems are active 24/7.</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">6. DATA RETENTION AND DELETION</h5>
+                                        <ul className="list-disc pl-5 space-y-1">
+                                            <li><strong className="text-gray-300">Active Subscription:</strong> Data is retained for the duration of your active subscription to maintain conversation context and history.</li>
+                                            <li><strong className="text-gray-300">Upon Cancellation:</strong> If you cancel your ₱15,000/month subscription, you have a grace period to export your data. After this period, automated deletion protocols are triggered to permanently remove Client data from our active servers in compliance with data retention policies.</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">7. CLIENT AND USER RIGHTS</h5>
+                                        <p className="mb-2">Under the Data Privacy Act, you have the right to:</p>
+                                        <ul className="list-disc pl-5 space-y-1">
+                                            <li><strong className="text-gray-300">Access:</strong> Request a copy of the personal data we hold about you.</li>
+                                            <li><strong className="text-gray-300">Correction:</strong> Request correction of inaccurate or incomplete data.</li>
+                                            <li><strong className="text-gray-300">Erasure:</strong> Request the deletion of your data, subject to our retention policies and legal obligations.</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">8. CONTACT US</h5>
+                                        <p className="mb-2">For any privacy-related concerns, data subject requests, or questions regarding this policy, please contact our Data Protection Officer:</p>
+                                        <p className="text-gray-300">Name: Marvin</p>
+                                        <p className="text-gray-300">Email: marvin@orin.work</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </LegalModal>
+                )}
 
                 <div className={`fixed bottom-8 right-4 md:right-8 z-50 transition-all duration-500 ${showFloat ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
                     <button 
