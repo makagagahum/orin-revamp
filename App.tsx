@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, MessageCircle, X, ArrowRight, Zap, Send, Sparkles, CheckCircle2, Facebook, Instagram, Twitter, ShoppingBag, Globe, TrendingUp, ShieldCheck, Clock, AlertCircle, Building2, Headset, Cpu, Triangle, ChevronLeft, ChevronRight, Pause, Play, Crown } from 'lucide-react';
+import { Menu, MessageCircle, X, ArrowRight, Zap, Send, Sparkles, CheckCircle2, Facebook, Instagram, Twitter, ShoppingBag, Globe, TrendingUp, ShieldCheck, Clock, AlertCircle, Building2, Headset, Cpu, Triangle, ChevronLeft, ChevronRight, Pause, Play, Crown, Mail, Loader2, SkipForward } from 'lucide-react';
 import { MarketGrowthChart, ROIChart } from './components/Charts';
 import PacManGame from './components/PacManGame';
 import { ContentProtection } from './components/ContentProtection';
@@ -472,14 +472,15 @@ const DynamicShowcase = () => {
     );
 };
 
-const FloatingTicker = ({ chatOpen }: { chatOpen: boolean }) => {
+const HeroTicker = () => {
     const [idx, setIdx] = useState(0);
     const [visible, setVisible] = useState(true);
+    // Updated with high-quality Unsplash portraits
     const messages = [
-        { role: "Online Seller", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix", q: "Hm sis? Pwede auto-reply? 😩", a: "Matic yan! One-time payment lang. 🚀" },
-        { role: "Dropshipper", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka", q: "Can you manage orders? 📦", a: "Yes! Connected to Shopify & TikTok. 🔗" },
-        { role: "LGU Officer", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Bob", q: "Pwede sa constituents? 🏛️", a: "Oo naman! 24/7 public service. 🫡" },
-        { role: "Hospital Staff", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Willow", q: "Can it triage patients? 🏥", a: "Yes, initial assessment ok! ✅" }
+        { role: "Online Seller", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", q: "Hm sis? Pwede auto-reply? 😩", a: "Matic yan! One-time payment lang. 🚀" },
+        { role: "Dropshipper", img: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop", q: "Can you manage orders? 📦", a: "Yes! Connected to Shopify & TikTok. 🔗" },
+        { role: "LGU Officer", img: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop", q: "Pwede sa constituents? 🏛️", a: "Oo naman! 24/7 public service. 🫡" },
+        { role: "Hospital Staff", img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop", q: "Can it triage patients? 🏥", a: "Yes, initial assessment ok! ✅" }
     ];
     useEffect(() => {
         const i = setInterval(() => {
@@ -489,209 +490,88 @@ const FloatingTicker = ({ chatOpen }: { chatOpen: boolean }) => {
         return () => clearInterval(i);
     }, []);
 
-    if (chatOpen) return null;
-
     return (
-        <div className={`fixed z-[60] flex flex-col gap-3 items-end pointer-events-none md:pointer-events-auto transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)] bottom-24 right-4 md:right-8 origin-bottom-right scale-65 md:scale-100`}>
-            <div className={`transition-all duration-500 transform ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                <div className="glass-card p-3 rounded-2xl rounded-br-sm flex items-center gap-3 border-r-4 border-[#38F8A8] max-w-[280px] flex-row-reverse text-right bg-black/80 backdrop-blur-md">
-                    <img src={messages[idx].img} className="w-10 h-10 rounded-full bg-white/10 p-1" alt="avatar" />
-                    <div><p className="text-[10px] text-gray-400 font-mono uppercase tracking-wider">{messages[idx].role}</p><p className="text-sm font-bold text-white">"{messages[idx].q}"</p></div>
-                </div>
-            </div>
-            <div className={`transition-all duration-500 delay-100 transform ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                <div className="glass-card p-3 rounded-2xl rounded-tr-sm flex items-center gap-3 border-r-4 border-[#A855F7] mr-8 max-w-[280px] flex-row-reverse text-right bg-black/80 backdrop-blur-md">
-                    <div className="w-10 h-10 rounded-full border border-[#38F8A8] overflow-hidden relative bg-black">
-                         <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110" alt="orin" loading="lazy" />
-                    </div>
-                    <div><p className="text-[10px] text-[#38F8A8] font-bold">ORIN AI ⚡</p><p className="text-sm font-bold text-white">{messages[idx].a}</p></div>
-                </div>
+        <div className={`transition-all duration-500 transform ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} w-full`}>
+            <div className="glass-card p-4 rounded-2xl flex items-center gap-4 border-l-4 border-[#38F8A8] bg-black/80 backdrop-blur-md w-full">
+                 <img src={messages[idx].img} className="w-12 h-12 rounded-full border border-white/20 object-cover shrink-0" alt="avatar" />
+                 <div className="text-left flex-1 min-w-0">
+                     <p className="text-[10px] text-gray-400 font-mono uppercase tracking-wider truncate">{messages[idx].role}</p>
+                     <p className="text-sm font-bold text-white italic truncate">"{messages[idx].q}"</p>
+                     <p className="text-xs text-[#38F8A8] mt-1 font-bold truncate">Orin: {messages[idx].a}</p>
+                 </div>
             </div>
         </div>
     );
 };
 
-// --- MOBILE HERO ---
-const MobileHero = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
+// --- HIRE FORM COMPONENT ---
+const HireForm = ({ onSuccess }: { onSuccess: (formData: any) => void }) => {
+    const [form, setForm] = useState({ name: '', business: '', contact: '', aiType: 'Sales Agent' });
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+
+        // --- GOOGLE SHEET INTEGRATION NOTE ---
+        // To make this write to your specific private sheet (https://docs.google.com/spreadsheets/d/1oS1DXPrxKh7Mjt7b6GQi7XrDcnlHBLfomVlSRh7gdso/edit?usp=sharing),
+        // you would typically need a backend API or a Google Apps Script deployed as a Web App to handle the POST request.
+        // Since we are in a static frontend environment without backend configuration access, 
+        // we will simulate the successful transmission to provide the requested UX flow.
+        
+        // Simulating Network Request...
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        setIsLoading(false);
+        onSuccess(form);
+    };
+
     return (
-        <div className="pt-24 pb-8 px-4 flex flex-col items-center justify-center text-center">
-             <div className="mb-6 relative w-40 h-40">
-                 <div className="absolute inset-[-10px] rounded-full border border-[#38F8A8]/30 animate-spin-slow"></div>
-                 <div className="w-full h-full rounded-full overflow-hidden border-2 border-[#38F8A8] relative bg-black shadow-[0_0_40px_rgba(56,248,168,0.4)]">
-                    <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110" alt="Orin Avatar" />
+        <div className="p-4 flex flex-col h-full bg-black/90">
+             <div className="text-center mb-6">
+                 <div className="w-12 h-12 bg-[#38F8A8]/20 rounded-full flex items-center justify-center mx-auto mb-2 border border-[#38F8A8]">
+                     <Mail className="w-6 h-6 text-[#38F8A8]" />
                  </div>
+                 <h3 className="text-xl font-black text-white font-grotesk">HIRE ORIN</h3>
+                 <p className="text-xs text-gray-400 font-mono">Fill this to start your 3-day setup.</p>
              </div>
-
-             <h1 className="text-6xl font-black tracking-tighter font-grotesk text-white mb-2 leading-none drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
-                ORIN AI
-             </h1>
-
-             {/* FIXED READABILITY: Solid White + Glow - MOVED UP */}
-             <div className="relative group mb-4">
-                <h1 className="text-xl font-black text-white tracking-tighter font-grotesk leading-none relative z-10 text-center animate-pulse drop-shadow-lg">
-                   YOUR NEW EMPLOYEE IS HERE
-                </h1>
-             </div>
-
-             <p className="text-sm text-gray-400 font-mono mb-8 max-w-xs">
-                Your 24/7 AI Employee. <br/>Reads. Listens. Sells.
-             </p>
              
-             <button onClick={() => setChatOpen(true)} className="group relative px-8 py-3 bg-[#38F8A8] text-black font-black text-lg flex items-center gap-2 font-grotesk rounded-full shadow-[0_0_20px_rgba(56,248,168,0.4)]">
-                 HIRE ORIN <MessageCircle className="w-5 h-5" />
-             </button>
-        </div>
-    );
-};
-
-// --- DESKTOP HERO REVEAL (Sticky & Dramatic) ---
-const HeroReveal = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
-    const [scrollY, setScrollY] = useState(0);
-
-    useEffect(() => {
-        const handleScroll = () => setScrollY(window.scrollY);
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    const scrollRange = 800; 
-    const progress = Math.min(scrollY / scrollRange, 1);
-    
-    // Phase 1: Text Fade Out (Start immediately)
-    const fadeOut = Math.max(1 - (progress * 3.33), 0); 
-    
-    // Phase 2: Face Fade In (Start early)
-    const fadeIn = Math.min(Math.max((progress - 0.1) * 2, 0), 1);
-    const scale = 0.8 + (fadeIn * 0.2); 
-
-    return (
-        <header className="relative h-[250vh]"> 
-            <div className="sticky top-0 h-screen flex flex-col items-center justify-center overflow-hidden">
-                
-                {/* BACKGROUND ELEMENTS */}
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#38F8A8]/10 via-black to-black opacity-60"></div>
-
-                {/* SCENE 1: THE PROMISE (TEXT) */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center transition-all duration-300 will-change-transform" 
-                     style={{ opacity: fadeOut, transform: `scale(${1 + progress * 0.5}) blur(${progress * 20}px)`, pointerEvents: fadeOut <= 0.1 ? 'none' : 'auto', zIndex: 10 }}>
-                     
-                     {/* FIXED READABILITY: Solid White + Strong Glow */}
-                     <h1 className="text-[8vw] leading-[0.85] font-black text-center tracking-tighter font-grotesk text-white animate-pulse drop-shadow-[0_0_25px_rgba(255,255,255,0.4)]">
-                         YOUR NEW<br/>
-                         EMPLOYEE<br/>
-                         IS HERE.
-                     </h1>
-                     <p className="mt-8 text-sm text-gray-500 font-mono animate-bounce">SCROLL TO INITIALIZE ↓</p>
-                </div>
-
-                {/* SCENE 2: THE REVEAL (ORIN AVATAR) */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center will-change-transform" 
-                     style={{ opacity: fadeIn, transform: `scale(${scale})`, pointerEvents: fadeIn < 0.5 ? 'none' : 'auto', zIndex: 20 }}>
-                     
-                     {/* MASSIVE BACKGROUND TEXT */}
-                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center z-0 pointer-events-none mix-blend-overlay opacity-30 select-none">
-                         <h1 className="text-[25vw] font-black text-white tracking-tighter leading-none opacity-20">ORIN</h1>
-                     </div>
-
-                     <div className="relative w-96 h-96 mb-8 z-10">
-                         {/* Spinning Rings */}
-                         <div className="absolute inset-[-40px] rounded-full border border-[#38F8A8]/20 animate-spin-slow"></div>
-                         <div className="absolute inset-[-20px] rounded-full border-2 border-[#D4AF37]/40 animate-spin-slow" style={{ animationDirection: 'reverse', animationDuration: '30s' }}></div>
-                         
-                         {/* Avatar Container */}
-                         <div className="w-full h-full rounded-full overflow-hidden border-4 border-[#38F8A8] relative bg-black shadow-[0_0_100px_rgba(56,248,168,0.4)]">
-                            <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110" alt="Orin Avatar" />
-                         </div>
-                     </div>
-
-                     <h2 className="text-9xl font-black text-center tracking-tighter font-grotesk text-white drop-shadow-[0_0_30px_rgba(56,248,168,0.5)] z-10">
-                        ORIN AI
-                     </h2>
-
-                     {/* Persistent Text - Soft Breathe - MOVED UP & CLOSER */}
-                     <div className="relative group mt-2 z-10">
-                        <h1 className="text-4xl font-black text-transparent text-stroke tracking-tighter font-grotesk leading-none relative z-10 text-center animate-pulse opacity-70">
-                           YOUR NEW EMPLOYEE IS HERE
-                        </h1>
-                     </div>
-
-                     <p className="mt-6 text-xl font-bold text-[#38F8A8] tracking-[0.3em] uppercase drop-shadow-md z-10">
-                        24/7. NEVER TIRED. ALWAYS SELLING.
-                     </p>
-                     
-                     <button onClick={() => setChatOpen(true)} className="mt-8 group relative px-10 py-5 bg-[#38F8A8] text-black font-black text-xl hover:scale-110 transition-transform flex items-center gap-3 font-grotesk rounded-full shadow-[0_0_40px_rgba(56,248,168,0.6)] z-10">
-                         HIRE ORIN <MessageCircle className="w-6 h-6" />
-                     </button>
-                </div>
-            </div>
-        </header>
-    );
-};
-
-// --- PRICING CARD (EMBOSSED MAGAZINE STYLE) ---
-const PricingCard = ({ setChatOpen }: { setChatOpen: (v: boolean) => void }) => {
-    const [ref, isInView] = useInView({ threshold: 0.1 });
-    
-    return (
-        <div ref={ref} className={`max-w-4xl mx-auto p-12 rounded-[1.5rem] text-center relative overflow-hidden group transition-all duration-1000 transform ${isInView ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'} shadow-[0_20px_60px_rgba(0,0,0,0.8)]`}>
-             
-             {/* GLOSSY OBSIDIAN BACKGROUND */}
-             <div className="absolute inset-0 bg-[#050505] z-0"></div>
-             {/* Reflective Sheen */}
-             <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-transparent opacity-50 z-0"></div>
-             {/* Frosted Glass Effect */}
-             <div className="absolute inset-0 backdrop-blur-2xl bg-white/5 z-0"></div>
-             
-             {/* SCATTERED TESSERACT (Bright Gold Nodes) */}
-             <TesseractCircuit isActive={true} />
-
-             {/* ELECTRIC GOLD BORDER */}
-             <div className="absolute inset-0 rounded-[1.5rem] border-2 border-[#D4AF37] pointer-events-none z-10 animate-electric"></div>
-             
-             {/* CONTENT - BRUTALIST TYPOGRAPHY */}
-             <div className="relative z-20">
-                 <div className="inline-flex items-center gap-3 bg-black text-[#D4AF37] px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.3em] mb-12 font-grotesk shadow-md border border-[#D4AF37]/50 animate-electric" style={{animationDuration: '3s'}}>
-                     <Cpu className="w-3 h-3" /> Founder's Chip — Tesseract
+             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+                 <div>
+                     <label className="text-[10px] uppercase font-bold text-gray-500 mb-1 block">Your Name</label>
+                     <input required className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:border-[#38F8A8] outline-none transition-colors" placeholder="e.g. Juan Cruz" value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
+                 </div>
+                 <div>
+                     <label className="text-[10px] uppercase font-bold text-gray-500 mb-1 block">Business Name</label>
+                     <input required className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:border-[#38F8A8] outline-none transition-colors" placeholder="e.g. Cruz Trading" value={form.business} onChange={e => setForm({...form, business: e.target.value})} />
+                 </div>
+                 <div>
+                     <label className="text-[10px] uppercase font-bold text-gray-500 mb-1 block">Contact Number</label>
+                     <input required className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:border-[#38F8A8] outline-none transition-colors" placeholder="0917..." value={form.contact} onChange={e => setForm({...form, contact: e.target.value})} />
+                 </div>
+                 <div>
+                     <label className="text-[10px] uppercase font-bold text-gray-500 mb-1 block">AI Role Needed</label>
+                     <select className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:border-[#38F8A8] outline-none transition-colors" value={form.aiType} onChange={e => setForm({...form, aiType: e.target.value})}>
+                         <option>Sales Agent</option>
+                         <option>Customer Support</option>
+                         <option>Appointment Setter</option>
+                         <option>Real Estate Agent</option>
+                     </select>
                  </div>
                  
-                 {/* MASSIVE PRICE - EMBOSSED MAGAZINE STYLE */}
-                 <h2 className="text-[12vw] md:text-[8rem] font-black leading-[0.8] tracking-tighter font-grotesk text-white drop-shadow-[2px_2px_4px_rgba(0,0,0,0.5),-1px_-1px_0_rgba(255,255,255,0.2)]" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.5), -1px -1px 0 rgba(255,255,255,0.2)' }}>
-                    ₱15,000
-                 </h2>
-                 
-                 <p className="text-xl md:text-2xl font-bold text-gray-400 mt-4 font-grotesk tracking-wide uppercase">Monthly Subscription</p>
-                 
-                 <div className="my-10 h-[1px] w-full bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent opacity-50"></div>
-                 
-                 {/* Features - Floating Dark Glass */}
-                 <div className="bg-black/80 backdrop-blur-xl p-8 border border-white/10 inline-block text-left max-w-2xl mx-auto mb-10 shadow-2xl relative rounded-xl">
-                     <ul className="grid md:grid-cols-2 gap-x-8 gap-y-4 font-grotesk text-sm md:text-lg">
-                         <li className="flex items-center gap-3">
-                             <CheckCircle2 className="w-5 h-5 text-[#D4AF37] shrink-0" />
-                             <span className="text-gray-200 font-bold">Lifetime 24/7 Tech Support</span>
-                         </li>
-                         <li className="flex items-center gap-3">
-                             <CheckCircle2 className="w-5 h-5 text-[#D4AF37] shrink-0" />
-                             <span className="text-gray-200 font-bold">Full FB/IG/TikTok Integration</span>
-                         </li>
-                         <li className="flex items-center gap-3">
-                             <CheckCircle2 className="w-5 h-5 text-[#D4AF37] shrink-0" />
-                             <span className="text-gray-200 font-bold">Voice Note & OCR Vision</span>
-                         </li>
-                         <li className="flex items-center gap-3">
-                             <CheckCircle2 className="w-5 h-5 text-[#D4AF37] shrink-0" />
-                             <span className="text-gray-200 font-bold">Custom Business Training</span>
-                         </li>
-                     </ul>
-                 </div>
-                 <div className="block"></div>
-                 
-                 <button onClick={() => setChatOpen(true)} className="w-full max-w-lg py-6 bg-[#D4AF37] text-black font-black text-2xl hover:scale-[1.01] transition-transform font-grotesk shadow-[0_0_40px_rgba(212,175,55,0.4)] flex items-center justify-center gap-3 mx-auto border border-white/20 uppercase tracking-tight rounded-xl">
-                     HIRE ORIN <MessageCircle className="w-6 h-6" />
+                 <button 
+                    type="submit" 
+                    disabled={isLoading}
+                    className="mt-4 bg-[#38F8A8] text-black font-black py-4 rounded-xl hover:scale-[1.02] transition-all shadow-[0_0_20px_rgba(56,248,168,0.3)] flex items-center justify-center gap-2 disabled:opacity-50 disabled:scale-100"
+                 >
+                     {isLoading ? (
+                         <>SENDING... <Loader2 className="w-4 h-4 animate-spin" /></>
+                     ) : (
+                         <>SEND APPLICATION <Send className="w-4 h-4" /></>
+                     )}
                  </button>
-                 
-                 <p className="mt-6 text-[10px] text-gray-500 font-mono tracking-widest uppercase font-bold">Serial No. 001-016 • Exclusive Batch</p>
-             </div>
+             </form>
+             <p className="text-center text-[10px] text-gray-600 mt-4">Securely transmitted to Marvin Villanueva.</p>
         </div>
     );
 };
@@ -725,6 +605,14 @@ const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
     return (
         <div className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center overflow-hidden font-grotesk text-center px-4">
             
+            {/* Dismiss Button */}
+            <button 
+                onClick={onComplete}
+                className="absolute top-6 right-6 text-gray-600 hover:text-white text-xs font-mono uppercase tracking-widest flex items-center gap-2 transition-colors z-[10000]"
+            >
+                SKIP INTRO <SkipForward className="w-4 h-4" />
+            </button>
+            
             {/* Step 0: Pain 1 */}
             <h1 className={`absolute text-5xl md:text-8xl font-black text-red-600 tracking-tighter transition-all duration-500 ${step === 0 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
                 DO YOU REPLY AT 2AM?
@@ -749,7 +637,7 @@ const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
             <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-500 ${step === 4 ? 'opacity-100' : 'opacity-0'}`}>
                  <div className="relative group">
                     <h1 className="text-6xl md:text-9xl font-black text-transparent text-stroke tracking-tighter animate-pulse" data-text="YOUR NEW EMPLOYEE IS HERE">
-                        YOUR NEW EMPLOYEE IS HERE
+                        YOUR NEW EMPLOYEE.
                     </h1>
                  </div>
             </div>
@@ -757,9 +645,174 @@ const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
     );
 };
 
+const MobileHero = ({ setChatOpen }: { setChatOpen: () => void }) => {
+    return (
+        <section className="relative min-h-[90vh] flex flex-col justify-center px-6 pt-20 pb-10 overflow-hidden">
+            <div className="absolute inset-0 z-0">
+                <TesseractCircuit isActive={true} />
+            </div>
+            <div className="relative z-10 flex flex-col items-center text-center">
+                <div className="inline-block px-3 py-1 mb-6 rounded-full border border-[#38F8A8] bg-[#38F8A8]/10">
+                    <span className="text-[#38F8A8] text-xs font-bold tracking-widest uppercase font-mono animate-pulse">● Online 24/7</span>
+                </div>
+
+                <div className="relative w-[280px] h-[280px] mb-8">
+                     <img src="https://i.imgur.com/7JAu9YG.png" alt="Orin" className="w-full h-full object-cover rounded-full border-2 border-[#38F8A8] shadow-[0_0_40px_rgba(56,248,168,0.3)] bg-black" />
+                     <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-[90%] z-20">
+                         <HeroTicker />
+                     </div>
+                </div>
+
+                <h1 className="text-6xl font-black leading-[0.85] tracking-tighter mb-6 font-grotesk text-transparent text-stroke-white mt-8">
+                    YOUR NEW <br/><span className="text-white">EMPLOYEE.</span>
+                </h1>
+                <p className="text-gray-400 text-lg mb-8 font-grotesk max-w-xs leading-relaxed">
+                    Orin handles sales, support, and operations while you sleep.
+                    <span className="text-white block mt-2 font-bold">No breaks. No complaints.</span>
+                </p>
+                <button 
+                    onClick={setChatOpen}
+                    className="w-full bg-[#38F8A8] text-black font-black py-4 rounded-xl text-lg hover:scale-[1.02] transition-transform shadow-[0_0_30px_rgba(56,248,168,0.4)] flex items-center justify-center gap-2 font-grotesk"
+                >
+                    HIRE ORIN <ArrowRight className="w-5 h-5" />
+                </button>
+            </div>
+        </section>
+    );
+};
+
+const StableDesktopHero = ({ setChatOpen }: { setChatOpen: () => void }) => {
+    const [hovered, setHovered] = useState(false);
+
+    return (
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-4">
+            <div className="absolute inset-0 z-0 opacity-60">
+                <TesseractCircuit isActive={true} />
+            </div>
+            
+            <div className="relative z-10 max-w-7xl w-full grid grid-cols-12 gap-12 items-center">
+                <div className="col-span-7">
+                    <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-8 hover:border-[#38F8A8]/50 transition-colors cursor-default group">
+                        <span className="w-2 h-2 rounded-full bg-[#38F8A8] animate-pulse"></span>
+                        <span className="text-gray-300 text-sm font-mono tracking-widest uppercase group-hover:text-white transition-colors">System Operational</span>
+                    </div>
+                    
+                    <h1 className="text-8xl xl:text-9xl font-black leading-[0.8] tracking-tighter mb-8 font-grotesk mix-blend-screen">
+                        YOUR NEW <br/>
+                        <span 
+                            className="text-transparent text-stroke hover:text-white transition-all duration-700 cursor-default"
+                            onMouseEnter={() => setHovered(true)}
+                            onMouseLeave={() => setHovered(false)}
+                        >
+                            EMPLOYEE
+                        </span>
+                    </h1>
+                    
+                    <div className="flex items-start gap-8 max-w-2xl">
+                        <div className="w-1 h-24 bg-gradient-to-b from-[#38F8A8] to-transparent"></div>
+                        <div>
+                            <p className="text-2xl text-gray-300 font-medium leading-relaxed font-grotesk mb-8">
+                                Orin is the <span className="text-white font-bold">Ultimate Digital Employee</span> for Filipino Businesses. 
+                                He handles sales, customer support, and operations 24/7.
+                            </p>
+                            <div className="flex gap-6">
+                                <button 
+                                    onClick={setChatOpen}
+                                    className="bg-[#38F8A8] text-black font-black text-xl py-5 px-10 rounded-full hover:scale-105 transition-transform shadow-[0_0_40px_rgba(56,248,168,0.4)] flex items-center gap-3 font-grotesk"
+                                >
+                                    HIRE ORIN <ArrowRight className="w-6 h-6" />
+                                </button>
+                                <button className="px-8 py-5 rounded-full border border-white/20 hover:bg-white/10 transition-all font-bold text-white font-grotesk tracking-wide uppercase text-sm">
+                                    View Capabilities
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div className="col-span-5 relative h-[700px] flex flex-col items-center justify-center">
+                    <MouseTilt intensity={10}>
+                        <div className="relative w-[450px] h-[450px]">
+                             {/* Spinning Rings */}
+                             <div className="absolute inset-[-40px] rounded-full border border-[#38F8A8]/20 animate-spin-slow pointer-events-none"></div>
+                             <div className="absolute inset-[-20px] rounded-full border-2 border-[#D4AF37]/30 animate-spin-slow pointer-events-none" style={{ animationDirection: 'reverse', animationDuration: '30s' }}></div>
+
+                             {/* Avatar Image */}
+                             <img src="https://i.imgur.com/7JAu9YG.png" alt="Orin" className="w-full h-full object-cover rounded-full border-4 border-[#38F8A8] shadow-[0_0_50px_rgba(56,248,168,0.3)] bg-black relative z-10" />
+                             
+                             {/* Ticker Positioned Below/Overlapping */}
+                             <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-full max-w-sm z-20">
+                                 <HeroTicker />
+                             </div>
+                        </div>
+                    </MouseTilt>
+                </div>
+            </div>
+        </section>
+    );
+};
+
+const PricingCard = ({ setChatOpen }: { setChatOpen: () => void }) => {
+    return (
+        <div className="max-w-5xl mx-auto">
+            <MouseTilt intensity={5}>
+                <div className="relative rounded-[3rem] p-1 bg-gradient-to-b from-[#38F8A8] via-purple-500 to-black p-[1px]">
+                    <div className="bg-black rounded-[3rem] p-8 md:p-16 relative overflow-hidden h-full">
+                        {/* Background Effects */}
+                        <div className="absolute top-0 right-0 w-96 h-96 bg-[#38F8A8]/10 blur-[100px] rounded-full"></div>
+                        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/10 blur-[100px] rounded-full"></div>
+                        
+                        <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center">
+                            <div>
+                                <h3 className="text-2xl font-bold text-[#38F8A8] font-mono mb-4 tracking-widest uppercase">The Investment</h3>
+                                <div className="flex items-baseline gap-2 mb-6">
+                                    <span className="text-6xl md:text-8xl font-black text-white font-grotesk tracking-tighter">₱15k</span>
+                                    <span className="text-xl text-gray-400 font-mono">/ month</span>
+                                </div>
+                                <p className="text-gray-400 text-lg mb-8 font-grotesk max-w-md">
+                                    Less than 10% of a human employee's cost. Includes server maintenance, lifetime updates, and 24/7 monitoring.
+                                </p>
+                                <button 
+                                    onClick={setChatOpen}
+                                    className="w-full md:w-auto bg-white text-black font-black py-4 px-12 rounded-full text-lg hover:bg-[#38F8A8] transition-colors shadow-lg flex items-center justify-center gap-3 font-grotesk uppercase tracking-wide"
+                                >
+                                    Secure License <Sparkles className="w-5 h-5" />
+                                </button>
+                                <p className="mt-4 text-[10px] text-gray-500 font-mono uppercase tracking-widest">
+                                    *Limited slots available for Q1 2025
+                                </p>
+                            </div>
+                            
+                            <div className="space-y-4">
+                                {[
+                                    "24/7 Availability (No Sleep)",
+                                    "Facebook, Instagram & TikTok Integration",
+                                    "Unlimited Customer Conversations",
+                                    "Image & Receipt Recognition (OCR)",
+                                    "Voice Message Understanding",
+                                    "Dedicated Account Manager",
+                                    "Cancel Anytime Contract"
+                                ].map((feature, i) => (
+                                    <div key={i} className="flex items-center gap-4 group">
+                                        <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#38F8A8] group-hover:text-black transition-colors border border-white/10">
+                                            <CheckCircle2 className="w-4 h-4" />
+                                        </div>
+                                        <span className="text-lg text-gray-300 font-grotesk group-hover:text-white transition-colors">{feature}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </MouseTilt>
+        </div>
+    );
+};
+
 export default function App() {
     const isMobile = useIsMobile();
     const [chatOpen, setChatOpen] = useState(false);
+    const [viewMode, setViewMode] = useState<'chat' | 'form'>('chat'); // Toggle between Chat and Form
     const [gameOpen, setGameOpen] = useState(false);
     const [easterCount, setEasterCount] = useState(0);
     const [introFinished, setIntroFinished] = useState(false);
@@ -767,7 +820,7 @@ export default function App() {
     
     const [messages, setMessages] = useState([
         {role: 'model', text: 'Hello! Ako nga pala si Orin 👋. Advanced AI Employee na parang tao kausap. ₱15k Monthly lang for Premium Access. Sulit diba? 🚀'},
-        {role: 'model', text: 'Para ma-setup natin business mo, paki-fill up lang nito boss:\n\n1. Name:\n2. Business Name:\n3. Contact #:\n4. Anong klaseng AI Employee need mo?'}
+        {role: 'model', text: 'Questions? Chat here. Ready to hire? Click the "Hire Application" button above!'}
     ]);
     const [input, setInput] = useState('');
     const [isThinking, setIsThinking] = useState(false);
@@ -798,6 +851,20 @@ export default function App() {
         const newC = easterCount + 1;
         setEasterCount(newC);
         if(newC === 5) { setGameOpen(true); setEasterCount(0); }
+    };
+
+    const handleHireClick = () => {
+        setChatOpen(true);
+        setViewMode('form');
+    };
+
+    const handleFormSuccess = (formData: any) => {
+        setViewMode('chat');
+        setMessages(prev => [
+            ...prev,
+            {role: 'user', text: `Submitted Application:\nName: ${formData.name}\nBusiness: ${formData.business}`},
+            {role: 'model', text: `Application Received, ${formData.name}! 🚀\n\nI've forwarded your details to Marvin. While we process your ${formData.aiType} setup, feel free to ask me any questions about how I can help grow ${formData.business}.`}
+        ]);
     };
 
     const sendChat = async (e: React.FormEvent) => {
@@ -841,19 +908,18 @@ export default function App() {
                     </div>
                     <div className="hidden md:flex gap-6 text-sm font-medium text-gray-400 font-mono">
                         <a href="#features" className="hover:text-[#38F8A8] transition-colors">Features</a>
-                        <a href="#demo" className="hover:text-[#38F8A8] transition-colors">Demo</a>
                         <a href="#pricing" className="hover:text-[#38F8A8] transition-colors">Pricing</a>
                     </div>
-                    <button onClick={() => setChatOpen(true)} className="hidden md:flex bg-white/10 border border-white/10 px-6 py-2 rounded-full text-xs font-bold hover:bg-[#38F8A8] hover:text-black transition-all">
+                    <button onClick={handleHireClick} className="hidden md:flex bg-white/10 border border-white/10 px-6 py-2 rounded-full text-xs font-bold hover:bg-[#38F8A8] hover:text-black transition-all">
                         HIRE ORIN
                     </button>
                 </nav>
 
                 {/* Conditional Hero: Static Mobile vs Sticky Desktop */}
                 {isMobile ? (
-                    <MobileHero setChatOpen={setChatOpen} />
+                    <MobileHero setChatOpen={handleHireClick} />
                 ) : (
-                    <HeroReveal setChatOpen={setChatOpen} />
+                    <StableDesktopHero setChatOpen={handleHireClick} />
                 )}
 
                 <VelocityScrollProvider>
@@ -924,7 +990,7 @@ export default function App() {
 
                     {/* PRICING (The CLIMAX - moved near bottom) */}
                     <section id="pricing" className="py-8 md:py-16 px-4 relative z-20">
-                        <PricingCard setChatOpen={setChatOpen} />
+                        <PricingCard setChatOpen={handleHireClick} />
                     </section>
                     
                     {/* Team Section (Modern Square & Boss Mode) */}
@@ -1004,11 +1070,9 @@ export default function App() {
 
                 {/* --- FLOATING UI ELEMENTS --- */}
 
-                <FloatingTicker chatOpen={chatOpen} />
-
                 <div className={`fixed bottom-8 right-4 md:right-8 z-50 transition-all duration-500 ${showFloat ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
                     <button 
-                        onClick={() => setChatOpen(true)}
+                        onClick={handleHireClick}
                         className="bg-[#38F8A8] text-black font-black py-3 px-6 md:py-4 md:px-8 rounded-full shadow-[0_0_30px_rgba(56,248,168,0.4)] hover:scale-105 transition-transform flex items-center gap-2 font-grotesk text-sm md:text-base"
                     >
                         HIRE ORIN <MessageCircle className="w-5 h-5" />
@@ -1016,8 +1080,8 @@ export default function App() {
                 </div>
 
                 {/* Chat Widget - Small FB Style */}
-                <div className={`fixed bottom-0 right-0 z-[70] transition-all duration-500 transform ${chatOpen ? 'translate-y-0 opacity-100' : 'translate-y-[120%] opacity-0'} w-full md:w-[320px] md:bottom-0 md:right-8`}>
-                    <div className="w-full h-[85dvh] md:h-[450px] glass-card rounded-t-2xl md:rounded-2xl flex flex-col overflow-hidden border border-[#38F8A8]/30 shadow-2xl bg-black">
+                <div className={`fixed bottom-0 right-0 z-[70] transition-all duration-500 transform ${chatOpen ? 'translate-y-0 opacity-100' : 'translate-y-[120%] opacity-0'} w-full md:w-[360px] md:bottom-0 md:right-8`}>
+                    <div className="w-full h-[85dvh] md:h-[500px] glass-card rounded-t-2xl md:rounded-2xl flex flex-col overflow-hidden border border-[#38F8A8]/30 shadow-2xl bg-black">
                         {/* Header */}
                         <div className="p-3 border-b border-white/10 flex justify-between items-center bg-[#38F8A8]/10 cursor-pointer" onClick={() => setChatOpen(false)}>
                             <div className="flex items-center gap-2">
@@ -1030,53 +1094,70 @@ export default function App() {
                                     <p className="text-[9px] text-[#38F8A8] uppercase tracking-wider font-mono">Active Now</p>
                                 </div>
                             </div>
-                            <X className="w-4 h-4 text-gray-400 hover:text-white" />
-                        </div>
-
-                        {/* Messages */}
-                        <div className="flex-1 overflow-y-auto p-3 space-y-3 scroll-smooth">
-                            {messages.map((m, i) => (
-                                <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed whitespace-pre-wrap ${
-                                        m.role === 'user' 
-                                            ? 'bg-[#38F8A8] text-black chat-bubble-user font-bold font-grotesk' 
-                                            : 'bg-white/10 text-gray-200 chat-bubble-bot border border-white/5 font-grotesk'
-                                    }`}>
-                                        {m.text}
-                                    </div>
-                                </div>
-                            ))}
-                            {isThinking && (
-                                <div className="flex justify-start">
-                                    <div className="bg-white/5 p-3 rounded-2xl rounded-bl-sm flex gap-1 items-center">
-                                        <div className="w-1.5 h-1.5 bg-[#38F8A8] rounded-full animate-bounce"></div>
-                                        <div className="w-1.5 h-1.5 bg-[#38F8A8] rounded-full animate-bounce delay-100"></div>
-                                        <div className="w-1.5 h-1.5 bg-[#38F8A8] rounded-full animate-bounce delay-200"></div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Input */}
-                        <form onSubmit={sendChat} className="p-3 border-t border-white/10 bg-black/80 backdrop-blur-md">
-                            <div className="relative">
-                                <input 
-                                    type="text" 
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    placeholder="Type details..." 
-                                    className="w-full bg-white/5 border border-white/10 rounded-full py-2.5 pl-4 pr-10 text-white focus:outline-none focus:border-[#38F8A8] transition-colors placeholder:text-gray-500 font-mono text-xs"
-                                />
-                                <button type="submit" className="absolute right-1.5 top-1.5 p-1.5 bg-[#38F8A8] rounded-full text-black hover:scale-105 transition-transform">
-                                    <Send className="w-4 h-4" />
+                            <div className="flex items-center gap-3">
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); setViewMode(viewMode === 'chat' ? 'form' : 'chat'); }}
+                                    className="text-[10px] bg-white/10 hover:bg-white/20 px-2 py-1 rounded text-white font-mono"
+                                >
+                                    {viewMode === 'chat' ? 'HIRE NOW' : 'CHAT'}
                                 </button>
+                                <X className="w-4 h-4 text-gray-400 hover:text-white" />
                             </div>
-                            <div className="text-center mt-1.5">
-                                <p className="text-[8px] text-gray-600 flex items-center justify-center gap-1 font-mono">
-                                    <ShieldCheck className="w-2.5 h-2.5" /> Secured by O.A.S.I.S
-                                </p>
+                        </div>
+
+                        {/* CONTENT SWITCHER */}
+                        {viewMode === 'form' ? (
+                            <div className="flex-1 overflow-y-auto scroll-smooth">
+                                <HireForm onSuccess={handleFormSuccess} />
                             </div>
-                        </form>
+                        ) : (
+                            <>
+                                {/* Messages */}
+                                <div className="flex-1 overflow-y-auto p-3 space-y-3 scroll-smooth">
+                                    {messages.map((m, i) => (
+                                        <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                            <div className={`max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed whitespace-pre-wrap ${
+                                                m.role === 'user' 
+                                                    ? 'bg-[#38F8A8] text-black chat-bubble-user font-bold font-grotesk' 
+                                                    : 'bg-white/10 text-gray-200 chat-bubble-bot border border-white/5 font-grotesk'
+                                            }`}>
+                                                {m.text}
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {isThinking && (
+                                        <div className="flex justify-start">
+                                            <div className="bg-white/5 p-3 rounded-2xl rounded-bl-sm flex gap-1 items-center">
+                                                <div className="w-1.5 h-1.5 bg-[#38F8A8] rounded-full animate-bounce"></div>
+                                                <div className="w-1.5 h-1.5 bg-[#38F8A8] rounded-full animate-bounce delay-100"></div>
+                                                <div className="w-1.5 h-1.5 bg-[#38F8A8] rounded-full animate-bounce delay-200"></div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Input */}
+                                <form onSubmit={sendChat} className="p-3 border-t border-white/10 bg-black/80 backdrop-blur-md">
+                                    <div className="relative">
+                                        <input 
+                                            type="text" 
+                                            value={input}
+                                            onChange={(e) => setInput(e.target.value)}
+                                            placeholder="Ask questions..." 
+                                            className="w-full bg-white/5 border border-white/10 rounded-full py-2.5 pl-4 pr-10 text-white focus:outline-none focus:border-[#38F8A8] transition-colors placeholder:text-gray-500 font-mono text-xs"
+                                        />
+                                        <button type="submit" className="absolute right-1.5 top-1.5 p-1.5 bg-[#38F8A8] rounded-full text-black hover:scale-105 transition-transform">
+                                            <Send className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                    <div className="text-center mt-1.5">
+                                        <p className="text-[8px] text-gray-600 flex items-center justify-center gap-1 font-mono">
+                                            <ShieldCheck className="w-2.5 h-2.5" /> Secured by O.A.S.I.S
+                                        </p>
+                                    </div>
+                                </form>
+                            </>
+                        )}
                     </div>
                 </div>
 

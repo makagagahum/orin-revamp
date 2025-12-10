@@ -16,12 +16,12 @@ export const TEAM = [
     { name: 'Roe', role: 'Investor', image: 'https://preview.redd.it/taro-sakamoto-icon-cleaned-edit-and-remastered-by-me-two-v0-kgpamdq4m0rb1.png?width=640&crop=smart&auto=webp&s=405967562d8822280c7ed17334574e3e238720dc', link: '#' }
 ];
 
-// UPDATED WITH HIGH RELIABILITY UNSPLASH IDS (Asian/Tech context)
+// UPDATED WITH HIGH RELIABILITY UNSPLASH IDS
 export const GALLERY_IMAGES = [
     { 
         urls: [
-            "https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?q=80&w=1200&auto=format&fit=crop", // Modern Transaction
-            "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?q=80&w=1200&auto=format&fit=crop"  // Asian Tech
+            "https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?q=80&w=1200&auto=format&fit=crop", // Safe backup
+            "https://images.unsplash.com/photo-1664575602276-acd073f104c1?q=80&w=1200&auto=format&fit=crop"  // E-commerce box
         ], 
         caption: "Online Sellers",
         description: "Miss 3AM sales? Orin never sleeps. Catches every inquiry while you're resting. 🚀"
