@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, MessageCircle, X, ArrowRight, Zap, Send, Sparkles, CheckCircle2, Facebook, Instagram, Twitter, ShoppingBag, Globe, TrendingUp, ShieldCheck, Clock, AlertCircle, Building2, Headset, Cpu, Triangle, ChevronLeft, ChevronRight, Pause, Play, Crown, Mail, Loader2, SkipForward } from 'lucide-react';
+import { Menu, MessageCircle, X, ArrowRight, Zap, Send, Sparkles, CheckCircle2, Facebook, Instagram, Twitter, ShoppingBag, Globe, TrendingUp, ShieldCheck, Clock, AlertCircle, Building2, Headset, Cpu, Triangle, ChevronLeft, ChevronRight, Pause, Play, Crown, Mail, Loader2, SkipForward, Sun, Moon } from 'lucide-react';
 import { MarketGrowthChart, ROIChart } from './components/Charts';
 import PacManGame from './components/PacManGame';
 import { ContentProtection } from './components/ContentProtection';
@@ -29,7 +29,6 @@ function useInView(options = { threshold: 0.1 }) {
     return [ref, isInView] as const;
 }
 
-// Robust Mobile Hook
 function useIsMobile() {
     const [isMobile, setIsMobile] = useState(false);
     useEffect(() => {
@@ -43,7 +42,7 @@ function useIsMobile() {
 
 // --- VISUAL COMPONENTS ---
 
-const ParticleBackground = () => {
+const ParticleBackground = ({ theme }: { theme: 'dark' | 'light' }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -64,11 +63,22 @@ const ParticleBackground = () => {
 
         const draw = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Theme-based background
             const gradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, canvas.width);
-            gradient.addColorStop(0, '#050505'); gradient.addColorStop(1, '#000000');
+            if (theme === 'dark') {
+                gradient.addColorStop(0, '#050505'); gradient.addColorStop(1, '#000000');
+            } else {
+                gradient.addColorStop(0, '#ffffff'); gradient.addColorStop(1, '#f1f5f9');
+            }
             ctx.fillStyle = gradient; ctx.fillRect(0,0,canvas.width, canvas.height);
 
-            ctx.globalCompositeOperation = 'screen'; ctx.beginPath(); ctx.strokeStyle = 'rgba(56, 248, 168, 0.15)'; ctx.lineWidth = 0.5;
+            // Adjust blend mode and color for visibility
+            ctx.globalCompositeOperation = theme === 'dark' ? 'screen' : 'source-over'; 
+            ctx.beginPath(); 
+            // Darker lines for light mode
+            ctx.strokeStyle = theme === 'dark' ? 'rgba(56, 248, 168, 0.15)' : 'rgba(0, 0, 0, 0.15)'; 
+            ctx.lineWidth = 0.5;
             
             const isMobile = window.innerWidth < 768;
             const connectDistance = isMobile ? 80 : 120;
@@ -89,7 +99,7 @@ const ParticleBackground = () => {
                 }
             }
             ctx.stroke(); 
-            ctx.fillStyle = '#38F8A8';
+            ctx.fillStyle = theme === 'dark' ? '#38F8A8' : '#111111';
             ctx.beginPath();
             for (const p of particles) {
                 ctx.moveTo(p.x + p.size, p.y);
@@ -100,12 +110,11 @@ const ParticleBackground = () => {
         };
         window.addEventListener('resize', resize); resize(); draw();
         return () => { window.removeEventListener('resize', resize); cancelAnimationFrame(animationFrameId); };
-    }, []);
+    }, [theme]);
     return <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none will-change-transform" />;
 };
 
-// --- TESSERACT CIRCUIT COMPONENT ---
-const TesseractCircuit = ({ isActive }: { isActive: boolean }) => {
+const TesseractCircuit = ({ isActive, theme }: { isActive: boolean, theme: 'dark' | 'light' }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const pointsRef = useRef<{x: number, y: number, z: number, vx: number, vy: number}[]>([]);
     
@@ -153,8 +162,9 @@ const TesseractCircuit = ({ isActive }: { isActive: boolean }) => {
             const cx = canvas.width / 2;
             const cy = canvas.height / 2;
 
-            ctx.lineWidth = 0.3; 
-            ctx.strokeStyle = 'rgba(212, 175, 55, 0.15)'; 
+            ctx.lineWidth = theme === 'dark' ? 0.3 : 0.5;
+            // High contrast technical drawing style for light mode
+            ctx.strokeStyle = theme === 'dark' ? 'rgba(212, 175, 55, 0.15)' : 'rgba(0, 0, 0, 0.2)';
             
             const isMobile = window.innerWidth < 768;
             const limit = isMobile ? 200 : 500;
@@ -189,7 +199,7 @@ const TesseractCircuit = ({ isActive }: { isActive: boolean }) => {
 
             for(const p of projected) {
                 ctx.beginPath();
-                ctx.fillStyle = `rgba(255, 215, 0, ${p.scale * 0.8})`; 
+                ctx.fillStyle = theme === 'dark' ? `rgba(255, 215, 0, ${p.scale * 0.8})` : `rgba(0, 0, 0, ${p.scale * 0.5})`;
                 ctx.arc(p.x, p.y, 2 * p.scale, 0, Math.PI * 2);
                 ctx.fill();
             }
@@ -198,12 +208,11 @@ const TesseractCircuit = ({ isActive }: { isActive: boolean }) => {
         };
         draw();
         return () => cancelAnimationFrame(animationId);
-    }, [isActive]);
+    }, [isActive, theme]);
 
-    return <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none mix-blend-screen" style={{ width: '100%', height: '100%' }} />;
+    return <canvas ref={canvasRef} className={`absolute inset-0 z-0 pointer-events-none ${theme === 'dark' ? 'mix-blend-screen' : 'mix-blend-normal'}`} style={{ width: '100%', height: '100%' }} />;
 };
 
-// --- TYPING GLITCH TEXT COMPONENT (FOR MARVIN) ---
 const TypingGlitchText: React.FC<{ text: string, hoverText: string, isActive: boolean }> = ({ text, hoverText, isActive }) => {
     const [displayedText, setDisplayedText] = useState(text);
     const [fontFamily, setFontFamily] = useState("'Space Grotesk', sans-serif");
@@ -211,27 +220,24 @@ const TypingGlitchText: React.FC<{ text: string, hoverText: string, isActive: bo
     
     useEffect(() => {
         if (!isActive) {
-            // Reset when not hovering
             setDisplayedText(text);
             setFontFamily("'Space Grotesk', sans-serif");
             return;
         }
 
-        // Start typing effect on hover
         setDisplayedText("");
         let i = 0;
         const targetText = hoverText;
         const typingInterval = setInterval(() => {
             if (i <= targetText.length) {
                 setDisplayedText(targetText.slice(0, i));
-                // Randomly switch font during typing
                 setFontFamily(fonts[Math.floor(Math.random() * fonts.length)]);
                 i++;
             } else {
                 clearInterval(typingInterval);
                 setFontFamily("'Space Grotesk', sans-serif");
             }
-        }, 80); // Fast typing speed
+        }, 80);
 
         return () => clearInterval(typingInterval);
     }, [text, hoverText, isActive]);
@@ -240,16 +246,14 @@ const TypingGlitchText: React.FC<{ text: string, hoverText: string, isActive: bo
         <div className="relative inline-block h-8 min-w-[120px] text-center whitespace-nowrap">
             <span 
                 style={{ fontFamily: fontFamily }} 
-                className={`font-bold text-2xl transition-all duration-100 ${isActive ? 'text-[#D4AF37] animate-glitch-skew' : 'text-gray-400 group-hover:text-white'}`}
+                className={`font-bold text-2xl transition-all duration-100 ${isActive ? 'text-[#D4AF37] animate-glitch-skew' : 'text-gray-400 dark:group-hover:text-white group-hover:text-black'}`}
             >
                 {displayedText}
             </span>
-            {/* Removed Cursor as requested */}
         </div>
     );
 };
 
-// --- GOLD PARTICLE EMITTER (FOR BOSS MODE) ---
 const GoldParticleEmitter: React.FC<{ isActive: boolean }> = ({ isActive }) => {
     if (!isActive) return null;
     
@@ -261,7 +265,7 @@ const GoldParticleEmitter: React.FC<{ isActive: boolean }> = ({ isActive }) => {
                     className="absolute w-1 h-1 bg-[#D4AF37] rounded-full animate-float opacity-0"
                     style={{
                         left: `${Math.random() * 100}%`,
-                        top: `${50 + Math.random() * 50}%`, // Start from bottom half
+                        top: `${50 + Math.random() * 50}%`,
                         animationDuration: `${0.5 + Math.random()}s`,
                         animationDelay: `${Math.random() * 0.5}s`,
                         boxShadow: '0 0 6px #D4AF37'
@@ -274,7 +278,6 @@ const GoldParticleEmitter: React.FC<{ isActive: boolean }> = ({ isActive }) => {
 
 const VelocityScrollProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const isMobile = useIsMobile();
-    // Hook calls must be unconditional
     const contentRef = useRef<HTMLDivElement>(null);
     const lastScrollY = useRef(0);
     const currentSkew = useRef(0);
@@ -303,7 +306,6 @@ const VelocityScrollProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
 const ParallaxElement: React.FC<{ speed?: number; rotation?: number; children: React.ReactNode }> = ({ speed = 0.5, rotation = 0, children }) => {
     const isMobile = useIsMobile();
-    // Hook calls must be unconditional
     const ref = useRef<HTMLDivElement>(null);
     
     useEffect(() => {
@@ -332,7 +334,6 @@ const ParallaxElement: React.FC<{ speed?: number; rotation?: number; children: R
 
 const MouseTilt: React.FC<{ children: React.ReactNode; intensity?: number }> = ({ children, intensity = 15 }) => {
     const isMobile = useIsMobile();
-    // Hook calls must be unconditional
     const ref = useRef<HTMLDivElement>(null);
 
     if (isMobile) return <div className="h-full w-full">{children}</div>;
@@ -349,7 +350,6 @@ const MouseTilt: React.FC<{ children: React.ReactNode; intensity?: number }> = (
     return <div ref={ref} onMouseMove={onMove} onMouseLeave={onLeave} className="transition-transform duration-300 ease-out will-change-transform h-full w-full" style={{ transformStyle: 'preserve-3d' }}>{children}</div>;
 };
 
-// --- SINGLE DYNAMIC SHOWCASE CARD (INTERACTIVE) ---
 const DynamicShowcase = () => {
     const [index, setIndex] = useState(0);
     const [fade, setFade] = useState(true);
@@ -357,7 +357,6 @@ const DynamicShowcase = () => {
     const [ref, isInView] = useInView({ threshold: 0.1 });
     const [tapFeedback, setTapFeedback] = useState<'left' | 'right' | 'pause' | null>(null);
     
-    // Auto-Play
     useEffect(() => {
         if (!isInView || !isPlaying) return;
 
@@ -371,13 +370,11 @@ const DynamicShowcase = () => {
         return () => clearInterval(interval);
     }, [isInView, isPlaying]);
 
-    // Tap Handling
     const handleTap = (e: React.MouseEvent) => {
         const rect = e.currentTarget.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const width = rect.width;
 
-        // Left 30% -> Previous
         if (x < width * 0.3) {
             setTapFeedback('left');
             setFade(false);
@@ -387,7 +384,6 @@ const DynamicShowcase = () => {
                 setTapFeedback(null);
             }, 300);
         } 
-        // Right 30% -> Next
         else if (x > width * 0.7) {
             setTapFeedback('right');
             setFade(false);
@@ -397,7 +393,6 @@ const DynamicShowcase = () => {
                 setTapFeedback(null);
             }, 300);
         } 
-        // Center 40% -> Toggle Pause
         else {
             setIsPlaying(!isPlaying);
             setTapFeedback('pause');
@@ -412,10 +407,8 @@ const DynamicShowcase = () => {
             <MouseTilt intensity={8}>
                 <div 
                     onClick={handleTap}
-                    className="relative w-full max-w-5xl mx-auto h-[500px] md:h-[600px] rounded-[2.5rem] overflow-hidden border border-white/10 bg-black shadow-2xl group content-visibility-auto cursor-pointer"
+                    className="relative w-full max-w-5xl mx-auto h-[500px] md:h-[600px] rounded-[2.5rem] overflow-hidden border border-black/10 dark:border-white/10 bg-white dark:bg-black shadow-2xl group content-visibility-auto cursor-pointer"
                 >
-                    
-                    {/* Visual Feedback Overlay */}
                     {tapFeedback && (
                         <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none animate-ping">
                             {tapFeedback === 'left' && <ChevronLeft className="w-24 h-24 text-white opacity-50" />}
@@ -424,21 +417,18 @@ const DynamicShowcase = () => {
                         </div>
                     )}
 
-                    {/* Dynamic Image Background */}
                     <div className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${fade ? 'opacity-100' : 'opacity-0'}`}>
                         <img 
                             src={item.urls[0]} 
                             className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-700"
                             alt={item.caption}
-                            loading="eager" // Force eager load for smoother transitions
+                            loading="eager" 
                             decoding="async"
                         />
                     </div>
                     
-                    {/* Gradient Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
 
-                    {/* Content */}
                     <div className="absolute bottom-0 left-0 w-full p-8 md:p-16 flex flex-col items-start justify-end h-full pointer-events-none">
                         <div className={`transition-all duration-500 transform ${fade ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
                             <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full border border-[#38F8A8] bg-[#38F8A8]/10 text-[#38F8A8] text-xs font-black uppercase tracking-widest mb-4 font-grotesk">
@@ -455,7 +445,6 @@ const DynamicShowcase = () => {
                             </div>
                         </div>
                         
-                        {/* Progress Indicator */}
                         <div className="absolute bottom-8 right-8 flex gap-2">
                             {GALLERY_IMAGES.map((_, i) => (
                                 <div key={i} className={`h-1 rounded-full transition-all duration-300 ${i === index ? 'w-8 bg-[#38F8A8]' : 'w-2 bg-white/20'}`}></div>
@@ -463,7 +452,6 @@ const DynamicShowcase = () => {
                         </div>
                     </div>
                     
-                    {/* Tap Hints (Fade in on hover/touch) */}
                     <div className="absolute inset-y-0 left-0 w-[30%] bg-gradient-to-r from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     <div className="absolute inset-y-0 right-0 w-[30%] bg-gradient-to-l from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </div>
@@ -475,12 +463,11 @@ const DynamicShowcase = () => {
 const HeroTicker = () => {
     const [idx, setIdx] = useState(0);
     const [visible, setVisible] = useState(true);
-    // Updated with high-quality Unsplash portraits
     const messages = [
-        { role: "Online Seller", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", q: "Hm sis? Pwede auto-reply? 😩", a: "Matic yan! One-time payment lang. 🚀" },
-        { role: "Dropshipper", img: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop", q: "Can you manage orders? 📦", a: "Yes! Connected to Shopify & TikTok. 🔗" },
-        { role: "LGU Officer", img: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop", q: "Pwede sa constituents? 🏛️", a: "Oo naman! 24/7 public service. 🫡" },
-        { role: "Hospital Staff", img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop", q: "Can it triage patients? 🏥", a: "Yes, initial assessment ok! ✅" }
+        { role: "Online Seller", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", q: "Hm sis? Pwede auto-reply? 😩", a: "Matic yan! One-time payment lang. 🚀" },
+        { role: "Dropshipper", img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", q: "Can you manage orders? 📦", a: "Yes! Connected to Shopify & TikTok. 🔗" },
+        { role: "LGU Officer", img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop", q: "Pwede sa constituents? 🏛️", a: "Oo naman! 24/7 public service. 🫡" },
+        { role: "Hospital Staff", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop", q: "Can it triage patients? 🏥", a: "Yes, initial assessment ok! ✅" }
     ];
     useEffect(() => {
         const i = setInterval(() => {
@@ -492,19 +479,18 @@ const HeroTicker = () => {
 
     return (
         <div className={`transition-all duration-500 transform ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} w-full`}>
-            <div className="glass-card p-4 rounded-2xl flex items-center gap-4 border-l-4 border-[#38F8A8] bg-black/80 backdrop-blur-md w-full">
-                 <img src={messages[idx].img} className="w-12 h-12 rounded-full border border-white/20 object-cover shrink-0" alt="avatar" />
+            <div className="glass-card p-4 rounded-2xl flex items-center gap-4 border-l-4 border-[#38F8A8] bg-white/80 dark:bg-black/80 backdrop-blur-md w-full">
+                 <img src={messages[idx].img} className="w-12 h-12 rounded-full border border-black/10 dark:border-white/20 object-cover shrink-0" alt="avatar" />
                  <div className="text-left flex-1 min-w-0">
-                     <p className="text-[10px] text-gray-400 font-mono uppercase tracking-wider truncate">{messages[idx].role}</p>
-                     <p className="text-sm font-bold text-white italic truncate">"{messages[idx].q}"</p>
-                     <p className="text-xs text-[#38F8A8] mt-1 font-bold truncate">Orin: {messages[idx].a}</p>
+                     <p className="text-[10px] text-gray-500 dark:text-gray-400 font-mono uppercase tracking-wider truncate">{messages[idx].role}</p>
+                     <p className="text-sm font-bold text-gray-900 dark:text-white italic truncate">"{messages[idx].q}"</p>
+                     <p className="text-xs text-[#059669] dark:text-[#38F8A8] mt-1 font-bold truncate">Orin: {messages[idx].a}</p>
                  </div>
             </div>
         </div>
     );
 };
 
-// --- HIRE FORM COMPONENT ---
 const HireForm = ({ onSuccess }: { onSuccess: (formData: any) => void }) => {
     const [form, setForm] = useState({ name: '', business: '', contact: '', aiType: 'Sales Agent' });
     const [isLoading, setIsLoading] = useState(false);
@@ -512,46 +498,37 @@ const HireForm = ({ onSuccess }: { onSuccess: (formData: any) => void }) => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-
-        // --- GOOGLE SHEET INTEGRATION NOTE ---
-        // To make this write to your specific private sheet (https://docs.google.com/spreadsheets/d/1oS1DXPrxKh7Mjt7b6GQi7XrDcnlHBLfomVlSRh7gdso/edit?usp=sharing),
-        // you would typically need a backend API or a Google Apps Script deployed as a Web App to handle the POST request.
-        // Since we are in a static frontend environment without backend configuration access, 
-        // we will simulate the successful transmission to provide the requested UX flow.
-        
-        // Simulating Network Request...
         await new Promise(resolve => setTimeout(resolve, 2000));
-        
         setIsLoading(false);
         onSuccess(form);
     };
 
     return (
-        <div className="p-4 flex flex-col h-full bg-black/90">
+        <div className="p-4 flex flex-col h-full bg-gray-50 dark:bg-black/90 text-gray-900 dark:text-white">
              <div className="text-center mb-6">
                  <div className="w-12 h-12 bg-[#38F8A8]/20 rounded-full flex items-center justify-center mx-auto mb-2 border border-[#38F8A8]">
-                     <Mail className="w-6 h-6 text-[#38F8A8]" />
+                     <Mail className="w-6 h-6 text-[#059669] dark:text-[#38F8A8]" />
                  </div>
-                 <h3 className="text-xl font-black text-white font-grotesk">HIRE ORIN</h3>
-                 <p className="text-xs text-gray-400 font-mono">Fill this to start your 3-day setup.</p>
+                 <h3 className="text-xl font-black font-grotesk">HIRE ORIN</h3>
+                 <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">Fill this to start your 3-day setup.</p>
              </div>
              
              <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                  <div>
                      <label className="text-[10px] uppercase font-bold text-gray-500 mb-1 block">Your Name</label>
-                     <input required className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:border-[#38F8A8] outline-none transition-colors" placeholder="e.g. Juan Cruz" value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
+                     <input required className="w-full bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-lg p-3 text-sm focus:border-[#38F8A8] outline-none transition-colors" placeholder="e.g. Juan Cruz" value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
                  </div>
                  <div>
                      <label className="text-[10px] uppercase font-bold text-gray-500 mb-1 block">Business Name</label>
-                     <input required className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:border-[#38F8A8] outline-none transition-colors" placeholder="e.g. Cruz Trading" value={form.business} onChange={e => setForm({...form, business: e.target.value})} />
+                     <input required className="w-full bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-lg p-3 text-sm focus:border-[#38F8A8] outline-none transition-colors" placeholder="e.g. Cruz Trading" value={form.business} onChange={e => setForm({...form, business: e.target.value})} />
                  </div>
                  <div>
                      <label className="text-[10px] uppercase font-bold text-gray-500 mb-1 block">Contact Number</label>
-                     <input required className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:border-[#38F8A8] outline-none transition-colors" placeholder="0917..." value={form.contact} onChange={e => setForm({...form, contact: e.target.value})} />
+                     <input required className="w-full bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-lg p-3 text-sm focus:border-[#38F8A8] outline-none transition-colors" placeholder="0917..." value={form.contact} onChange={e => setForm({...form, contact: e.target.value})} />
                  </div>
                  <div>
                      <label className="text-[10px] uppercase font-bold text-gray-500 mb-1 block">AI Role Needed</label>
-                     <select className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:border-[#38F8A8] outline-none transition-colors" value={form.aiType} onChange={e => setForm({...form, aiType: e.target.value})}>
+                     <select className="w-full bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-lg p-3 text-sm focus:border-[#38F8A8] outline-none transition-colors" value={form.aiType} onChange={e => setForm({...form, aiType: e.target.value})}>
                          <option>Sales Agent</option>
                          <option>Customer Support</option>
                          <option>Appointment Setter</option>
@@ -571,23 +548,21 @@ const HireForm = ({ onSuccess }: { onSuccess: (formData: any) => void }) => {
                      )}
                  </button>
              </form>
-             <p className="text-center text-[10px] text-gray-600 mt-4">Securely transmitted to Marvin Villanueva.</p>
+             <p className="text-center text-[10px] text-gray-500 mt-4">Securely transmitted to Marvin Villanueva.</p>
         </div>
     );
 };
 
-// --- PAIN-POINT INTRO SEQUENCE (INSTANT LOAD) ---
 const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
     const [step, setStep] = useState(0);
 
     useEffect(() => {
-        // INSTANT START - No "Initializing" delay
         const sequence = [
-            { t: 2000, s: 1 }, // "DO YOU REPLY AT 2AM?"
-            { t: 4000, s: 2 }, // "LOSING SALES?"
-            { t: 6000, s: 3 }, // "STOP DOING IT MANUALLY"
-            { t: 8000, s: 4 }, // "MEET ORIN AI"
-            { t: 10000, s: 5 } // DONE
+            { t: 2000, s: 1 }, 
+            { t: 4000, s: 2 }, 
+            { t: 6000, s: 3 }, 
+            { t: 8000, s: 4 }, 
+            { t: 10000, s: 5 } 
         ];
 
         let timeouts: ReturnType<typeof setTimeout>[] = [];
@@ -604,8 +579,6 @@ const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
 
     return (
         <div className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center overflow-hidden font-grotesk text-center px-4">
-            
-            {/* Dismiss Button */}
             <button 
                 onClick={onComplete}
                 className="absolute top-6 right-6 text-gray-600 hover:text-white text-xs font-mono uppercase tracking-widest flex items-center gap-2 transition-colors z-[10000]"
@@ -613,27 +586,22 @@ const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
                 SKIP INTRO <SkipForward className="w-4 h-4" />
             </button>
             
-            {/* Step 0: Pain 1 */}
             <h1 className={`absolute text-5xl md:text-8xl font-black text-red-600 tracking-tighter transition-all duration-500 ${step === 0 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
                 DO YOU REPLY AT 2AM?
             </h1>
 
-            {/* Step 1: Pain 2 */}
             <h1 className={`absolute text-5xl md:text-8xl font-black text-red-500 tracking-tighter transition-all duration-500 ${step === 1 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
                 LOSING SALES WHILE YOU SLEEP?
             </h1>
 
-            {/* Step 2: Pivot */}
             <h1 className={`absolute text-5xl md:text-8xl font-black text-white tracking-tighter transition-all duration-500 ${step === 2 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
                 STOP DOING IT MANUALLY.
             </h1>
 
-            {/* Step 3: MEET ORIN AI */}
             <h1 className={`absolute text-6xl md:text-9xl font-black text-[#38F8A8] tracking-tighter transition-all duration-500 ${step === 3 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
                 MEET ORIN AI.
             </h1>
 
-            {/* Step 4: Reveal Pre-Loader */}
             <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-500 ${step === 4 ? 'opacity-100' : 'opacity-0'}`}>
                  <div className="relative group">
                     <h1 className="text-6xl md:text-9xl font-black text-transparent text-stroke tracking-tighter animate-pulse" data-text="YOUR NEW EMPLOYEE IS HERE">
@@ -645,31 +613,38 @@ const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
     );
 };
 
-const MobileHero = ({ setChatOpen }: { setChatOpen: () => void }) => {
+const MobileHero = ({ setChatOpen, theme }: { setChatOpen: () => void, theme: 'dark' | 'light' }) => {
     return (
-        <section className="relative min-h-[90vh] flex flex-col justify-center px-6 pt-20 pb-10 overflow-hidden">
+        <section className="relative min-h-[95vh] flex flex-col justify-start px-4 pt-48 pb-10 overflow-hidden">
             <div className="absolute inset-0 z-0">
-                <TesseractCircuit isActive={true} />
+                <TesseractCircuit isActive={true} theme={theme} />
             </div>
             <div className="relative z-10 flex flex-col items-center text-center">
-                <div className="inline-block px-3 py-1 mb-6 rounded-full border border-[#38F8A8] bg-[#38F8A8]/10">
-                    <span className="text-[#38F8A8] text-xs font-bold tracking-widest uppercase font-mono animate-pulse">● Online 24/7</span>
-                </div>
-
-                <div className="relative w-[280px] h-[280px] mb-8">
+                
+                <div className="relative w-[220px] h-[220px] mb-24">
                      <img src="https://i.imgur.com/7JAu9YG.png" alt="Orin" className="w-full h-full object-cover rounded-full border-2 border-[#38F8A8] shadow-[0_0_40px_rgba(56,248,168,0.3)] bg-black" />
-                     <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-[90%] z-20">
+                     <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-[300px] z-20">
                          <HeroTicker />
                      </div>
                 </div>
 
-                <h1 className="text-6xl font-black leading-[0.85] tracking-tighter mb-6 font-grotesk text-transparent text-stroke-white mt-8">
-                    YOUR NEW <br/><span className="text-white">EMPLOYEE.</span>
+                <div className="inline-block px-3 py-1 mb-4 rounded-full border border-[#38F8A8] bg-[#38F8A8]/10 mt-4">
+                    <span className="text-[#059669] dark:text-[#38F8A8] text-[10px] font-bold tracking-widest uppercase font-mono animate-pulse">● Online 24/7</span>
+                </div>
+
+                <h1 className="text-6xl font-black leading-[0.9] tracking-tighter mb-4 font-grotesk text-gray-900 dark:text-white">
+                    MEET <span className="text-[#059669] dark:text-[#38F8A8]">ORIN AI</span>
                 </h1>
-                <p className="text-gray-400 text-lg mb-8 font-grotesk max-w-xs leading-relaxed">
+                
+                <h2 className="text-xl font-bold font-grotesk text-gray-500 dark:text-gray-300 tracking-widest uppercase mb-6">
+                    YOUR 24/7 EMPLOYEE
+                </h2>
+                
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-6 font-grotesk max-w-[280px] leading-relaxed mx-auto">
                     Orin handles sales, support, and operations while you sleep.
-                    <span className="text-white block mt-2 font-bold">No breaks. No complaints.</span>
+                    <span className="text-black dark:text-white block mt-1 font-bold">No breaks. No complaints.</span>
                 </p>
+                
                 <button 
                     onClick={setChatOpen}
                     className="w-full bg-[#38F8A8] text-black font-black py-4 rounded-xl text-lg hover:scale-[1.02] transition-transform shadow-[0_0_30px_rgba(56,248,168,0.4)] flex items-center justify-center gap-2 font-grotesk"
@@ -681,38 +656,34 @@ const MobileHero = ({ setChatOpen }: { setChatOpen: () => void }) => {
     );
 };
 
-const StableDesktopHero = ({ setChatOpen }: { setChatOpen: () => void }) => {
-    const [hovered, setHovered] = useState(false);
-
+const StableDesktopHero = ({ setChatOpen, theme }: { setChatOpen: () => void, theme: 'dark' | 'light' }) => {
     return (
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-4">
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 pt-48">
             <div className="absolute inset-0 z-0 opacity-60">
-                <TesseractCircuit isActive={true} />
+                <TesseractCircuit isActive={true} theme={theme} />
             </div>
             
-            <div className="relative z-10 max-w-7xl w-full grid grid-cols-12 gap-12 items-center">
-                <div className="col-span-7">
-                    <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-8 hover:border-[#38F8A8]/50 transition-colors cursor-default group">
+            <div className="relative z-10 max-w-7xl w-full grid grid-cols-1 md:grid-cols-12 gap-12 items-center h-full">
+                <div className="col-span-7 flex flex-col justify-center">
+                    <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-black/10 dark:border-white/10 bg-white/5 backdrop-blur-md mb-8 hover:border-[#38F8A8]/50 transition-colors cursor-default group w-fit">
                         <span className="w-2 h-2 rounded-full bg-[#38F8A8] animate-pulse"></span>
-                        <span className="text-gray-300 text-sm font-mono tracking-widest uppercase group-hover:text-white transition-colors">System Operational</span>
+                        <span className="text-gray-600 dark:text-gray-300 text-sm font-mono tracking-widest uppercase group-hover:text-black dark:group-hover:text-white transition-colors">STATUS: ONLINE 24/7</span>
                     </div>
                     
-                    <h1 className="text-8xl xl:text-9xl font-black leading-[0.8] tracking-tighter mb-8 font-grotesk mix-blend-screen">
-                        YOUR NEW <br/>
-                        <span 
-                            className="text-transparent text-stroke hover:text-white transition-all duration-700 cursor-default"
-                            onMouseEnter={() => setHovered(true)}
-                            onMouseLeave={() => setHovered(false)}
-                        >
-                            EMPLOYEE
-                        </span>
+                    <h1 className="text-8xl xl:text-9xl font-black leading-[0.8] tracking-tighter mb-4 font-grotesk text-gray-900 dark:text-white">
+                        MEET <br/>
+                        <span className="text-[#059669] dark:text-[#38F8A8]">ORIN AI</span>
                     </h1>
+                    
+                    <h2 className="text-4xl text-transparent text-stroke font-black tracking-widest mb-8 uppercase" style={{ WebkitTextStrokeColor: theme === 'light' ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)' }}>
+                        YOUR 24/7 EMPLOYEE
+                    </h2>
                     
                     <div className="flex items-start gap-8 max-w-2xl">
                         <div className="w-1 h-24 bg-gradient-to-b from-[#38F8A8] to-transparent"></div>
                         <div>
-                            <p className="text-2xl text-gray-300 font-medium leading-relaxed font-grotesk mb-8">
-                                Orin is the <span className="text-white font-bold">Ultimate Digital Employee</span> for Filipino Businesses. 
+                            <p className="text-2xl text-gray-600 dark:text-gray-300 font-medium leading-relaxed font-grotesk mb-8">
+                                Orin is the <span className="text-black dark:text-white font-bold">Advanced Digital Employee</span> for Filipino Businesses. 
                                 He handles sales, customer support, and operations 24/7.
                             </p>
                             <div className="flex gap-6">
@@ -722,7 +693,7 @@ const StableDesktopHero = ({ setChatOpen }: { setChatOpen: () => void }) => {
                                 >
                                     HIRE ORIN <ArrowRight className="w-6 h-6" />
                                 </button>
-                                <button className="px-8 py-5 rounded-full border border-white/20 hover:bg-white/10 transition-all font-bold text-white font-grotesk tracking-wide uppercase text-sm">
+                                <button className="px-8 py-5 rounded-full border border-black/20 dark:border-white/20 hover:bg-black/5 dark:hover:bg-white/10 transition-all font-bold text-gray-900 dark:text-white font-grotesk tracking-wide uppercase text-sm">
                                     View Capabilities
                                 </button>
                             </div>
@@ -730,17 +701,14 @@ const StableDesktopHero = ({ setChatOpen }: { setChatOpen: () => void }) => {
                     </div>
                 </div>
                 
-                <div className="col-span-5 relative h-[700px] flex flex-col items-center justify-center">
+                <div className="col-span-5 flex flex-col items-center justify-center relative h-full min-h-[600px]">
                     <MouseTilt intensity={10}>
                         <div className="relative w-[450px] h-[450px]">
-                             {/* Spinning Rings */}
                              <div className="absolute inset-[-40px] rounded-full border border-[#38F8A8]/20 animate-spin-slow pointer-events-none"></div>
                              <div className="absolute inset-[-20px] rounded-full border-2 border-[#D4AF37]/30 animate-spin-slow pointer-events-none" style={{ animationDirection: 'reverse', animationDuration: '30s' }}></div>
 
-                             {/* Avatar Image */}
                              <img src="https://i.imgur.com/7JAu9YG.png" alt="Orin" className="w-full h-full object-cover rounded-full border-4 border-[#38F8A8] shadow-[0_0_50px_rgba(56,248,168,0.3)] bg-black relative z-10" />
                              
-                             {/* Ticker Positioned Below/Overlapping */}
                              <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-full max-w-sm z-20">
                                  <HeroTicker />
                              </div>
@@ -754,52 +722,96 @@ const StableDesktopHero = ({ setChatOpen }: { setChatOpen: () => void }) => {
 
 const PricingCard = ({ setChatOpen }: { setChatOpen: () => void }) => {
     return (
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-4xl mx-auto py-12 relative z-50">
             <MouseTilt intensity={5}>
-                <div className="relative rounded-[3rem] p-1 bg-gradient-to-b from-[#38F8A8] via-purple-500 to-black p-[1px]">
-                    <div className="bg-black rounded-[3rem] p-8 md:p-16 relative overflow-hidden h-full">
-                        {/* Background Effects */}
-                        <div className="absolute top-0 right-0 w-96 h-96 bg-[#38F8A8]/10 blur-[100px] rounded-full"></div>
-                        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/10 blur-[100px] rounded-full"></div>
+                {/* 
+                  ULTRA PREMIUM CONTAINER 
+                  - Ensures dark mode look even in light mode for "Exclusive Pass" feel 
+                  - Deep black background with Gold Accents 
+                */}
+                <div className="relative group rounded-[3rem] p-[2px] bg-gradient-to-b from-[#D4AF37] via-[#F7EF8A] to-[#D4AF37] shadow-[0_0_80px_-20px_rgba(212,175,55,0.4)] overflow-visible transition-all duration-500 hover:shadow-[0_0_120px_-10px_rgba(212,175,55,0.6)]">
+                    
+                    {/* Founder's Chip - GLOWING INTENSELY */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 z-30">
+                        <div className="relative">
+                            {/* Glowing Backlight for Chip */}
+                            <div className="absolute inset-0 bg-[#D4AF37] blur-xl opacity-80 animate-pulse"></div>
+                            
+                            <div className="bg-black px-8 py-3 border-b-2 border-x-2 border-[#D4AF37] rounded-b-xl text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.3em] font-grotesk flex items-center gap-3 relative z-10 shadow-[0_10px_30px_rgba(212,175,55,0.6)]">
+                                <div className="w-2 h-2 rounded-full bg-[#D4AF37] animate-ping"></div>
+                                <Cpu className="w-4 h-4" /> 
+                                FOUNDER'S CHIP — TESSERACT
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-[#050505] rounded-[3rem] p-6 md:p-12 relative h-full flex flex-col items-center text-center overflow-hidden">
                         
-                        <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center">
-                            <div>
-                                <h3 className="text-2xl font-bold text-[#38F8A8] font-mono mb-4 tracking-widest uppercase">The Investment</h3>
-                                <div className="flex items-baseline gap-2 mb-6">
-                                    <span className="text-6xl md:text-8xl font-black text-white font-grotesk tracking-tighter">₱15k</span>
-                                    <span className="text-xl text-gray-400 font-mono">/ month</span>
-                                </div>
-                                <p className="text-gray-400 text-lg mb-8 font-grotesk max-w-md">
-                                    Less than 10% of a human employee's cost. Includes server maintenance, lifetime updates, and 24/7 monitoring.
-                                </p>
-                                <button 
-                                    onClick={setChatOpen}
-                                    className="w-full md:w-auto bg-white text-black font-black py-4 px-12 rounded-full text-lg hover:bg-[#38F8A8] transition-colors shadow-lg flex items-center justify-center gap-3 font-grotesk uppercase tracking-wide"
-                                >
-                                    Secure License <Sparkles className="w-5 h-5" />
-                                </button>
-                                <p className="mt-4 text-[10px] text-gray-500 font-mono uppercase tracking-widest">
-                                    *Limited slots available for Q1 2025
-                                </p>
+                        {/* Animated Background Rays */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.05)_0%,transparent_60%)] animate-spin-slow pointer-events-none"></div>
+                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/circuit-board.png')] opacity-10 pointer-events-none mix-blend-color-dodge"></div>
+                        
+                        <div className="relative z-10 w-full max-w-3xl">
+                            
+                            {/* Header */}
+                            <div className="flex flex-col items-center mb-6 mt-4">
+                                <h3 className="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F7EF8A] to-[#D4AF37] font-mono mb-2 tracking-[0.3em] uppercase drop-shadow-sm">
+                                    THE PREMIUM PASS
+                                </h3>
+                                <div className="w-24 h-1 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent"></div>
+                            </div>
+
+                            {/* Price */}
+                            <div className="flex flex-col items-center justify-center mb-6 relative">
+                                <div className="absolute inset-0 bg-[#D4AF37] blur-[60px] opacity-10 rounded-full"></div>
+                                <span className="text-6xl md:text-9xl font-black text-white font-grotesk tracking-tighter drop-shadow-[0_0_25px_rgba(212,175,55,0.5)] z-10">
+                                    ₱15,000
+                                </span>
+                                <span className="text-sm md:text-base text-[#D4AF37] font-mono mt-4 tracking-[0.2em] uppercase border border-[#D4AF37]/30 px-4 py-1 rounded-full bg-[#D4AF37]/10">
+                                    Monthly • Cancel Anytime
+                                </span>
                             </div>
                             
-                            <div className="space-y-4">
+                            <p className="text-gray-400 text-base md:text-lg mb-8 font-grotesk max-w-xl mx-auto leading-relaxed">
+                                Less than 10% of a human employee's cost. <br/>
+                                <span className="text-white">Full automation architecture. Zero headaches.</span>
+                            </p>
+                            
+                            {/* Features Grid - COMPACT */}
+                            <div className="grid md:grid-cols-2 gap-x-8 gap-y-3 text-left max-w-2xl mx-auto mb-12 bg-white/5 p-6 rounded-3xl border border-white/5">
                                 {[
                                     "24/7 Availability (No Sleep)",
-                                    "Facebook, Instagram & TikTok Integration",
-                                    "Unlimited Customer Conversations",
-                                    "Image & Receipt Recognition (OCR)",
-                                    "Voice Message Understanding",
+                                    "24/7 Technical Support",
+                                    "Unlimited Conversations",
                                     "Dedicated Account Manager",
-                                    "Cancel Anytime Contract"
+                                    "Facebook, Insta & TikTok",
+                                    "Receipt Recognition (OCR)",
+                                    "Voice Understanding",
+                                    "Priority Server Access"
                                 ].map((feature, i) => (
                                     <div key={i} className="flex items-center gap-4 group">
-                                        <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#38F8A8] group-hover:text-black transition-colors border border-white/10">
-                                            <CheckCircle2 className="w-4 h-4" />
+                                        <div className="w-8 h-8 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] transition-all duration-300">
+                                            <CheckCircle2 className="w-4 h-4 text-[#D4AF37] group-hover:text-black transition-colors" />
                                         </div>
-                                        <span className="text-lg text-gray-300 font-grotesk group-hover:text-white transition-colors">{feature}</span>
+                                        <span className="text-sm md:text-base text-gray-300 font-grotesk group-hover:text-white transition-colors tracking-wide">{feature}</span>
                                     </div>
                                 ))}
+                            </div>
+
+                            {/* ISOLATED ACTION DECK - MASSIVE BUTTON */}
+                            <div className="relative w-full flex flex-col items-center justify-center mt-2">
+                                <div className="absolute -inset-10 bg-gradient-to-r from-transparent via-[#D4AF37]/20 to-transparent blur-2xl opacity-50 pointer-events-none"></div>
+                                <button 
+                                    onClick={setChatOpen}
+                                    className="relative z-[100] w-full md:w-auto bg-[#D4AF37] text-black font-black py-4 px-10 md:py-5 md:px-16 rounded-full text-xl md:text-3xl hover:scale-105 transition-all duration-300 shadow-[0_0_60px_rgba(212,175,55,0.6)] flex items-center justify-center gap-3 font-grotesk uppercase tracking-widest mx-auto hover:bg-white border-4 border-transparent hover:border-[#D4AF37] group cursor-pointer"
+                                >
+                                    <span className="relative z-10">SECURE PASS</span>
+                                    <Sparkles className="w-6 h-6 md:w-8 md:h-8 group-hover:rotate-12 transition-transform" />
+                                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 rounded-full transition-opacity"></div>
+                                </button>
+                                <p className="mt-8 text-[10px] text-[#D4AF37]/60 font-mono uppercase tracking-[0.2em] relative z-10">
+                                    *Limited slots available for Q1 2025 • Priority Access
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -812,14 +824,15 @@ const PricingCard = ({ setChatOpen }: { setChatOpen: () => void }) => {
 export default function App() {
     const isMobile = useIsMobile();
     const [chatOpen, setChatOpen] = useState(false);
-    const [viewMode, setViewMode] = useState<'chat' | 'form'>('chat'); // Toggle between Chat and Form
+    const [viewMode, setViewMode] = useState<'chat' | 'form'>('chat');
     const [gameOpen, setGameOpen] = useState(false);
     const [easterCount, setEasterCount] = useState(0);
     const [introFinished, setIntroFinished] = useState(false);
-    const [hoveredMember, setHoveredMember] = useState<number | null>(null); // Track hovered team member for Boss Mode
+    const [hoveredMember, setHoveredMember] = useState<number | null>(null);
+    const [theme, setTheme] = useState<'dark' | 'light'>('dark');
     
     const [messages, setMessages] = useState([
-        {role: 'model', text: 'Hello! Ako nga pala si Orin 👋. Advanced AI Employee na parang tao kausap. ₱15k Monthly lang for Premium Access. Sulit diba? 🚀'},
+        {role: 'model', text: 'Hello! Ako nga pala si Orin 👋. Advanced AI Employee na parang tao kausap. ₱15,000 Monthly lang for Premium Access. Sulit diba? 🚀'},
         {role: 'model', text: 'Questions? Chat here. Ready to hire? Click the "Hire Application" button above!'}
     ]);
     const [input, setInput] = useState('');
@@ -828,9 +841,16 @@ export default function App() {
     const [showFloat, setShowFloat] = useState(false);
 
     useEffect(() => {
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    }, [theme]);
+
+    useEffect(() => {
         if(typeof process !== 'undefined' && process.env && process.env.API_KEY) {
              const client = new GoogleGenAI({ apiKey: process.env.API_KEY });
-             // Initialize chat session with history capability
              const session = client.chats.create({
                  model: 'gemini-2.5-flash',
                  config: { systemInstruction: systemInstruction }
@@ -839,12 +859,15 @@ export default function App() {
         }
 
         const handleScroll = () => {
-            // Show float after hero (lower threshold for mobile)
             setShowFloat(window.scrollY > 400); 
         };
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    const toggleTheme = () => {
+        setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    };
 
     const handleLogoClick = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -877,7 +900,6 @@ export default function App() {
 
         if (chatSession) {
              try {
-                // Use Chat Session for memory
                 const response = await chatSession.sendMessage({ message: input });
                 setMessages(p => [...p, {role: 'model', text: response.text || "Sorry boss, medyo loading ako ngayon."}]);
              } catch(e) {
@@ -895,35 +917,40 @@ export default function App() {
         <ContentProtection>
             {!introFinished && <IntroOverlay onComplete={() => setIntroFinished(true)} />}
             
-            <div className={`min-h-screen text-white overflow-x-hidden selection:bg-[#38F8A8] selection:text-black ${!introFinished ? 'h-screen overflow-hidden' : ''}`}>
-                <ParticleBackground />
+            <div className={`min-h-screen transition-colors duration-300 ${theme === 'dark' ? 'text-white bg-[#020202]' : 'text-gray-900 bg-gray-50'} overflow-x-hidden selection:bg-[#38F8A8] selection:text-black ${!introFinished ? 'h-screen overflow-hidden' : ''}`}>
+                <ParticleBackground theme={theme} />
                 
-                {/* Optimized Blurred Nav */}
-                <nav className="fixed top-0 w-full z-50 py-4 px-6 flex justify-between items-center bg-black/50 backdrop-blur-xl border-b border-white/5 transition-all duration-300">
+                <nav className="fixed top-0 w-full z-50 py-4 px-6 flex justify-between items-center bg-white/50 dark:bg-black/50 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 transition-all duration-300">
                     <div className="flex items-center gap-2 cursor-pointer" onClick={handleLogoClick}>
-                        <div className="w-10 h-10 rounded-full border border-white/20 overflow-hidden bg-black relative group">
+                        <div className="w-10 h-10 rounded-full border border-gray-300 dark:border-white/20 overflow-hidden bg-black relative group">
                             <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110 transition-transform duration-500 group-hover:scale-125" alt="ORIN Logo" loading="lazy" />
                         </div>
-                        <span className="font-black text-xl tracking-tighter font-grotesk">ORIN AI</span>
+                        <span className="font-black text-xl tracking-tighter font-grotesk text-gray-900 dark:text-white">ORIN AI</span>
                     </div>
-                    <div className="hidden md:flex gap-6 text-sm font-medium text-gray-400 font-mono">
-                        <a href="#features" className="hover:text-[#38F8A8] transition-colors">Features</a>
-                        <a href="#pricing" className="hover:text-[#38F8A8] transition-colors">Pricing</a>
+                    <div className="hidden md:flex gap-6 text-sm font-medium text-gray-600 dark:text-gray-400 font-mono items-center">
+                        <a href="#features" className="hover:text-black dark:hover:text-[#38F8A8] transition-colors">Features</a>
+                        <a href="#pricing" className="hover:text-black dark:hover:text-[#38F8A8] transition-colors">Pricing</a>
+                        <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">
+                            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                        </button>
                     </div>
-                    <button onClick={handleHireClick} className="hidden md:flex bg-white/10 border border-white/10 px-6 py-2 rounded-full text-xs font-bold hover:bg-[#38F8A8] hover:text-black transition-all">
-                        HIRE ORIN
-                    </button>
+                    <div className="flex items-center gap-2">
+                         <button onClick={toggleTheme} className="md:hidden p-2 rounded-full hover:bg-gray-200 dark:hover:bg-white/10 transition-colors text-gray-600 dark:text-gray-400">
+                            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                        </button>
+                        <button onClick={handleHireClick} className="hidden md:flex bg-black dark:bg-white/10 border border-black/10 dark:border-white/10 px-6 py-2 rounded-full text-xs font-bold text-white hover:bg-[#38F8A8] hover:text-black transition-all">
+                            HIRE ORIN
+                        </button>
+                    </div>
                 </nav>
 
-                {/* Conditional Hero: Static Mobile vs Sticky Desktop */}
                 {isMobile ? (
-                    <MobileHero setChatOpen={handleHireClick} />
+                    <MobileHero setChatOpen={handleHireClick} theme={theme} />
                 ) : (
-                    <StableDesktopHero setChatOpen={handleHireClick} />
+                    <StableDesktopHero setChatOpen={handleHireClick} theme={theme} />
                 )}
 
                 <VelocityScrollProvider>
-                    {/* Marquee - STRAIGHTENED */}
                     <div className="py-6 bg-[#38F8A8] text-black overflow-hidden border-y-4 border-black mb-8 md:mb-12 relative z-10">
                         <div className="animate-marquee whitespace-nowrap flex gap-12 text-2xl md:text-4xl font-black italic tracking-tighter font-grotesk">
                             <span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span><span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span>
@@ -931,15 +958,14 @@ export default function App() {
                         </div>
                     </div>
 
-                    {/* Sales Psychology Section - MOVED UP AS REQUESTED (Pain -> Solution) */}
                     <section className="py-8 md:py-16 px-4 max-w-7xl mx-auto">
                         <div className="grid md:grid-cols-2 gap-8 items-center">
                             <ParallaxElement speed={0.2} rotation={5}>
                                 <MouseTilt>
-                                    <div className="glass-card p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] relative overflow-hidden gpu-accel">
-                                        <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/20 blur-[80px] rounded-full"></div>
-                                        <h3 className="text-3xl md:text-4xl font-black mb-6 font-grotesk">STOP DOING IT<br/>MANUALLY.</h3>
-                                        <ul className="space-y-6 text-lg md:text-xl text-gray-300 font-grotesk">
+                                    <div className="glass-card p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] relative overflow-hidden gpu-accel bg-white/60 dark:bg-black/60 border border-gray-200 dark:border-white/10 shadow-xl">
+                                        <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/10 blur-[80px] rounded-full"></div>
+                                        <h3 className="text-3xl md:text-4xl font-black mb-6 font-grotesk text-gray-900 dark:text-white">STOP DOING IT<br/>MANUALLY.</h3>
+                                        <ul className="space-y-6 text-lg md:text-xl text-gray-600 dark:text-gray-300 font-grotesk">
                                             <li className="flex items-center gap-4"><X className="text-red-500 w-6 h-6 md:w-8 md:h-8" /> You reply at 2AM (Tired)</li>
                                             <li className="flex items-center gap-4"><X className="text-red-500 w-6 h-6 md:w-8 md:h-8" /> Leads ignored = Sales lost</li>
                                             <li className="flex items-center gap-4"><X className="text-red-500 w-6 h-6 md:w-8 md:h-8" /> Hiring humans = ₱20k/mo cost</li>
@@ -950,13 +976,13 @@ export default function App() {
 
                             <ParallaxElement speed={0.4} rotation={-5}>
                                 <MouseTilt>
-                                    <div className="glass-card p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] border border-[#38F8A8]/30 relative overflow-hidden gpu-accel mt-8 md:mt-0">
+                                    <div className="glass-card p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] border border-[#38F8A8]/30 relative overflow-hidden gpu-accel mt-8 md:mt-0 bg-white/60 dark:bg-black/60 shadow-xl">
                                         <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#38F8A8]/20 blur-[80px] rounded-full"></div>
-                                        <h3 className="text-3xl md:text-4xl font-black mb-6 text-[#38F8A8] font-grotesk">THE UPGRADE.</h3>
-                                        <ul className="space-y-6 text-lg md:text-xl text-white font-grotesk">
+                                        <h3 className="text-3xl md:text-4xl font-black mb-6 text-[#059669] dark:text-[#38F8A8] font-grotesk">THE UPGRADE.</h3>
+                                        <ul className="space-y-6 text-lg md:text-xl text-gray-900 dark:text-white font-grotesk">
                                             <li className="flex items-center gap-4"><CheckCircle2 className="text-[#38F8A8] w-6 h-6 md:w-8 md:h-8" /> Auto-Replies in 1 Second</li>
                                             <li className="flex items-center gap-4"><CheckCircle2 className="text-[#38F8A8] w-6 h-6 md:w-8 md:h-8" /> Closes Sales While You Sleep</li>
-                                            <li className="flex items-center gap-4"><CheckCircle2 className="text-[#38F8A8] w-6 h-6 md:w-8 md:h-8" /> ₱15k Monthly (Premium)</li>
+                                            <li className="flex items-center gap-4"><CheckCircle2 className="text-[#38F8A8] w-6 h-6 md:w-8 md:h-8" /> ₱15,000 Monthly (Premium)</li>
                                         </ul>
                                     </div>
                                 </MouseTilt>
@@ -964,39 +990,35 @@ export default function App() {
                         </div>
                     </section>
 
-                    {/* Gallery Grid - PROOF (Moved Up) */}
                     <section id="features" className="py-8 md:py-12 px-4 max-w-7xl mx-auto">
-                        <h2 className="text-4xl md:text-8xl font-black text-center mb-8 tracking-tighter font-grotesk">
-                            BUILT FOR<br/><span className="text-[#38F8A8]">EVERYONE.</span>
+                        <h2 className="text-4xl md:text-8xl font-black text-center mb-8 tracking-tighter font-grotesk text-gray-900 dark:text-white">
+                            BUILT FOR<br/><span className="text-[#059669] dark:text-[#38F8A8]">EVERYONE.</span>
                         </h2>
                         <div className="w-full">
                             <DynamicShowcase />
                         </div>
                     </section>
 
-                    {/* Stats - LOGIC */}
                     <section className="py-8 md:py-12 px-4">
                         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8">
-                             <div className="glass-card p-6 md:p-8 rounded-3xl">
-                                 <h4 className="text-xl md:text-2xl font-bold mb-6 font-grotesk">Market Domination</h4>
+                             <div className="glass-card p-6 md:p-8 rounded-3xl bg-white/60 dark:bg-black/60 border border-gray-200 dark:border-white/10">
+                                 <h4 className="text-xl md:text-2xl font-bold mb-6 font-grotesk text-gray-900 dark:text-white">Market Domination</h4>
                                  <MarketGrowthChart />
                              </div>
-                             <div className="glass-card p-6 md:p-8 rounded-3xl">
-                                 <h4 className="text-xl md:text-2xl font-bold mb-6 font-grotesk">ROI Potential (vs Hiring)</h4>
+                             <div className="glass-card p-6 md:p-8 rounded-3xl bg-white/60 dark:bg-black/60 border border-gray-200 dark:border-white/10">
+                                 <h4 className="text-xl md:text-2xl font-bold mb-6 font-grotesk text-gray-900 dark:text-white">ROI Potential (vs Hiring)</h4>
                                  <ROIChart />
                              </div>
                         </div>
                     </section>
 
-                    {/* PRICING (The CLIMAX - moved near bottom) */}
                     <section id="pricing" className="py-8 md:py-16 px-4 relative z-20">
                         <PricingCard setChatOpen={handleHireClick} />
                     </section>
                     
-                    {/* Team Section (Modern Square & Boss Mode) */}
                     <section className="py-8 px-4"> 
                         <div className="max-w-6xl mx-auto text-center mb-10"> 
-                            <h2 className="text-3xl md:text-5xl font-black mb-4 font-grotesk">MEET THE MINDS</h2>
+                            <h2 className="text-3xl md:text-5xl font-black mb-4 font-grotesk text-gray-900 dark:text-white">MEET THE MINDS</h2>
                             <p className="text-gray-500 text-sm font-mono uppercase tracking-widest">The architects behind the intelligence.</p>
                         </div>
                         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -1007,16 +1029,14 @@ export default function App() {
                                     onMouseLeave={() => setHoveredMember(null)}
                                 >
                                     <MouseTilt intensity={5}>
-                                        <div className={`glass-card p-6 rounded-[2.5rem] text-center group h-full flex flex-col items-center bg-black/80 transition-all duration-500 hover:bg-[#111] ${member.name === 'Marvin' ? 'border-2 border-transparent' : ''}`}>
-                                            {/* Modern Square Avatar (Squircle) */}
-                                            <div className={`w-56 h-56 rounded-[2rem] overflow-hidden mb-6 bg-black relative transition-all duration-700 ${member.name === 'Marvin' ? '' : 'border border-white/5 group-hover:border-[#38F8A8]/50'}`}>
+                                        <div className={`glass-card p-6 rounded-[2.5rem] text-center group h-full flex flex-col items-center bg-white/60 dark:bg-black/80 transition-all duration-500 hover:bg-gray-100 dark:hover:bg-[#111] border border-gray-200 dark:border-white/10 ${member.name === 'Marvin' ? 'border-2 border-transparent' : ''}`}>
+                                            <div className={`w-56 h-56 rounded-[2rem] overflow-hidden mb-6 bg-black relative transition-all duration-700 ${member.name === 'Marvin' ? '' : 'border border-gray-300 dark:border-white/5 group-hover:border-[#38F8A8]/50'}`}>
                                                 <img 
                                                     src={member.image} 
                                                     className={`w-full h-full object-cover ${member.name === 'Marvin' ? 'object-left' : 'object-center'} transition-all duration-700 group-hover:scale-105 ${member.name === 'Marvin' ? 'opacity-50 grayscale group-hover:opacity-100 group-hover:grayscale-0 group-hover:opacity-100' : 'opacity-50 grayscale group-hover:grayscale-0 group-hover:opacity-100'}`} 
                                                     alt={member.name} 
                                                     loading="lazy" 
                                                 />
-                                                {/* Boss Mode Glow Animation for Marvin (On Hover) */}
                                                 {member.name === 'Marvin' && (
                                                     <>
                                                         <div className="absolute inset-0 border-4 border-[#D4AF37] rounded-[2rem] group-hover:animate-electric pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -1024,23 +1044,22 @@ export default function App() {
                                                     </>
                                                 )}
                                                 
-                                                {/* Gradient Mask to fade into background */}
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80 group-hover:opacity-20 transition-opacity duration-700"></div>
                                             </div>
                                             
                                             <div className="flex items-center gap-2 mb-2 justify-center">
                                                 <div className="relative">
-                                                    <h4 className={`font-bold text-2xl font-grotesk ${member.name === 'Marvin' ? 'group-hover:text-[#D4AF37] text-gray-400' : 'text-gray-400 group-hover:text-white'} transition-colors`}>
+                                                    <h4 className={`font-bold text-2xl font-grotesk ${member.name === 'Marvin' ? 'group-hover:text-[#D4AF37] text-gray-700 dark:text-gray-400' : 'text-gray-700 dark:text-gray-400 dark:group-hover:text-white group-hover:text-black'} transition-colors`}>
                                                         {member.name === 'Marvin' ? <TypingGlitchText text="Marvin" hoverText="Marvin Villanueva" isActive={hoveredMember === i} /> : member.name}
                                                     </h4>
                                                 </div>
                                                 {member.name === 'Marvin' && <Crown className="w-5 h-5 text-[#D4AF37] fill-[#D4AF37] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />}
                                             </div>
                                             
-                                            <p className="text-xs text-gray-600 uppercase font-mono tracking-widest mb-4 group-hover:text-[#38F8A8] transition-colors">{member.role}</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-600 uppercase font-mono tracking-widest mb-4 group-hover:text-[#059669] dark:group-hover:text-[#38F8A8] transition-colors">{member.role}</p>
                                             
                                             {member.name === 'Marvin' && (
-                                                <a href={member.link} target="_blank" rel="noreferrer" className="mt-auto inline-block text-xs bg-white text-black hover:bg-[#D4AF37] py-2 px-4 rounded-full font-bold hover:scale-105 transition-all font-mono shadow-lg hover:shadow-[#D4AF37]/50 hover:shadow-lg">
+                                                <a href={member.link} target="_blank" rel="noreferrer" className="mt-auto inline-block text-xs bg-black dark:bg-white text-white dark:text-black hover:bg-[#D4AF37] py-2 px-4 rounded-full font-bold hover:scale-105 transition-all font-mono shadow-lg hover:shadow-[#D4AF37]/50 hover:shadow-lg">
                                                     HIRE MARVIN
                                                 </a>
                                             )}
@@ -1052,7 +1071,6 @@ export default function App() {
                     </section>
                 </VelocityScrollProvider>
 
-                {/* BOTTOM MARQUEE */}
                 <div className="py-6 bg-[#38F8A8] text-black overflow-hidden border-y-4 border-black relative z-10">
                     <div className="animate-marquee whitespace-nowrap flex gap-12 text-2xl md:text-4xl font-black italic tracking-tighter font-grotesk">
                         <span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span><span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span>
@@ -1060,15 +1078,13 @@ export default function App() {
                     </div>
                 </div>
 
-                <footer className="py-8 text-center text-gray-600 text-sm relative z-10 bg-black font-mono">
+                <footer className="py-8 text-center text-gray-500 dark:text-gray-600 text-sm relative z-10 bg-white dark:bg-black font-mono">
                     <p className="mb-2">© 2025 Organic Intelligence AI • OASIS Inc.</p>
                     <div className="flex justify-center gap-4 mt-4">
-                        <a href="#" className="hover:text-white transition-colors">Terms</a>
-                        <a href="#" className="hover:text-white transition-colors">Privacy</a>
+                        <a href="#" className="hover:text-black dark:hover:text-white transition-colors">Terms</a>
+                        <a href="#" className="hover:text-black dark:hover:text-white transition-colors">Privacy</a>
                     </div>
                 </footer>
-
-                {/* --- FLOATING UI ELEMENTS --- */}
 
                 <div className={`fixed bottom-8 right-4 md:right-8 z-50 transition-all duration-500 ${showFloat ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
                     <button 
@@ -1079,47 +1095,43 @@ export default function App() {
                     </button>
                 </div>
 
-                {/* Chat Widget - Small FB Style */}
                 <div className={`fixed bottom-0 right-0 z-[70] transition-all duration-500 transform ${chatOpen ? 'translate-y-0 opacity-100' : 'translate-y-[120%] opacity-0'} w-full md:w-[360px] md:bottom-0 md:right-8`}>
-                    <div className="w-full h-[85dvh] md:h-[500px] glass-card rounded-t-2xl md:rounded-2xl flex flex-col overflow-hidden border border-[#38F8A8]/30 shadow-2xl bg-black">
-                        {/* Header */}
-                        <div className="p-3 border-b border-white/10 flex justify-between items-center bg-[#38F8A8]/10 cursor-pointer" onClick={() => setChatOpen(false)}>
+                    <div className="w-full h-[85dvh] md:h-[500px] glass-card rounded-t-2xl md:rounded-2xl flex flex-col overflow-hidden border border-[#38F8A8]/30 shadow-2xl bg-white dark:bg-black">
+                        <div className="p-3 border-b border-gray-200 dark:border-white/10 flex justify-between items-center bg-[#38F8A8]/10 cursor-pointer" onClick={() => setChatOpen(false)}>
                             <div className="flex items-center gap-2">
                                 <div className="w-8 h-8 rounded-full border border-[#38F8A8] overflow-hidden bg-black relative">
                                     <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110" alt="Orin" loading="lazy" />
                                     <div className="absolute bottom-0 right-0 w-2 h-2 bg-[#38F8A8] rounded-full border border-black animate-pulse"></div>
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-white text-sm font-grotesk">ORIN AI</h3>
-                                    <p className="text-[9px] text-[#38F8A8] uppercase tracking-wider font-mono">Active Now</p>
+                                    <h3 className="font-bold text-gray-900 dark:text-white text-sm font-grotesk">ORIN AI</h3>
+                                    <p className="text-[9px] text-[#059669] dark:text-[#38F8A8] uppercase tracking-wider font-mono">Active Now</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
                                 <button 
                                     onClick={(e) => { e.stopPropagation(); setViewMode(viewMode === 'chat' ? 'form' : 'chat'); }}
-                                    className="text-[10px] bg-white/10 hover:bg-white/20 px-2 py-1 rounded text-white font-mono"
+                                    className="text-[10px] bg-gray-200 dark:bg-white/10 hover:bg-gray-300 dark:hover:bg-white/20 px-2 py-1 rounded text-gray-900 dark:text-white font-mono"
                                 >
                                     {viewMode === 'chat' ? 'HIRE NOW' : 'CHAT'}
                                 </button>
-                                <X className="w-4 h-4 text-gray-400 hover:text-white" />
+                                <X className="w-4 h-4 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white" />
                             </div>
                         </div>
 
-                        {/* CONTENT SWITCHER */}
                         {viewMode === 'form' ? (
                             <div className="flex-1 overflow-y-auto scroll-smooth">
                                 <HireForm onSuccess={handleFormSuccess} />
                             </div>
                         ) : (
                             <>
-                                {/* Messages */}
                                 <div className="flex-1 overflow-y-auto p-3 space-y-3 scroll-smooth">
                                     {messages.map((m, i) => (
                                         <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                             <div className={`max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed whitespace-pre-wrap ${
                                                 m.role === 'user' 
                                                     ? 'bg-[#38F8A8] text-black chat-bubble-user font-bold font-grotesk' 
-                                                    : 'bg-white/10 text-gray-200 chat-bubble-bot border border-white/5 font-grotesk'
+                                                    : 'bg-gray-100 dark:bg-white/10 text-gray-800 dark:text-gray-200 chat-bubble-bot border border-gray-200 dark:border-white/5 font-grotesk'
                                             }`}>
                                                 {m.text}
                                             </div>
@@ -1127,7 +1139,7 @@ export default function App() {
                                     ))}
                                     {isThinking && (
                                         <div className="flex justify-start">
-                                            <div className="bg-white/5 p-3 rounded-2xl rounded-bl-sm flex gap-1 items-center">
+                                            <div className="bg-gray-100 dark:bg-white/5 p-3 rounded-2xl rounded-bl-sm flex gap-1 items-center">
                                                 <div className="w-1.5 h-1.5 bg-[#38F8A8] rounded-full animate-bounce"></div>
                                                 <div className="w-1.5 h-1.5 bg-[#38F8A8] rounded-full animate-bounce delay-100"></div>
                                                 <div className="w-1.5 h-1.5 bg-[#38F8A8] rounded-full animate-bounce delay-200"></div>
@@ -1136,22 +1148,21 @@ export default function App() {
                                     )}
                                 </div>
 
-                                {/* Input */}
-                                <form onSubmit={sendChat} className="p-3 border-t border-white/10 bg-black/80 backdrop-blur-md">
+                                <form onSubmit={sendChat} className="p-3 border-t border-gray-200 dark:border-white/10 bg-white/80 dark:bg-black/80 backdrop-blur-md">
                                     <div className="relative">
                                         <input 
                                             type="text" 
                                             value={input}
                                             onChange={(e) => setInput(e.target.value)}
                                             placeholder="Ask questions..." 
-                                            className="w-full bg-white/5 border border-white/10 rounded-full py-2.5 pl-4 pr-10 text-white focus:outline-none focus:border-[#38F8A8] transition-colors placeholder:text-gray-500 font-mono text-xs"
+                                            className="w-full bg-gray-100 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-full py-2.5 pl-4 pr-10 text-gray-900 dark:text-white focus:outline-none focus:border-[#38F8A8] transition-colors placeholder:text-gray-500 font-mono text-xs"
                                         />
                                         <button type="submit" className="absolute right-1.5 top-1.5 p-1.5 bg-[#38F8A8] rounded-full text-black hover:scale-105 transition-transform">
                                             <Send className="w-4 h-4" />
                                         </button>
                                     </div>
                                     <div className="text-center mt-1.5">
-                                        <p className="text-[8px] text-gray-600 flex items-center justify-center gap-1 font-mono">
+                                        <p className="text-[8px] text-gray-500 flex items-center justify-center gap-1 font-mono">
                                             <ShieldCheck className="w-2.5 h-2.5" /> Secured by O.A.S.I.S
                                         </p>
                                     </div>

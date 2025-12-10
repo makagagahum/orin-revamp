@@ -20,8 +20,8 @@ export const TEAM = [
 export const GALLERY_IMAGES = [
     { 
         urls: [
-            "https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?q=80&w=1200&auto=format&fit=crop", // Safe backup
-            "https://images.unsplash.com/photo-1664575602276-acd073f104c1?q=80&w=1200&auto=format&fit=crop"  // E-commerce box
+            "https://images.unsplash.com/photo-1586880244406-556ebe35f282?q=80&w=1200&auto=format&fit=crop", // Boxes/Ecommerce
+            "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?q=80&w=1200&auto=format&fit=crop"  // Warehouse
         ], 
         caption: "Online Sellers",
         description: "Miss 3AM sales? Orin never sleeps. Catches every inquiry while you're resting. 🚀"
