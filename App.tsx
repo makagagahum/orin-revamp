@@ -583,57 +583,72 @@ const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
     const [step, setStep] = useState(0);
 
     useEffect(() => {
-        const sequence = [
-            { t: 2000, s: 1 }, 
-            { t: 4000, s: 2 }, 
-            { t: 6000, s: 3 }, 
-            { t: 8000, s: 4 }, 
-            { t: 10000, s: 5 } 
-        ];
+        if (step >= 5) {
+            const t = setTimeout(onComplete, 500);
+            return () => clearTimeout(t);
+        }
 
-        let timeouts: ReturnType<typeof setTimeout>[] = [];
-        sequence.forEach(({t, s}) => {
-            timeouts.push(setTimeout(() => setStep(s), t));
-        });
-        
-        timeouts.push(setTimeout(onComplete, 11000));
+        const timer = setTimeout(() => {
+            setStep(s => s + 1);
+        }, 2500); 
 
-        return () => timeouts.forEach(clearTimeout);
-    }, [onComplete]);
+        return () => clearTimeout(timer);
+    }, [step, onComplete]);
+
+    const handleTap = (e: React.MouseEvent) => {
+        const width = window.innerWidth;
+        const clickX = e.clientX;
+
+        if (clickX < width * 0.3) {
+            setStep(s => Math.max(0, s - 1));
+        } else {
+            setStep(s => s + 1);
+        }
+    };
 
     if (step >= 5) return null;
 
     return (
-        <div className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center overflow-hidden font-grotesk text-center px-4">
+        <div 
+            onClick={handleTap}
+            className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center overflow-hidden font-grotesk text-center px-4 cursor-pointer select-none"
+        >
+            <div className="absolute top-0 left-0 w-[30%] h-full z-20" /> 
+            <div className="absolute top-0 right-0 w-[70%] h-full z-20" /> 
+
             <button 
-                onClick={onComplete}
+                onClick={(e) => { e.stopPropagation(); onComplete(); }}
                 className="absolute top-6 right-6 text-gray-600 hover:text-white text-xs font-mono uppercase tracking-widest flex items-center gap-2 transition-colors z-[10000]"
             >
                 SKIP INTRO <SkipForward className="w-4 h-4" />
             </button>
             
-            <h1 className={`absolute text-5xl md:text-8xl font-black text-red-600 tracking-tighter transition-all duration-500 ${step === 0 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
+            <h1 className={`absolute text-5xl md:text-8xl font-black text-red-600 tracking-tighter transition-all duration-300 ${step === 0 ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-90 blur-sm'}`}>
                 DO YOU REPLY AT 2AM?
             </h1>
 
-            <h1 className={`absolute text-5xl md:text-8xl font-black text-red-500 tracking-tighter transition-all duration-500 ${step === 1 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
+            <h1 className={`absolute text-5xl md:text-8xl font-black text-red-500 tracking-tighter transition-all duration-300 ${step === 1 ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-90 blur-sm'}`}>
                 LOSING SALES WHILE YOU SLEEP?
             </h1>
 
-            <h1 className={`absolute text-5xl md:text-8xl font-black text-white tracking-tighter transition-all duration-500 ${step === 2 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
+            <h1 className={`absolute text-5xl md:text-8xl font-black text-white tracking-tighter transition-all duration-300 ${step === 2 ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-90 blur-sm'}`}>
                 STOP DOING IT MANUALLY.
             </h1>
 
-            <h1 className={`absolute text-6xl md:text-9xl font-black text-[#38F8A8] tracking-tighter transition-all duration-500 ${step === 3 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
+            <h1 className={`absolute text-6xl md:text-9xl font-black text-[#38F8A8] tracking-tighter transition-all duration-300 ${step === 3 ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-90 blur-sm'}`}>
                 MEET ORIN AI.
             </h1>
 
-            <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-500 ${step === 4 ? 'opacity-100' : 'opacity-0'}`}>
+            <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-300 ${step === 4 ? 'opacity-100' : 'opacity-0'}`}>
                  <div className="relative group">
                     <h1 className="text-6xl md:text-9xl font-black text-transparent text-stroke tracking-tighter animate-pulse" data-text="YOUR NEW EMPLOYEE IS HERE">
                         YOUR NEW EMPLOYEE.
                     </h1>
                  </div>
+            </div>
+            
+            <div className="absolute bottom-10 left-0 w-full text-center text-gray-500 text-[10px] font-mono animate-pulse">
+                TAP LEFT OR RIGHT TO NAVIGATE
             </div>
         </div>
     );
@@ -758,20 +773,20 @@ const PricingCard = ({ setChatOpen }: { setChatOpen: () => void }) => {
                 <div className="relative group rounded-[3rem] p-[2px] bg-gradient-to-b from-[#D4AF37] via-[#F7EF8A] to-[#D4AF37] shadow-[0_0_80px_-20px_rgba(212,175,55,0.4)] overflow-visible transition-all duration-500 hover:shadow-[0_0_120px_-10px_rgba(212,175,55,0.6)]">
                     
                     {/* Founder's Chip - GLOWING INTENSELY */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 z-30">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 z-30 w-max max-w-[90%]">
                         <div className="relative">
                             {/* Glowing Backlight for Chip */}
                             <div className="absolute inset-0 bg-[#D4AF37] blur-xl opacity-80 animate-pulse"></div>
                             
-                            <div className="bg-black px-8 py-3 border-b-2 border-x-2 border-[#D4AF37] rounded-b-xl text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.3em] font-grotesk flex items-center gap-3 relative z-10 shadow-[0_10px_30px_rgba(212,175,55,0.6)]">
-                                <div className="w-2 h-2 rounded-full bg-[#D4AF37] animate-ping"></div>
-                                <Cpu className="w-4 h-4" /> 
+                            <div className="bg-black px-5 py-2 md:px-8 md:py-3 border-b-2 border-x-2 border-[#D4AF37] rounded-b-xl text-[#D4AF37] text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] font-grotesk flex items-center gap-2 md:gap-3 relative z-10 shadow-[0_10px_30px_rgba(212,175,55,0.6)] whitespace-nowrap">
+                                <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[#D4AF37] animate-ping"></div>
+                                <Cpu className="w-3 h-3 md:w-4 md:h-4" /> 
                                 FOUNDER'S CHIP — TESSERACT
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-[#050505] rounded-[3rem] p-6 md:p-12 relative h-full flex flex-col items-center text-center overflow-hidden">
+                    <div className="bg-[#050505] rounded-[3rem] p-6 pt-12 md:p-12 relative h-full flex flex-col items-center text-center overflow-hidden">
                         
                         {/* Animated Background Rays */}
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.05)_0%,transparent_60%)] animate-spin-slow pointer-events-none"></div>
@@ -780,7 +795,7 @@ const PricingCard = ({ setChatOpen }: { setChatOpen: () => void }) => {
                         <div className="relative z-10 w-full max-w-3xl">
                             
                             {/* Header */}
-                            <div className="flex flex-col items-center mb-6 mt-4">
+                            <div className="flex flex-col items-center mb-6 mt-8 md:mt-4">
                                 <h3 className="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F7EF8A] to-[#D4AF37] font-mono mb-2 tracking-[0.3em] uppercase drop-shadow-sm">
                                     THE PREMIUM PASS
                                 </h3>
