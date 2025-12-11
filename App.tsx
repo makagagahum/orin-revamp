@@ -1181,10 +1181,18 @@ export default function App() {
                             <h2 className="text-3xl md:text-5xl font-black mb-4 font-grotesk text-gray-900 dark:text-white">MEET THE MINDS</h2>
                             <p className="text-gray-500 text-sm font-mono uppercase tracking-widest">The architects behind the intelligence.</p>
                         </div>
-                        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
+                        
+                        {/* 
+                          UPDATED: Mobile Horizontal Scroll Layout 
+                          - Uses 'flex' and 'overflow-x-auto' on mobile
+                          - Uses 'grid' on desktop
+                          - 'snap-x' for carousel effect
+                        */}
+                        <div className="max-w-6xl mx-auto flex md:grid md:grid-cols-4 overflow-x-auto md:overflow-visible snap-x snap-mandatory gap-4 pb-8 md:pb-0 px-4 md:px-0 -mx-4 md:mx-auto no-scrollbar">
                             {TEAM.map((member, i) => (
                                 <div 
                                     key={i} 
+                                    className="min-w-[280px] w-[85vw] md:w-auto md:min-w-0 snap-center flex-shrink-0 md:flex-shrink first:pl-4 last:pr-4 md:first:pl-0 md:last:pr-0"
                                     onMouseEnter={() => setHoveredMember(i)}
                                     onMouseLeave={() => setHoveredMember(null)}
                                 >
