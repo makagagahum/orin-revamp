@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, MessageCircle, X, ArrowRight, Zap, Send, Sparkles, CheckCircle2, Facebook, Instagram, Twitter, ShoppingBag, Globe, TrendingUp, ShieldCheck, Clock, AlertCircle, Building2, Headset, Cpu, Triangle, ChevronLeft, ChevronRight, Pause, Play, Crown, Mail, Loader2, SkipForward, Sun, Moon } from 'lucide-react';
+import { Menu, MessageCircle, X, ArrowRight, Zap, Send, Sparkles, CheckCircle2, Facebook, Instagram, Twitter, ShoppingBag, Globe, TrendingUp, ShieldCheck, Clock, AlertCircle, Building2, Headset, Cpu, Triangle, ChevronLeft, ChevronRight, Pause, Play, Crown, Mail, Loader2, SkipForward, Sun, Moon, Store, Heart, Share2 } from 'lucide-react';
 import { MarketGrowthChart, ROIChart } from './components/Charts';
 import PacManGame from './components/PacManGame';
 import { ContentProtection } from './components/ContentProtection';
@@ -237,6 +237,131 @@ const TesseractCircuit = ({ isActive, theme }: { isActive: boolean, theme: 'dark
     }, [isActive, theme]);
 
     return <canvas ref={canvasRef} className={`absolute inset-0 z-0 pointer-events-none ${theme === 'dark' ? 'mix-blend-screen' : 'mix-blend-normal'}`} style={{ width: '100%', height: '100%' }} />;
+};
+
+// --- ICON COMPONENTS ---
+// Simple SVG components for authentic branding
+const BrandIcons = {
+    Facebook: () => <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036c-2.148 0-2.791 1.657-2.791 3.556v.416h4.133l-1.026 3.667h-3.107v7.98h-5.023z"/></svg>,
+    Messenger: () => <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M12 2C6.347 2 2 5.867 2 10.879c0 2.723 1.258 5.068 3.245 6.697V22l3.434-1.884c.159.043 1.157.197 1.321.197 5.653 0 10-3.867 10-8.879S17.653 2 12 2zm.892 10.428l-2.435-2.583-4.755 2.583 5.222-5.542 2.457 2.583 4.733-2.583-5.222 5.542z"/></svg>,
+    Instagram: () => <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>,
+    TikTok: () => <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.65-1.62-1.12v8.76c0 5.29-5.43 7.31-8.65 5.75-2.67-1.35-3.69-4.89-2.28-7.55 1.09-2.02 3.19-3.05 5.43-2.91v4.2c-1.31-.27-2.73.57-2.99 1.88-.17.96.38 2.01 1.26 2.47 1.66.82 3.42-.64 3.15-2.36V0h-.01z"/></svg>,
+    Airbnb: () => <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M12.02 0C5.397 0 0 5.397 0 12.02c0 6.623 5.397 12.02 12.02 12.02 6.623 0 12.02-5.397 12.02-12.02C24.04 5.397 18.643 0 12.02 0zm6.816 14.51c-.13 1.95-1.928 3.51-3.67 3.51-2.126 0-3.328-1.745-3.328-1.745s-1.2 1.745-3.328 1.745c-1.742 0-3.54-1.56-3.67-3.51-.157-2.31 1.358-4.223 2.934-5.91C9.626 6.848 11.66 4.316 12 3.868c.34.448 2.374 2.98 4.228 4.732 1.576 1.687 3.091 3.6 2.934 5.91h-.326z"/></svg>,
+    Shopee: () => <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M19.38 7.38A3.66 3.66 0 0 0 16.5 6h-1.5v-.5a3 3 0 0 0-6 0V6H7.5c-1.21 0-2.3.56-3 1.45L2 19.5A2.99 2.99 0 0 0 5 23h14a2.99 2.99 0 0 0 3-3.5l-2.62-12.12zM11 5.5a1.5 1.5 0 0 1 3 0V6h-3v-.5zm.27 9.87c.6.21.92.35 1.05.47.1.09.18.25.18.41 0 .5-.4.8-1.04.8-.5 0-.91-.22-1.12-.55l-.83.56c.33.56.97.94 1.9.94 1.15 0 2.05-.62 2.05-1.7 0-.95-.65-1.42-1.52-1.74l-.62-.22c-.52-.19-.77-.32-.9-.42-.1-.08-.18-.21-.18-.38 0-.44.42-.7.97-.7.54 0 .9.23 1.13.56l.78-.62C12.75 11.23 12.12 11 11.5 11c-1.1 0-1.95.62-1.95 1.64 0 .9.6 1.36 1.45 1.67l.27.11V15.37z"/></svg>,
+    Lazada: () => <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>, // Using heart shape as requested by Lazada's common logo representation in minimal sets, or we can use a stylized 'L'
+    Shopify: () => <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M21.56 12.15l-1.88-9.06a.75.75 0 0 0-.6-.58l-5.75-1.43a.75.75 0 0 0-.58.15l-4.18 3.65-4.1-1.03a.75.75 0 0 0-.9.46L2.44 12.15a4.5 4.5 0 0 0 2.45 5.38l6.75 2.7a.75.75 0 0 0 .56 0l7.25-2.7a4.5 4.5 0 0 0 2.11-5.38zM12 18.5l-5.25-2.1c-.2-.08-.35-.25-.4-.46l-1.5-6.03 2.5.63v.01l4.25 1.06 4.65-4.06 4.3 1.07-1.5 7.23c-.05.21-.2.38-.4.46L12 18.5z"/></svg>
+};
+
+const OrbitingAvatar = ({ theme }: { theme: 'dark' | 'light' }) => {
+    // Config for planetary placement: angle in degrees, dist in % from center
+    const PLATFORMS = [
+        { id: 0, name: 'Facebook', color: '#1877F2', icon: <BrandIcons.Facebook />, angle: 270, dist: 48 }, // Top
+        { id: 1, name: 'Messenger', color: '#00B2FF', icon: <BrandIcons.Messenger />, angle: 320, dist: 35 },
+        { id: 2, name: 'Instagram', color: '#E1306C', icon: <BrandIcons.Instagram />, angle: 30, dist: 50 },
+        { id: 3, name: 'TikTok', color: '#ffffff', icon: <BrandIcons.TikTok />, angle: 90, dist: 38 }, // Right
+        { id: 4, name: 'Airbnb', color: '#FF5A5F', icon: <BrandIcons.Airbnb />, angle: 140, dist: 45 },
+        { id: 5, name: 'Shopee', color: '#EE4D2D', icon: <BrandIcons.Shopee />, angle: 180, dist: 33 }, // Bottom
+        { id: 6, name: 'Lazada', color: '#0f146d', icon: <BrandIcons.Lazada />, angle: 210, dist: 52 },
+        { id: 7, name: 'Shopify', color: '#95BF47', icon: <BrandIcons.Shopify />, angle: 240, dist: 38 },
+    ];
+
+    // Constellation lines: [StartIndex, EndIndex]
+    const CONNECTIONS = [
+        [0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 0], // Outer loop
+        [1, 3], [5, 7], [0, 2], [4, 6] // Cross connections
+    ];
+
+    return (
+        <div className="relative w-[340px] h-[340px] md:w-[480px] md:h-[480px] flex items-center justify-center">
+            {/* Spinning Constellation Container - VERY SLOW SUBTLE ORBIT */}
+            <div className="absolute inset-0 animate-[spin_120s_linear_infinite] pointer-events-none z-20">
+                
+                {/* SVG Lines Layer */}
+                <svg className="absolute inset-0 w-full h-full opacity-20 pointer-events-none" style={{ overflow: 'visible' }}>
+                    {CONNECTIONS.map(([startIdx, endIdx], i) => {
+                        const start = PLATFORMS[startIdx];
+                        const end = PLATFORMS[endIdx];
+                        
+                        // Convert polar to cartesian (assuming 100x100 coordinate space for ease)
+                        // Center is 50, 50. Radius is scaled.
+                        const getPos = (p: typeof start) => ({
+                            x: 50 + p.dist * Math.cos((p.angle * Math.PI) / 180),
+                            y: 50 + p.dist * Math.sin((p.angle * Math.PI) / 180)
+                        });
+
+                        const p1 = getPos(start);
+                        const p2 = getPos(end);
+
+                        return (
+                            <line 
+                                key={i}
+                                x1={`${p1.x}%`} y1={`${p1.y}%`}
+                                x2={`${p2.x}%`} y2={`${p2.y}%`}
+                                stroke={theme === 'dark' ? '#38F8A8' : '#000'} 
+                                strokeWidth="0.5"
+                                strokeDasharray="4 4"
+                            />
+                        );
+                    })}
+                </svg>
+
+                {/* Icons */}
+                {PLATFORMS.map((platform, i) => {
+                    const angleRad = (platform.angle * Math.PI) / 180;
+                    const left = 50 + platform.dist * Math.cos(angleRad);
+                    const top = 50 + platform.dist * Math.sin(angleRad);
+                    
+                    return (
+                        <div 
+                            key={i}
+                            className="absolute flex items-center justify-center w-10 h-10 md:w-14 md:h-14 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white transition-all duration-300 hover:scale-125 hover:z-50 hover:border-transparent group/icon cursor-pointer shadow-lg"
+                            style={{
+                                left: `${left}%`,
+                                top: `${top}%`,
+                                transform: 'translate(-50%, -50%)', 
+                                boxShadow: `0 0 15px -5px ${platform.color}40`
+                            }}
+                        >
+                            {/* Counter-rotate to keep icons upright relative to screen */}
+                            <div 
+                                className="animate-[spin_120s_linear_infinite_reverse] w-full h-full flex items-center justify-center" 
+                                style={{ 
+                                    animationDuration: '120s',
+                                    color: 'white'
+                                }}
+                            >
+                                <div 
+                                    className="transition-colors duration-300 group-hover/icon:text-[var(--hover-color)] drop-shadow-md"
+                                    style={{ '--hover-color': platform.color } as React.CSSProperties}
+                                >
+                                    {platform.icon}
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Glowing Orbital Rings (Static Visuals) */}
+            <div className="absolute inset-[18%] rounded-full border border-[#38F8A8]/10 pointer-events-none"></div>
+            <div className="absolute inset-[32%] rounded-full border border-[#38F8A8]/10 pointer-events-none"></div>
+            <div className="absolute inset-[46%] rounded-full border border-[#38F8A8]/5 pointer-events-none"></div>
+
+            {/* Main Avatar - Zoomed out to show head and shoulders */}
+            <div className="w-[55%] h-[55%] rounded-full overflow-hidden border-[3px] border-[#38F8A8] shadow-[0_0_60px_rgba(56,248,168,0.2)] bg-black relative z-10 group">
+                <img 
+                    src="https://i.imgur.com/7JAu9YG.png" 
+                    alt="Orin" 
+                    className="w-full h-full object-cover object-top scale-100 translate-y-0 transition-transform duration-700 group-hover:scale-105" 
+                />
+            </div>
+
+            {/* Ticker Below */}
+            <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-[90%] max-w-sm z-30">
+                <HeroTicker />
+            </div>
+        </div>
+    );
 };
 
 const TypingGlitchText: React.FC<{ text: string, hoverText: string, isActive: boolean }> = ({ text, hoverText, isActive }) => {
@@ -662,11 +787,8 @@ const MobileHero = ({ setChatOpen, theme }: { setChatOpen: () => void, theme: 'd
             </div>
             <div className="relative z-10 flex flex-col items-center text-center">
                 
-                <div className="relative w-[220px] h-[220px] mb-24">
-                     <img src="https://i.imgur.com/7JAu9YG.png" alt="Orin" className="w-full h-full object-cover rounded-full border-2 border-[#38F8A8] shadow-[0_0_40px_rgba(56,248,168,0.3)] bg-black" />
-                     <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-[300px] z-20">
-                         <HeroTicker />
-                     </div>
+                <div className="mb-24 scale-90">
+                     <OrbitingAvatar theme={theme} />
                 </div>
 
                 <div className="inline-block px-3 py-1 mb-4 rounded-full border border-[#38F8A8] bg-[#38F8A8]/10 mt-4">
@@ -744,16 +866,9 @@ const StableDesktopHero = ({ setChatOpen, theme }: { setChatOpen: () => void, th
                 
                 <div className="col-span-5 flex flex-col items-center justify-center relative h-full min-h-[600px]">
                     <MouseTilt intensity={10}>
-                        <div className="relative w-[450px] h-[450px]">
-                             <div className="absolute inset-[-40px] rounded-full border border-[#38F8A8]/20 animate-spin-slow pointer-events-none"></div>
-                             <div className="absolute inset-[-20px] rounded-full border-2 border-[#D4AF37]/30 animate-spin-slow pointer-events-none" style={{ animationDirection: 'reverse', animationDuration: '30s' }}></div>
-
-                             <img src="https://i.imgur.com/7JAu9YG.png" alt="Orin" className="w-full h-full object-cover rounded-full border-4 border-[#38F8A8] shadow-[0_0_50px_rgba(56,248,168,0.3)] bg-black relative z-10" />
-                             
-                             <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-full max-w-sm z-20">
-                                 <HeroTicker />
-                             </div>
-                        </div>
+                         <div className="scale-110">
+                             <OrbitingAvatar theme={theme} />
+                         </div>
                     </MouseTilt>
                 </div>
             </div>
