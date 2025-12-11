@@ -849,22 +849,29 @@ const PricingCard = ({ setChatOpen, theme }: { setChatOpen: () => void, theme: '
     );
 };
 
-// --- MISSING COMPONENTS ---
-
 const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
     const [exiting, setExiting] = useState(false);
     
     useEffect(() => {
+        // Prevent scrolling during intro
+        document.body.style.overflow = 'hidden';
+        
         // Simulate initialization sequence
         const timer = setTimeout(() => {
             setExiting(true);
-            setTimeout(onComplete, 800); 
+            setTimeout(() => {
+                document.body.style.overflow = '';
+                onComplete();
+            }, 800); 
         }, 2200); 
-        return () => clearTimeout(timer);
+        return () => {
+            clearTimeout(timer);
+            document.body.style.overflow = '';
+        };
     }, [onComplete]);
 
     return (
-        <div className={`fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center transition-opacity duration-700 ${exiting ? 'opacity-0' : 'opacity-100'}`}>
+        <div className={`fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center transition-opacity duration-700 ${exiting ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
              <div className="w-24 h-24 relative mb-6">
                  <div className="absolute inset-0 border-4 border-[#38F8A8] border-t-transparent rounded-full animate-spin"></div>
                  <div className="absolute inset-2 border-4 border-[#38F8A8]/30 border-b-transparent rounded-full animate-spin-reverse"></div>
@@ -1476,4 +1483,11 @@ export default function App() {
                 </div>
 
                 {gameOpen && (
-                    <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-
+                    <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center backdrop-blur-xl">
+                        <PacManGame onClose={() => setGameOpen(false)} />
+                    </div>
+                )}
+            </div>
+        </ContentProtection>
+    );
+}
