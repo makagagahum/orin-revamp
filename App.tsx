@@ -850,36 +850,104 @@ const PricingCard = ({ setChatOpen, theme }: { setChatOpen: () => void, theme: '
 };
 
 const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
+    const [step, setStep] = useState(0);
     const [exiting, setExiting] = useState(false);
-    
+
     useEffect(() => {
-        // Prevent scrolling during intro
+        // Stop scrolling
         document.body.style.overflow = 'hidden';
+
+        // Sequence timing
+        const timings = [1500, 3000, 4200, 5500]; // Accumulated time for steps 0, 1, 2, 3
         
-        // Simulate initialization sequence
-        const timer = setTimeout(() => {
+        const t1 = setTimeout(() => setStep(1), 1200); // Losing sales? -> Replying manually?
+        const t2 = setTimeout(() => setStep(2), 2600); // Replying manually? -> STOP.
+        const t3 = setTimeout(() => setStep(3), 3500); // STOP. -> AUTOMATE EVERYTHING.
+        const t4 = setTimeout(() => setStep(4), 4800); // AUTOMATE -> ORIN LOGO
+
+        const tFinal = setTimeout(() => {
             setExiting(true);
             setTimeout(() => {
                 document.body.style.overflow = '';
                 onComplete();
-            }, 800); 
-        }, 2200); 
+            }, 800);
+        }, 6500);
+
         return () => {
-            clearTimeout(timer);
+            [t1, t2, t3, t4, tFinal].forEach(clearTimeout);
             document.body.style.overflow = '';
         };
     }, [onComplete]);
 
     return (
-        <div className={`fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center transition-opacity duration-700 ${exiting ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-             <div className="w-24 h-24 relative mb-6">
-                 <div className="absolute inset-0 border-4 border-[#38F8A8] border-t-transparent rounded-full animate-spin"></div>
-                 <div className="absolute inset-2 border-4 border-[#38F8A8]/30 border-b-transparent rounded-full animate-spin-reverse"></div>
-                 <div className="absolute inset-0 flex items-center justify-center font-black text-[#38F8A8] text-xl font-grotesk tracking-tighter">ORIN</div>
-             </div>
-             <div className="font-mono text-[#38F8A8] text-xs tracking-[0.3em] animate-pulse">
-                 INITIALIZING SYSTEM...
-             </div>
+        <div className={`fixed inset-0 z-[99999] bg-black flex flex-col items-center justify-center transition-opacity duration-700 ${exiting ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+            <div className="text-center px-4 relative">
+                
+                {/* STEP 0: LOSING SALES? */}
+                {step === 0 && (
+                    <div className="animate-in fade-in zoom-in duration-300">
+                        <h1 className="text-5xl md:text-8xl font-black text-red-500 font-grotesk tracking-tighter leading-none mb-2 glitch-text" data-text="TIRED OF">
+                            TIRED OF
+                        </h1>
+                        <h1 className="text-5xl md:text-8xl font-black text-white font-grotesk tracking-tighter leading-none glitch-text" data-text="LOSING SALES?">
+                            LOSING SALES?
+                        </h1>
+                    </div>
+                )}
+
+                {/* STEP 1: REPLYING AT 2AM? */}
+                {step === 1 && (
+                    <div className="animate-in fade-in zoom-in duration-300">
+                        <h1 className="text-5xl md:text-8xl font-black text-white font-grotesk tracking-tighter leading-none mb-2">
+                            REPLYING
+                        </h1>
+                        <h1 className="text-5xl md:text-8xl font-black text-red-500 font-grotesk tracking-tighter leading-none italic">
+                            AT 2:00 AM?
+                        </h1>
+                    </div>
+                )}
+
+                {/* STEP 2: STOP. */}
+                {step === 2 && (
+                    <div className="animate-in fade-in zoom-in duration-100">
+                        <h1 className="text-7xl md:text-9xl font-black text-white font-grotesk tracking-tighter leading-none border-b-8 border-red-500 inline-block">
+                            STOP.
+                        </h1>
+                    </div>
+                )}
+
+                {/* STEP 3: AUTOMATE */}
+                {step === 3 && (
+                    <div className="animate-in fade-in zoom-in duration-500">
+                        <h1 className="text-4xl md:text-7xl font-black text-gray-500 font-grotesk tracking-widest leading-none mb-4">
+                            AUTOMATE
+                        </h1>
+                        <h1 className="text-5xl md:text-8xl font-black text-[#38F8A8] font-grotesk tracking-tighter leading-none text-stroke">
+                            EVERYTHING.
+                        </h1>
+                    </div>
+                )}
+
+                {/* STEP 4: ORIN REVEAL */}
+                {step === 4 && (
+                    <div className="animate-in fade-in zoom-in duration-700 flex flex-col items-center">
+                        <div className="w-24 h-24 relative mb-6">
+                            <div className="absolute inset-0 border-4 border-[#38F8A8] border-t-transparent rounded-full animate-spin"></div>
+                            <div className="absolute inset-2 border-4 border-[#38F8A8]/30 border-b-transparent rounded-full animate-spin-reverse"></div>
+                            <div className="absolute inset-0 flex items-center justify-center font-black text-[#38F8A8] text-xl font-grotesk tracking-tighter">ORIN</div>
+                        </div>
+                        <h1 className="text-6xl md:text-8xl font-black text-white font-grotesk tracking-tighter">
+                            ORIN <span className="text-[#38F8A8]">AI</span>
+                        </h1>
+                        <p className="mt-4 font-mono text-gray-500 tracking-[0.5em] text-xs uppercase animate-pulse">
+                            Neural Core Online
+                        </p>
+                    </div>
+                )}
+            </div>
+
+            {/* Scanline Effect Overlay */}
+            <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-50 bg-[length:100%_2px,3px_100%] pointer-events-none opacity-20"></div>
         </div>
     );
 };
