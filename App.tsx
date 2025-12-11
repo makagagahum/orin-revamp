@@ -669,12 +669,12 @@ const HeroTicker = ({ theme }: { theme: 'dark' | 'light' }) => {
 
     return (
         <div className={`transition-all duration-500 transform ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} w-full`}>
-            <div className={`glass-card p-4 rounded-2xl flex items-center gap-4 border-l-4 backdrop-blur-md w-full ${theme === 'light' ? 'bg-white shadow-lg border-[#C5A028]' : 'bg-white/80 dark:bg-black/80 border-[#38F8A8]'}`}>
-                 <img src={messages[idx].img} className={`w-12 h-12 rounded-full border object-cover shrink-0 ${theme === 'light' ? 'border-gray-200' : 'border-black/10 dark:border-white/20'}`} alt="avatar" />
+            <div className={`glass-card p-4 rounded-2xl flex items-center gap-4 border-l-4 backdrop-blur-xl w-full shadow-2xl ${theme === 'light' ? 'bg-white/95 border-[#C5A028]' : 'bg-[#111]/90 border-[#38F8A8]'}`}>
+                 <img src={messages[idx].img} className={`w-12 h-12 rounded-full border-2 object-cover shrink-0 ${theme === 'light' ? 'border-gray-200' : 'border-[#38F8A8]/30'}`} alt="avatar" />
                  <div className="text-left flex-1 min-w-0">
-                     <p className="text-[10px] text-gray-500 dark:text-gray-400 font-mono uppercase tracking-wider truncate">{messages[idx].role}</p>
-                     <p className="text-sm font-bold text-gray-900 dark:text-white italic truncate">"{messages[idx].q}"</p>
-                     <p className={`text-xs mt-1 font-bold truncate ${theme === 'light' ? 'text-[#C5A028]' : 'text-[#059669] dark:text-[#38F8A8]'}`}>Orin: {messages[idx].a}</p>
+                     <p className="text-[10px] text-gray-500 dark:text-gray-400 font-mono uppercase tracking-wider mb-0.5">{messages[idx].role}</p>
+                     <p className="text-sm font-bold text-gray-900 dark:text-white italic leading-tight mb-1 whitespace-normal">"{messages[idx].q}"</p>
+                     <p className={`text-xs font-bold whitespace-normal leading-tight ${theme === 'light' ? 'text-[#C5A028]' : 'text-[#38F8A8]'}`}>Orin: {messages[idx].a}</p>
                  </div>
             </div>
         </div>
@@ -852,36 +852,69 @@ const PricingCard = ({ setChatOpen, theme }: { setChatOpen: () => void, theme: '
 const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
     const [step, setStep] = useState(0);
     const [exiting, setExiting] = useState(false);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // Durations for each step in milliseconds
+    const stepDurations = [1500, 1500, 1200, 1500, 2000];
+
+    const advance = () => {
+        if (exiting) return;
+        if (step < 4) {
+            setStep(s => s + 1);
+        } else {
+            finish();
+        }
+    };
+
+    const finish = () => {
+        if (exiting) return;
+        setExiting(true);
+        // Short delay for exit animation
+        setTimeout(onComplete, 500);
+    };
+
+    const skip = (e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent triggering advance
+        onComplete();
+    };
 
     useEffect(() => {
-        // Stop scrolling
-        document.body.style.overflow = 'hidden';
+        // Clear previous timer when step changes
+        if (timerRef.current) clearTimeout(timerRef.current);
 
-        // Sequence timing
-        const timings = [1500, 3000, 4200, 5500]; // Accumulated time for steps 0, 1, 2, 3
-        
-        const t1 = setTimeout(() => setStep(1), 1200); // Losing sales? -> Replying manually?
-        const t2 = setTimeout(() => setStep(2), 2600); // Replying manually? -> STOP.
-        const t3 = setTimeout(() => setStep(3), 3500); // STOP. -> AUTOMATE EVERYTHING.
-        const t4 = setTimeout(() => setStep(4), 4800); // AUTOMATE -> ORIN LOGO
-
-        const tFinal = setTimeout(() => {
-            setExiting(true);
-            setTimeout(() => {
-                document.body.style.overflow = '';
-                onComplete();
-            }, 800);
-        }, 6500);
+        if (step < 4) {
+             timerRef.current = setTimeout(() => {
+                setStep(s => s + 1);
+            }, stepDurations[step]);
+        } else if (step === 4) {
+            // Final step (reveal), wait then auto-finish
+            timerRef.current = setTimeout(finish, stepDurations[step]);
+        }
 
         return () => {
-            [t1, t2, t3, t4, tFinal].forEach(clearTimeout);
-            document.body.style.overflow = '';
+            if (timerRef.current) clearTimeout(timerRef.current);
         };
-    }, [onComplete]);
+    }, [step]);
+
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = ''; };
+    }, []);
 
     return (
-        <div className={`fixed inset-0 z-[99999] bg-black flex flex-col items-center justify-center transition-opacity duration-700 ${exiting ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-            <div className="text-center px-4 relative">
+        <div 
+            onClick={advance}
+            className={`fixed inset-0 z-[99999] bg-black flex flex-col items-center justify-center transition-opacity duration-700 cursor-pointer ${exiting ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+        >
+            {/* Skip Button */}
+            <button 
+                onClick={skip}
+                className="absolute top-8 right-8 z-[100000] text-gray-500 hover:text-white text-xs font-mono uppercase tracking-widest border border-white/10 hover:border-white px-4 py-2 rounded-full transition-colors"
+            >
+                Skip Intro
+            </button>
+
+            <div className="text-center px-4 relative pointer-events-none">
                 
                 {/* STEP 0: LOSING SALES? */}
                 {step === 0 && (
@@ -944,6 +977,11 @@ const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
                         </p>
                     </div>
                 )}
+            </div>
+
+            {/* Tap to Forward Hint */}
+            <div className="absolute bottom-12 text-gray-600 text-[10px] font-mono uppercase tracking-[0.3em] animate-pulse pointer-events-none">
+                Tap anywhere to fast forward
             </div>
 
             {/* Scanline Effect Overlay */}
