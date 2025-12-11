@@ -14,9 +14,11 @@
             colors: {
               background: '#020202', 
               surface: '#0A0A0A', 
-              primary: '#38F8A8',
-              secondary: '#A855F7',
-              chip: '#D4AF37',
+              primary: '#38F8A8', // Neon Green (Dark Mode)
+              'primary-light': '#D4AF37', // Muted Gold (Light Mode)
+              'editorial-gray': '#F4F4F5', // Magazine Paper
+              'ancient-gold': '#C5A028',
+              'ancient-stone': '#EAEAEA',
             },
             fontFamily: { 
               sans: ['Inter', 'sans-serif'], 
@@ -60,7 +62,10 @@
             },
             backgroundImage: {
               'chip-pattern': "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
-              'circuit-nodes': "url(\"data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 10h80v80h-80z' fill='none' stroke='%23D4AF37' stroke-width='0.5' stroke-opacity='0.2'/%3E%3Ccircle cx='10' cy='10' r='2' fill='%23D4AF37' fill-opacity='0.4'/%3E%3Ccircle cx='90' cy='10' r='2' fill='%23D4AF37' fill-opacity='0.4'/%3E%3Ccircle cx='90' cy='90' r='2' fill='%23D4AF37' fill-opacity='0.4'/%3E%3Ccircle cx='10' cy='90' r='2' fill='%23D4AF37' fill-opacity='0.4'/%3E%3Ccircle cx='50' cy='50' r='3' fill='%23D4AF37' fill-opacity='0.4'/%3E%3Cpath d='M10 10l40 40l40-40M10 90l40-40l40 40' stroke='%23D4AF37' stroke-width='0.5' stroke-opacity='0.2'/%3E%3C/svg%3E\")"
+              'circuit-nodes': "url(\"data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 10h80v80h-80z' fill='none' stroke='%23D4AF37' stroke-width='0.5' stroke-opacity='0.2'/%3E%3Ccircle cx='10' cy='10' r='2' fill='%23D4AF37' fill-opacity='0.4'/%3E%3Ccircle cx='90' cy='10' r='2' fill='%23D4AF37' fill-opacity='0.4'/%3E%3Ccircle cx='90' cy='90' r='2' fill='%23D4AF37' fill-opacity='0.4'/%3E%3Ccircle cx='10' cy='90' r='2' fill='%23D4AF37' fill-opacity='0.4'/%3E%3Ccircle cx='50' cy='50' r='3' fill='%23D4AF37' fill-opacity='0.4'/%3E%3Cpath d='M10 10l40 40l40-40M10 90l40-40l40 40' stroke='%23D4AF37' stroke-width='0.5' stroke-opacity='0.2'/%3E%3C/svg%3E\")",
+              'grid-light': "url(\"data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='0.05' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E\")",
+              'grid-dots': "url(\"data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='0.08' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1'/%3E%3C/g%3E%3C/svg%3E\")",
+              'noise': "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E\")"
             }
           },
         },
@@ -72,34 +77,54 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
       body { background-color: #020202; color: #ffffff; overflow-x: hidden; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+      
+      /* Light Mode Body Override - Editorial Gray */
+      html:not(.dark) body { background-color: #F4F4F5; color: #0A0A0A; }
+
       h1, h2, h3, h4, h5, h6 { font-family: 'Space Grotesk', sans-serif; }
       
       /* Optimized Scrollbar */
       ::-webkit-scrollbar { width: 6px; }
       ::-webkit-scrollbar-track { background: #020202; }
+      html:not(.dark) ::-webkit-scrollbar-track { background: #F4F4F5; }
       ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+      html:not(.dark) ::-webkit-scrollbar-thumb { background: #C5A028; }
       ::-webkit-scrollbar-thumb:hover { background: #38F8A8; }
       
-      .glass-card { 
+      /* Glass Card - Adaptive for Light Mode */
+      .dark .glass-card { 
         background: rgba(20, 20, 20, 0.7); 
         backdrop-filter: blur(12px); 
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.08); 
         box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5); 
-        will-change: transform, opacity;
       }
       
+      /* Light Mode Card - Stone Chip / Magazine Style */
+      html:not(.dark) .glass-card {
+        background: #FFFFFF;
+        border: 1px solid #E5E7EB;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+      }
+      
+      .will-change-transform { will-change: transform, opacity; }
+
       /* OUTLINED TEXT EFFECT */
       .text-stroke { 
         -webkit-text-stroke: 1px rgba(255,255,255,0.8); 
         color: transparent; 
       }
+      html:not(.dark) .text-stroke {
+        -webkit-text-stroke: 1.5px #0A0A0A;
+      }
+
       .text-stroke-thick {
         -webkit-text-stroke: 2px #fff;
         color: transparent;
       }
       @media (min-width: 768px) {
         .text-stroke { -webkit-text-stroke: 2px rgba(255,255,255,0.8); }
+        html:not(.dark) .text-stroke { -webkit-text-stroke: 2px #0A0A0A; }
       }
       
       /* TV GLITCH CLIP PATHS */
@@ -116,6 +141,11 @@
         height: 100%;
         background: #020202;
       }
+      html:not(.dark) .glitch-text::before, 
+      html:not(.dark) .glitch-text::after {
+        background: #F4F4F5;
+      }
+
       .glitch-text::before {
         left: 2px;
         text-shadow: -1px 0 #ff00c1;
@@ -151,6 +181,8 @@
         opacity: 0.1; background-size: 100% 4px; animation: scanline 8s linear infinite;
         pointer-events: none; position: fixed; top: 0; left: 0; will-change: transform;
       }
+      html:not(.dark) .scanline { display: none; } 
+      
       @keyframes scanline { 0% { transform: translateY(-100px); } 100% { transform: translateY(100vh); } }
       
       .chat-bubble-user { border-bottom-right-radius: 2px; }

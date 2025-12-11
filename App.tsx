@@ -81,8 +81,17 @@ const ParticleBackground = ({ theme }: { theme: 'dark' | 'light' }) => {
         const initParticles = () => {
             particles = [];
             const isMobile = window.innerWidth < 768;
-            const count = isMobile ? 12 : 35;
-            for (let i = 0; i < count; i++) particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4, size: Math.random() * 2 + 0.5 });
+            // Fewer particles in light mode for cleaner look
+            const count = isMobile ? 12 : (theme === 'light' ? 30 : 35);
+            for (let i = 0; i < count; i++) {
+                particles.push({ 
+                    x: Math.random() * canvas.width, 
+                    y: Math.random() * canvas.height, 
+                    vx: (Math.random() - 0.5) * (theme === 'light' ? 0.1 : 0.4), 
+                    vy: (Math.random() - 0.5) * (theme === 'light' ? 0.1 : 0.4), 
+                    size: Math.random() * 2 + 0.5 
+                });
+            }
         };
 
         const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; initParticles(); };
@@ -90,48 +99,76 @@ const ParticleBackground = ({ theme }: { theme: 'dark' | 'light' }) => {
         const draw = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Theme-based background
-            const gradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, canvas.width);
             if (theme === 'dark') {
+                // Dark Mode: Constellation Network
+                const gradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, canvas.width);
                 gradient.addColorStop(0, '#050505'); gradient.addColorStop(1, '#000000');
-            } else {
-                gradient.addColorStop(0, '#ffffff'); gradient.addColorStop(1, '#f1f5f9');
-            }
-            ctx.fillStyle = gradient; ctx.fillRect(0,0,canvas.width, canvas.height);
+                ctx.fillStyle = gradient; ctx.fillRect(0,0,canvas.width, canvas.height);
 
-            // Adjust blend mode and color for visibility
-            ctx.globalCompositeOperation = theme === 'dark' ? 'screen' : 'source-over'; 
-            ctx.beginPath(); 
-            // Darker lines for light mode
-            ctx.strokeStyle = theme === 'dark' ? 'rgba(56, 248, 168, 0.15)' : 'rgba(0, 0, 0, 0.15)'; 
-            ctx.lineWidth = 0.5;
-            
-            const isMobile = window.innerWidth < 768;
-            const connectDistance = isMobile ? 80 : 120;
-
-            for (let i = 0; i < particles.length; i++) {
-                const p = particles[i];
-                p.x += p.vx; p.y += p.vy;
-                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                ctx.globalCompositeOperation = 'screen'; 
+                ctx.beginPath(); 
+                ctx.strokeStyle = 'rgba(56, 248, 168, 0.15)'; 
+                ctx.lineWidth = 0.5;
                 
-                for (let j = i + 1; j < particles.length; j++) {
-                    const p2 = particles[j];
-                    const dx = p.x - p2.x;
-                    const dy = p.y - p2.y;
-                    if (Math.abs(dx) < connectDistance && Math.abs(dy) < connectDistance) {
-                        if (dx*dx + dy*dy < (connectDistance * connectDistance)) { ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); }
+                const isMobile = window.innerWidth < 768;
+                const connectDistance = isMobile ? 80 : 120;
+
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+                    p.x += p.vx; p.y += p.vy;
+                    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                    
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const p2 = particles[j];
+                        const dx = p.x - p2.x;
+                        const dy = p.y - p2.y;
+                        if (Math.abs(dx) < connectDistance && Math.abs(dy) < connectDistance) {
+                            if (dx*dx + dy*dy < (connectDistance * connectDistance)) { ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); }
+                        }
                     }
                 }
+                ctx.stroke(); 
+                ctx.fillStyle = '#38F8A8';
+                ctx.beginPath();
+                for (const p of particles) {
+                    ctx.moveTo(p.x + p.size, p.y);
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); 
+                }
+                ctx.fill();
+
+            } else {
+                // Light Mode: Editorial Gray + Gold Accents
+                ctx.fillStyle = '#F4F4F5'; 
+                ctx.fillRect(0,0,canvas.width, canvas.height);
+                
+                // Draw static grid
+                ctx.fillStyle = '#E4E4E7'; // Slightly darker gray for dots
+                const spacing = 40;
+                for(let x = 0; x < canvas.width; x += spacing) {
+                    for(let y = 0; y < canvas.height; y += spacing) {
+                        ctx.beginPath();
+                        ctx.arc(x, y, 1, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                // Gold Dust Particles
+                ctx.fillStyle = '#D4AF37';
+                ctx.globalAlpha = 0.4; 
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+                    p.x += p.vx; p.y += p.vy;
+                    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                    
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * 0.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1.0;
             }
-            ctx.stroke(); 
-            ctx.fillStyle = theme === 'dark' ? '#38F8A8' : '#111111';
-            ctx.beginPath();
-            for (const p of particles) {
-                ctx.moveTo(p.x + p.size, p.y);
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); 
-            }
-            ctx.fill();
+
             animationFrameId = requestAnimationFrame(draw);
         };
         window.addEventListener('resize', resize); resize(); draw();
@@ -188,9 +225,10 @@ const TesseractCircuit = ({ isActive, theme }: { isActive: boolean, theme: 'dark
             const cx = canvas.width / 2;
             const cy = canvas.height / 2;
 
-            ctx.lineWidth = theme === 'dark' ? 0.3 : 0.5;
-            // High contrast technical drawing style for light mode
-            ctx.strokeStyle = theme === 'dark' ? 'rgba(212, 175, 55, 0.15)' : 'rgba(0, 0, 0, 0.2)';
+            // Theme Specific Styles
+            ctx.lineWidth = theme === 'dark' ? 0.3 : 0.6;
+            // Ancient Gold Lines for Light Mode
+            ctx.strokeStyle = theme === 'dark' ? 'rgba(212, 175, 55, 0.15)' : 'rgba(197, 160, 40, 0.2)'; 
             
             const isMobile = window.innerWidth < 768;
             const limit = isMobile ? 200 : 500;
@@ -225,7 +263,8 @@ const TesseractCircuit = ({ isActive, theme }: { isActive: boolean, theme: 'dark
 
             for(const p of projected) {
                 ctx.beginPath();
-                ctx.fillStyle = theme === 'dark' ? `rgba(255, 215, 0, ${p.scale * 0.8})` : `rgba(0, 0, 0, ${p.scale * 0.5})`;
+                // Gold Nodes in Light Mode
+                ctx.fillStyle = theme === 'dark' ? `rgba(255, 215, 0, ${p.scale * 0.8})` : `rgba(197, 160, 40, ${p.scale * 0.6})`;
                 ctx.arc(p.x, p.y, 2 * p.scale, 0, Math.PI * 2);
                 ctx.fill();
             }
@@ -258,7 +297,7 @@ const OrbitingAvatar = ({ theme }: { theme: 'dark' | 'light' }) => {
         { id: 0, name: 'Facebook', color: '#1877F2', icon: <BrandIcons.Facebook />, angle: 270, dist: 48 }, // Top
         { id: 1, name: 'Messenger', color: '#00B2FF', icon: <BrandIcons.Messenger />, angle: 320, dist: 35 },
         { id: 2, name: 'Instagram', color: '#E1306C', icon: <BrandIcons.Instagram />, angle: 30, dist: 50 },
-        { id: 3, name: 'TikTok', color: '#ffffff', icon: <BrandIcons.TikTok />, angle: 90, dist: 38 }, // Right
+        { id: 3, name: 'TikTok', color: '#000000', icon: <BrandIcons.TikTok />, angle: 90, dist: 38 }, // Right
         { id: 4, name: 'Airbnb', color: '#FF5A5F', icon: <BrandIcons.Airbnb />, angle: 140, dist: 45 },
         { id: 5, name: 'Shopee', color: '#EE4D2D', icon: <BrandIcons.Shopee />, angle: 180, dist: 33 }, // Bottom
         { id: 6, name: 'Lazada', color: '#0f146d', icon: <BrandIcons.Lazada />, angle: 210, dist: 52 },
@@ -297,7 +336,7 @@ const OrbitingAvatar = ({ theme }: { theme: 'dark' | 'light' }) => {
                                 key={i}
                                 x1={`${p1.x}%`} y1={`${p1.y}%`}
                                 x2={`${p2.x}%`} y2={`${p2.y}%`}
-                                stroke={theme === 'dark' ? '#38F8A8' : '#000'} 
+                                stroke={theme === 'dark' ? '#38F8A8' : '#C5A028'} 
                                 strokeWidth="0.5"
                                 strokeDasharray="4 4"
                             />
@@ -343,12 +382,12 @@ const OrbitingAvatar = ({ theme }: { theme: 'dark' | 'light' }) => {
             </div>
 
             {/* Glowing Orbital Rings (Static Visuals) */}
-            <div className="absolute inset-[18%] rounded-full border border-[#38F8A8]/10 pointer-events-none"></div>
-            <div className="absolute inset-[32%] rounded-full border border-[#38F8A8]/10 pointer-events-none"></div>
-            <div className="absolute inset-[46%] rounded-full border border-[#38F8A8]/5 pointer-events-none"></div>
+            <div className={`absolute inset-[18%] rounded-full border pointer-events-none ${theme === 'dark' ? 'border-[#38F8A8]/10' : 'border-[#C5A028]/10'}`}></div>
+            <div className={`absolute inset-[32%] rounded-full border pointer-events-none ${theme === 'dark' ? 'border-[#38F8A8]/10' : 'border-[#C5A028]/10'}`}></div>
+            <div className={`absolute inset-[46%] rounded-full border pointer-events-none ${theme === 'dark' ? 'border-[#38F8A8]/5' : 'border-[#C5A028]/5'}`}></div>
 
             {/* Main Avatar - Zoomed out to show head and shoulders */}
-            <div className="w-[55%] h-[55%] rounded-full overflow-hidden border-[3px] border-[#38F8A8] shadow-[0_0_60px_rgba(56,248,168,0.2)] bg-black relative z-10 group">
+            <div className={`w-[55%] h-[55%] rounded-full overflow-hidden border-[3px] shadow-[0_0_60px_rgba(56,248,168,0.2)] bg-black relative z-10 group ${theme === 'dark' ? 'border-[#38F8A8]' : 'border-[#0A0A0A] shadow-none'}`}>
                 <img 
                     src="https://i.imgur.com/7JAu9YG.png" 
                     alt="Orin" 
@@ -358,7 +397,7 @@ const OrbitingAvatar = ({ theme }: { theme: 'dark' | 'light' }) => {
 
             {/* Ticker Below */}
             <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-[90%] max-w-sm z-30">
-                <HeroTicker />
+                <HeroTicker theme={theme} />
             </div>
         </div>
     );
@@ -582,14 +621,14 @@ const DynamicShowcase = () => {
 
                     <div className="absolute bottom-0 left-0 w-full p-8 md:p-16 flex flex-col items-start justify-end h-full pointer-events-none">
                         <div className={`transition-all duration-500 transform ${fade ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-                            <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full border border-[#38F8A8] bg-[#38F8A8]/10 text-[#38F8A8] text-xs font-black uppercase tracking-widest mb-4 font-grotesk">
-                                <span className={`w-2 h-2 rounded-full bg-[#38F8A8] ${isPlaying ? 'animate-pulse' : 'opacity-50'}`}></span>
+                            <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full border border-[#38F8A8] bg-[#38F8A8]/10 text-[#38F8A8] text-xs font-black uppercase tracking-widest mb-4 font-grotesk dark:border-[#38F8A8] dark:bg-[#38F8A8]/10 dark:text-[#38F8A8] border-[#C5A028] bg-[#C5A028]/10 text-[#C5A028]">
+                                <span className={`w-2 h-2 rounded-full ${isPlaying ? 'animate-pulse' : 'opacity-50'} bg-current`}></span>
                                 {isPlaying ? 'Active Deployment' : 'Paused'}
                             </div>
                             <h2 className="text-5xl md:text-8xl font-black text-white mb-6 tracking-tighter font-grotesk leading-none">
                                 {item.caption.toUpperCase()}
                             </h2>
-                            <div className="max-w-xl border-l-4 border-[#38F8A8] pl-6">
+                            <div className="max-w-xl border-l-4 border-[#38F8A8] dark:border-[#38F8A8] pl-6 border-[#C5A028]">
                                 <p className="text-xl md:text-2xl text-gray-200 font-medium font-grotesk leading-relaxed">
                                     {item.description}
                                 </p>
@@ -598,7 +637,7 @@ const DynamicShowcase = () => {
                         
                         <div className="absolute bottom-8 right-8 flex gap-2">
                             {GALLERY_IMAGES.map((_, i) => (
-                                <div key={i} className={`h-1 rounded-full transition-all duration-300 ${i === index ? 'w-8 bg-[#38F8A8]' : 'w-2 bg-white/20'}`}></div>
+                                <div key={i} className={`h-1 rounded-full transition-all duration-300 ${i === index ? 'w-8 bg-[#38F8A8] dark:bg-[#38F8A8] bg-[#C5A028]' : 'w-2 bg-white/20'}`}></div>
                             ))}
                         </div>
                     </div>
@@ -611,7 +650,7 @@ const DynamicShowcase = () => {
     );
 };
 
-const HeroTicker = () => {
+const HeroTicker = ({ theme }: { theme: 'dark' | 'light' }) => {
     const [idx, setIdx] = useState(0);
     const [visible, setVisible] = useState(true);
     const messages = [
@@ -630,192 +669,15 @@ const HeroTicker = () => {
 
     return (
         <div className={`transition-all duration-500 transform ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} w-full`}>
-            <div className="glass-card p-4 rounded-2xl flex items-center gap-4 border-l-4 border-[#38F8A8] bg-white/80 dark:bg-black/80 backdrop-blur-md w-full">
-                 <img src={messages[idx].img} className="w-12 h-12 rounded-full border border-black/10 dark:border-white/20 object-cover shrink-0" alt="avatar" />
+            <div className={`glass-card p-4 rounded-2xl flex items-center gap-4 border-l-4 backdrop-blur-md w-full ${theme === 'light' ? 'bg-white shadow-lg border-[#C5A028]' : 'bg-white/80 dark:bg-black/80 border-[#38F8A8]'}`}>
+                 <img src={messages[idx].img} className={`w-12 h-12 rounded-full border object-cover shrink-0 ${theme === 'light' ? 'border-gray-200' : 'border-black/10 dark:border-white/20'}`} alt="avatar" />
                  <div className="text-left flex-1 min-w-0">
                      <p className="text-[10px] text-gray-500 dark:text-gray-400 font-mono uppercase tracking-wider truncate">{messages[idx].role}</p>
                      <p className="text-sm font-bold text-gray-900 dark:text-white italic truncate">"{messages[idx].q}"</p>
-                     <p className="text-xs text-[#059669] dark:text-[#38F8A8] mt-1 font-bold truncate">Orin: {messages[idx].a}</p>
+                     <p className={`text-xs mt-1 font-bold truncate ${theme === 'light' ? 'text-[#C5A028]' : 'text-[#059669] dark:text-[#38F8A8]'}`}>Orin: {messages[idx].a}</p>
                  </div>
             </div>
         </div>
-    );
-};
-
-const HireForm = ({ onSuccess }: { onSuccess: (formData: any) => void }) => {
-    const [form, setForm] = useState({ name: '', business: '', contact: '', aiType: 'Sales Agent' });
-    const [isLoading, setIsLoading] = useState(false);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        setIsLoading(false);
-        onSuccess(form);
-    };
-
-    return (
-        <div className="p-4 flex flex-col h-full bg-gray-50 dark:bg-black/90 text-gray-900 dark:text-white">
-             <div className="text-center mb-6">
-                 <div className="w-12 h-12 bg-[#38F8A8]/20 rounded-full flex items-center justify-center mx-auto mb-2 border border-[#38F8A8]">
-                     <Mail className="w-6 h-6 text-[#059669] dark:text-[#38F8A8]" />
-                 </div>
-                 <h3 className="text-xl font-black font-grotesk">HIRE ORIN</h3>
-                 <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">Fill this to start your 3-day setup.</p>
-             </div>
-             
-             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-                 <div>
-                     <label className="text-[10px] uppercase font-bold text-gray-500 mb-1 block">Your Name</label>
-                     <input required className="w-full bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-lg p-3 text-sm focus:border-[#38F8A8] outline-none transition-colors" placeholder="e.g. Juan Cruz" value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
-                 </div>
-                 <div>
-                     <label className="text-[10px] uppercase font-bold text-gray-500 mb-1 block">Business Name</label>
-                     <input required className="w-full bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-lg p-3 text-sm focus:border-[#38F8A8] outline-none transition-colors" placeholder="e.g. Cruz Trading" value={form.business} onChange={e => setForm({...form, business: e.target.value})} />
-                 </div>
-                 <div>
-                     <label className="text-[10px] uppercase font-bold text-gray-500 mb-1 block">Contact Number</label>
-                     <input required className="w-full bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-lg p-3 text-sm focus:border-[#38F8A8] outline-none transition-colors" placeholder="0917..." value={form.contact} onChange={e => setForm({...form, contact: e.target.value})} />
-                 </div>
-                 <div>
-                     <label className="text-[10px] uppercase font-bold text-gray-500 mb-1 block">AI Role Needed</label>
-                     <select className="w-full bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-lg p-3 text-sm focus:border-[#38F8A8] outline-none transition-colors" value={form.aiType} onChange={e => setForm({...form, aiType: e.target.value})}>
-                         <option>Sales Agent</option>
-                         <option>Customer Support</option>
-                         <option>Appointment Setter</option>
-                         <option>Real Estate Agent</option>
-                     </select>
-                 </div>
-                 
-                 <button 
-                    type="submit" 
-                    disabled={isLoading}
-                    className="mt-4 bg-[#38F8A8] text-black font-black py-4 rounded-xl hover:scale-[1.02] transition-all shadow-[0_0_20px_rgba(56,248,168,0.3)] flex items-center justify-center gap-2 disabled:opacity-50 disabled:scale-100"
-                 >
-                     {isLoading ? (
-                         <>SENDING... <Loader2 className="w-4 h-4 animate-spin" /></>
-                     ) : (
-                         <>SEND APPLICATION <Send className="w-4 h-4" /></>
-                     )}
-                 </button>
-             </form>
-             <p className="text-center text-[10px] text-gray-500 mt-4">Securely transmitted to Marvin Villanueva.</p>
-        </div>
-    );
-};
-
-const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
-    const [step, setStep] = useState(0);
-
-    useEffect(() => {
-        if (step >= 5) {
-            const t = setTimeout(onComplete, 500);
-            return () => clearTimeout(t);
-        }
-
-        const timer = setTimeout(() => {
-            setStep(s => s + 1);
-        }, 2500); 
-
-        return () => clearTimeout(timer);
-    }, [step, onComplete]);
-
-    const handleTap = (e: React.MouseEvent) => {
-        const width = window.innerWidth;
-        const clickX = e.clientX;
-
-        if (clickX < width * 0.3) {
-            setStep(s => Math.max(0, s - 1));
-        } else {
-            setStep(s => s + 1);
-        }
-    };
-
-    if (step >= 5) return null;
-
-    return (
-        <div 
-            onClick={handleTap}
-            className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center overflow-hidden font-grotesk text-center px-4 cursor-pointer select-none"
-        >
-            <div className="absolute top-0 left-0 w-[30%] h-full z-20" /> 
-            <div className="absolute top-0 right-0 w-[70%] h-full z-20" /> 
-
-            <button 
-                onClick={(e) => { e.stopPropagation(); onComplete(); }}
-                className="absolute top-6 right-6 text-gray-600 hover:text-white text-xs font-mono uppercase tracking-widest flex items-center gap-2 transition-colors z-[10000]"
-            >
-                SKIP INTRO <SkipForward className="w-4 h-4" />
-            </button>
-            
-            <h1 className={`absolute text-5xl md:text-8xl font-black text-red-600 tracking-tighter transition-all duration-300 ${step === 0 ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-90 blur-sm'}`}>
-                DO YOU REPLY AT 2AM?
-            </h1>
-
-            <h1 className={`absolute text-5xl md:text-8xl font-black text-red-500 tracking-tighter transition-all duration-300 ${step === 1 ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-90 blur-sm'}`}>
-                LOSING SALES WHILE YOU SLEEP?
-            </h1>
-
-            <h1 className={`absolute text-5xl md:text-8xl font-black text-white tracking-tighter transition-all duration-300 ${step === 2 ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-90 blur-sm'}`}>
-                STOP DOING IT MANUALLY.
-            </h1>
-
-            <h1 className={`absolute text-6xl md:text-9xl font-black text-[#38F8A8] tracking-tighter transition-all duration-300 ${step === 3 ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-90 blur-sm'}`}>
-                MEET ORIN AI.
-            </h1>
-
-            <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-300 ${step === 4 ? 'opacity-100' : 'opacity-0'}`}>
-                 <div className="relative group">
-                    <h1 className="text-6xl md:text-9xl font-black text-transparent text-stroke tracking-tighter animate-pulse" data-text="YOUR NEW EMPLOYEE IS HERE">
-                        YOUR NEW EMPLOYEE.
-                    </h1>
-                 </div>
-            </div>
-            
-            <div className="absolute bottom-10 left-0 w-full text-center text-gray-500 text-[10px] font-mono animate-pulse">
-                TAP LEFT OR RIGHT TO NAVIGATE
-            </div>
-        </div>
-    );
-};
-
-const MobileHero = ({ setChatOpen, theme }: { setChatOpen: () => void, theme: 'dark' | 'light' }) => {
-    return (
-        <section className="relative min-h-[95vh] flex flex-col justify-start px-4 pt-48 pb-10 overflow-hidden">
-            <div className="absolute inset-0 z-0">
-                <TesseractCircuit isActive={true} theme={theme} />
-            </div>
-            <div className="relative z-10 flex flex-col items-center text-center">
-                
-                <div className="mb-24 scale-90">
-                     <OrbitingAvatar theme={theme} />
-                </div>
-
-                <div className="inline-block px-3 py-1 mb-4 rounded-full border border-[#38F8A8] bg-[#38F8A8]/10 mt-4">
-                    <span className="text-[#059669] dark:text-[#38F8A8] text-[10px] font-bold tracking-widest uppercase font-mono animate-pulse">● Online 24/7</span>
-                </div>
-
-                <h1 className="text-6xl font-black leading-[0.9] tracking-tighter mb-4 font-grotesk text-gray-900 dark:text-white">
-                    MEET <span className="text-[#059669] dark:text-[#38F8A8]">ORIN AI</span>
-                </h1>
-                
-                <h2 className="text-xl font-bold font-grotesk text-gray-500 dark:text-gray-300 tracking-widest uppercase mb-6">
-                    YOUR 24/7 EMPLOYEE
-                </h2>
-                
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-6 font-grotesk max-w-[280px] leading-relaxed mx-auto">
-                    Orin handles sales, support, and operations while you sleep.
-                    <span className="text-black dark:text-white block mt-1 font-bold">No breaks. No complaints.</span>
-                </p>
-                
-                <button 
-                    onClick={setChatOpen}
-                    className="w-full bg-[#38F8A8] text-black font-black py-4 rounded-xl text-lg hover:scale-[1.02] transition-transform shadow-[0_0_30px_rgba(56,248,168,0.4)] flex items-center justify-center gap-2 font-grotesk"
-                >
-                    HIRE ORIN <ArrowRight className="w-5 h-5" />
-                </button>
-            </div>
-        </section>
     );
 };
 
@@ -829,34 +691,34 @@ const StableDesktopHero = ({ setChatOpen, theme }: { setChatOpen: () => void, th
             <div className="relative z-10 max-w-7xl w-full grid grid-cols-1 md:grid-cols-12 gap-12 items-center h-full">
                 <div className="col-span-7 flex flex-col justify-center">
                     <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-black/10 dark:border-white/10 bg-white/5 backdrop-blur-md mb-8 hover:border-[#38F8A8]/50 transition-colors cursor-default group w-fit">
-                        <span className="w-2 h-2 rounded-full bg-[#38F8A8] animate-pulse"></span>
+                        <span className={`w-2 h-2 rounded-full animate-pulse ${theme === 'light' ? 'bg-[#C5A028]' : 'bg-[#38F8A8]'}`}></span>
                         <span className="text-gray-600 dark:text-gray-300 text-sm font-mono tracking-widest uppercase group-hover:text-black dark:group-hover:text-white transition-colors">STATUS: ONLINE 24/7</span>
                     </div>
                     
-                    <h1 className="text-8xl xl:text-9xl font-black leading-[0.8] tracking-tighter mb-4 font-grotesk text-gray-900 dark:text-white">
+                    <h1 className="text-8xl xl:text-9xl font-black leading-[0.8] tracking-tighter mb-4 font-grotesk text-black dark:text-white">
                         MEET <br/>
-                        <span className="text-[#059669] dark:text-[#38F8A8]">ORIN AI</span>
+                        <span className={`${theme === 'light' ? 'text-[#C5A028]' : 'text-[#38F8A8]'}`}>ORIN AI</span>
                     </h1>
                     
-                    <h2 className="text-4xl text-transparent text-stroke font-black tracking-widest mb-8 uppercase" style={{ WebkitTextStrokeColor: theme === 'light' ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)' }}>
+                    <h2 className="text-4xl text-transparent text-stroke font-black tracking-widest mb-8 uppercase" style={{ WebkitTextStrokeColor: theme === 'light' ? '#111' : 'rgba(255,255,255,0.8)' }}>
                         YOUR 24/7 EMPLOYEE
                     </h2>
                     
                     <div className="flex items-start gap-8 max-w-2xl">
-                        <div className="w-1 h-24 bg-gradient-to-b from-[#38F8A8] to-transparent"></div>
+                        <div className={`w-1 h-24 bg-gradient-to-b to-transparent ${theme === 'light' ? 'from-[#C5A028]' : 'from-[#38F8A8]'}`}></div>
                         <div>
-                            <p className="text-2xl text-gray-600 dark:text-gray-300 font-medium leading-relaxed font-grotesk mb-8">
+                            <p className="text-2xl text-gray-800 dark:text-gray-300 font-medium leading-relaxed font-grotesk mb-8">
                                 Orin is the <span className="text-black dark:text-white font-bold">Advanced Digital Employee</span> for Filipino Businesses. 
                                 He handles sales, customer support, and operations 24/7.
                             </p>
                             <div className="flex gap-6">
                                 <button 
                                     onClick={setChatOpen}
-                                    className="bg-[#38F8A8] text-black font-black text-xl py-5 px-10 rounded-full hover:scale-105 transition-transform shadow-[0_0_40px_rgba(56,248,168,0.4)] flex items-center gap-3 font-grotesk"
+                                    className={`text-black font-black text-xl py-5 px-10 rounded-full hover:scale-105 transition-transform shadow-[0_0_40px_rgba(56,248,168,0.4)] flex items-center gap-3 font-grotesk border-2 border-transparent ${theme === 'light' ? 'bg-[#C5A028] shadow-[0_0_40px_rgba(197,160,40,0.4)]' : 'bg-[#38F8A8] hover:border-black'}`}
                                 >
                                     HIRE ORIN <ArrowRight className="w-6 h-6" />
                                 </button>
-                                <button className="px-8 py-5 rounded-full border border-black/20 dark:border-white/20 hover:bg-black/5 dark:hover:bg-white/10 transition-all font-bold text-gray-900 dark:text-white font-grotesk tracking-wide uppercase text-sm">
+                                <button className="px-8 py-5 rounded-full border-2 border-black/10 dark:border-white/20 hover:border-black dark:hover:border-white hover:bg-transparent transition-all font-bold text-black dark:text-white font-grotesk tracking-wide uppercase text-sm">
                                     View Capabilities
                                 </button>
                             </div>
@@ -876,65 +738,76 @@ const StableDesktopHero = ({ setChatOpen, theme }: { setChatOpen: () => void, th
     );
 };
 
-const PricingCard = ({ setChatOpen }: { setChatOpen: () => void }) => {
+const PricingCard = ({ setChatOpen, theme }: { setChatOpen: () => void, theme: 'dark' | 'light' }) => {
     return (
         <div className="max-w-4xl mx-auto py-12 relative z-50">
             <MouseTilt intensity={5}>
                 {/* 
-                  ULTRA PREMIUM CONTAINER 
-                  - Ensures dark mode look even in light mode for "Exclusive Pass" feel 
-                  - Deep black background with Gold Accents 
+                  Adaptive Card Container:
+                  Dark Mode: Black & Neon Gold Gradient
+                  Light Mode: "Ancient Alien Stone" Chip Aesthetic (Gray/Gold/Black)
                 */}
-                <div className="relative group rounded-[3rem] p-[2px] bg-gradient-to-b from-[#D4AF37] via-[#F7EF8A] to-[#D4AF37] shadow-[0_0_80px_-20px_rgba(212,175,55,0.4)] overflow-visible transition-all duration-500 hover:shadow-[0_0_120px_-10px_rgba(212,175,55,0.6)]">
+                <div className={`relative group rounded-[3rem] p-[2px] transition-all duration-500 overflow-visible ${theme === 'dark' ? 'bg-gradient-to-b from-[#D4AF37] via-[#F7EF8A] to-[#D4AF37] shadow-[0_0_80px_-20px_rgba(212,175,55,0.4)]' : 'bg-gradient-to-b from-[#C5A028] via-[#E5E5E5] to-[#C5A028] shadow-[0_15px_50px_rgba(0,0,0,0.1)]'}`}>
                     
-                    {/* Founder's Chip - GLOWING INTENSELY */}
+                    {/* Founder's Chip */}
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 z-30 w-max max-w-[90%]">
                         <div className="relative">
                             {/* Glowing Backlight for Chip */}
-                            <div className="absolute inset-0 bg-[#D4AF37] blur-xl opacity-80 animate-pulse"></div>
+                            <div className={`absolute inset-0 blur-xl opacity-80 animate-pulse ${theme === 'dark' ? 'bg-[#D4AF37]' : 'bg-[#C5A028]/20'}`}></div>
                             
-                            <div className="bg-black px-5 py-2 md:px-8 md:py-3 border-b-2 border-x-2 border-[#D4AF37] rounded-b-xl text-[#D4AF37] text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] font-grotesk flex items-center gap-2 md:gap-3 relative z-10 shadow-[0_10px_30px_rgba(212,175,55,0.6)] whitespace-nowrap">
-                                <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[#D4AF37] animate-ping"></div>
+                            <div className={`px-5 py-2 md:px-8 md:py-3 border-b-2 border-x-2 rounded-b-xl text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] font-grotesk flex items-center gap-2 md:gap-3 relative z-10 whitespace-nowrap ${theme === 'dark' ? 'bg-black border-[#D4AF37] text-[#D4AF37] shadow-[0_10px_30px_rgba(212,175,55,0.6)]' : 'bg-[#EAEAEA] border-[#C5A028] text-black shadow-md'}`}>
+                                <div className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full animate-ping ${theme === 'dark' ? 'bg-[#D4AF37]' : 'bg-[#C5A028]'}`}></div>
                                 <Cpu className="w-3 h-3 md:w-4 md:h-4" /> 
                                 FOUNDER'S CHIP — TESSERACT
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-[#050505] rounded-[3rem] p-6 pt-12 md:p-12 relative h-full flex flex-col items-center text-center overflow-hidden">
+                    <div className={`rounded-[3rem] p-6 pt-12 md:p-12 relative h-full flex flex-col items-center text-center overflow-hidden ${theme === 'dark' ? 'bg-[#050505]' : 'bg-[#F4F4F5] bg-opacity-90'}`}>
                         
-                        {/* Animated Background Rays */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.05)_0%,transparent_60%)] animate-spin-slow pointer-events-none"></div>
-                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/circuit-board.png')] opacity-10 pointer-events-none mix-blend-color-dodge"></div>
+                        {/* Background Textures */}
+                        {theme === 'dark' && (
+                            <>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.05)_0%,transparent_60%)] animate-spin-slow pointer-events-none"></div>
+                                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/circuit-board.png')] opacity-10 pointer-events-none mix-blend-color-dodge"></div>
+                            </>
+                        )}
+                        {theme === 'light' && (
+                             /* Ancient Chip Texture: Noise + Subtle Circuit Overlay */
+                             <>
+                                <div className="absolute inset-0 bg-[#000] opacity-[0.02]" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E\")" }}></div>
+                                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTAgMTBoODB2ODBoLTgweiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjQzVBMDI4IiBzdHJva2Utd2lkdGg9IjAuNSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIvPjwvc3ZnPg==')] opacity-40 pointer-events-none"></div>
+                             </>
+                        )}
                         
                         <div className="relative z-10 w-full max-w-3xl">
                             
                             {/* Header */}
                             <div className="flex flex-col items-center mb-6 mt-8 md:mt-4">
-                                <h3 className="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F7EF8A] to-[#D4AF37] font-mono mb-2 tracking-[0.3em] uppercase drop-shadow-sm">
+                                <h3 className={`text-xl md:text-2xl font-bold font-mono mb-2 tracking-[0.3em] uppercase drop-shadow-sm ${theme === 'dark' ? 'text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F7EF8A] to-[#D4AF37]' : 'text-[#0A0A0A]'}`}>
                                     THE PREMIUM PASS
                                 </h3>
-                                <div className="w-24 h-1 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent"></div>
+                                <div className={`w-24 h-1 ${theme === 'dark' ? 'bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent' : 'bg-[#C5A028]'}`}></div>
                             </div>
 
                             {/* Price */}
                             <div className="flex flex-col items-center justify-center mb-6 relative">
-                                <div className="absolute inset-0 bg-[#D4AF37] blur-[60px] opacity-10 rounded-full"></div>
-                                <span className="text-6xl md:text-9xl font-black text-white font-grotesk tracking-tighter drop-shadow-[0_0_25px_rgba(212,175,55,0.5)] z-10">
+                                {theme === 'dark' && <div className="absolute inset-0 bg-[#D4AF37] blur-[60px] opacity-10 rounded-full"></div>}
+                                <span className={`text-6xl md:text-9xl font-black font-grotesk tracking-tighter z-10 ${theme === 'dark' ? 'text-white drop-shadow-[0_0_25px_rgba(212,175,55,0.5)]' : 'text-[#0A0A0A]'}`}>
                                     ₱15,000
                                 </span>
-                                <span className="text-sm md:text-base text-[#D4AF37] font-mono mt-4 tracking-[0.2em] uppercase border border-[#D4AF37]/30 px-4 py-1 rounded-full bg-[#D4AF37]/10">
+                                <span className={`text-sm md:text-base font-mono mt-4 tracking-[0.2em] uppercase border px-4 py-1 rounded-full ${theme === 'dark' ? 'text-[#D4AF37] border-[#D4AF37]/30 bg-[#D4AF37]/10' : 'text-[#C5A028] border-[#C5A028]/30 bg-[#C5A028]/10'}`}>
                                     Monthly • Cancel Anytime
                                 </span>
                             </div>
                             
-                            <p className="text-gray-400 text-base md:text-lg mb-8 font-grotesk max-w-xl mx-auto leading-relaxed">
+                            <p className={`text-base md:text-lg mb-8 font-grotesk max-w-xl mx-auto leading-relaxed ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                                 Less than 10% of a human employee's cost. <br/>
-                                <span className="text-white">Full automation architecture. Zero headaches.</span>
+                                <span className={`${theme === 'dark' ? 'text-white' : 'text-black font-bold'}`}>Full automation architecture. Zero headaches.</span>
                             </p>
                             
                             {/* Features Grid - COMPACT */}
-                            <div className="grid md:grid-cols-2 gap-x-8 gap-y-3 text-left max-w-2xl mx-auto mb-12 bg-white/5 p-6 rounded-3xl border border-white/5">
+                            <div className={`grid md:grid-cols-2 gap-x-8 gap-y-3 text-left max-w-2xl mx-auto mb-12 p-6 rounded-3xl border ${theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-white border-[#E5E5E5]'}`}>
                                 {[
                                     "24/7 Availability (No Sleep)",
                                     "24/7 Technical Support",
@@ -946,26 +819,25 @@ const PricingCard = ({ setChatOpen }: { setChatOpen: () => void }) => {
                                     "Priority Server Access"
                                 ].map((feature, i) => (
                                     <div key={i} className="flex items-center gap-4 group">
-                                        <div className="w-8 h-8 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] transition-all duration-300">
-                                            <CheckCircle2 className="w-4 h-4 text-[#D4AF37] group-hover:text-black transition-colors" />
+                                        <div className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-300 ${theme === 'dark' ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30 group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37]' : 'bg-[#C5A028]/10 border-[#C5A028]/30 group-hover:bg-[#C5A028] group-hover:border-[#C5A028]'}`}>
+                                            <CheckCircle2 className={`w-4 h-4 transition-colors ${theme === 'dark' ? 'text-[#D4AF37] group-hover:text-black' : 'text-[#C5A028] group-hover:text-white'}`} />
                                         </div>
-                                        <span className="text-sm md:text-base text-gray-300 font-grotesk group-hover:text-white transition-colors tracking-wide">{feature}</span>
+                                        <span className={`text-sm md:text-base font-grotesk transition-colors tracking-wide ${theme === 'dark' ? 'text-gray-300 group-hover:text-white' : 'text-gray-600 group-hover:text-black'}`}>{feature}</span>
                                     </div>
                                 ))}
                             </div>
 
                             {/* ISOLATED ACTION DECK - MASSIVE BUTTON */}
                             <div className="relative w-full flex flex-col items-center justify-center mt-2">
-                                <div className="absolute -inset-10 bg-gradient-to-r from-transparent via-[#D4AF37]/20 to-transparent blur-2xl opacity-50 pointer-events-none"></div>
+                                {theme === 'dark' && <div className="absolute -inset-10 bg-gradient-to-r from-transparent via-[#D4AF37]/20 to-transparent blur-2xl opacity-50 pointer-events-none"></div>}
                                 <button 
                                     onClick={setChatOpen}
-                                    className="relative z-[100] w-full md:w-auto bg-[#D4AF37] text-black font-black py-4 px-10 md:py-5 md:px-16 rounded-full text-xl md:text-3xl hover:scale-105 transition-all duration-300 shadow-[0_0_60px_rgba(212,175,55,0.6)] flex items-center justify-center gap-3 font-grotesk uppercase tracking-widest mx-auto hover:bg-white border-4 border-transparent hover:border-[#D4AF37] group cursor-pointer"
+                                    className={`relative z-[100] w-full md:w-auto font-black py-4 px-10 md:py-5 md:px-16 rounded-full text-xl md:text-3xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3 font-grotesk uppercase tracking-widest mx-auto border-4 border-transparent group cursor-pointer ${theme === 'dark' ? 'bg-[#D4AF37] text-black shadow-[0_0_60px_rgba(212,175,55,0.6)] hover:bg-white hover:border-[#D4AF37]' : 'bg-[#C5A028] text-black hover:bg-black hover:text-[#C5A028] hover:border-[#C5A028] shadow-xl'}`}
                                 >
                                     <span className="relative z-10">SECURE PASS</span>
                                     <Sparkles className="w-6 h-6 md:w-8 md:h-8 group-hover:rotate-12 transition-transform" />
-                                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 rounded-full transition-opacity"></div>
                                 </button>
-                                <p className="mt-8 text-[10px] text-[#D4AF37]/60 font-mono uppercase tracking-[0.2em] relative z-10">
+                                <p className={`mt-8 text-[10px] font-mono uppercase tracking-[0.2em] relative z-10 ${theme === 'dark' ? 'text-[#D4AF37]/60' : 'text-gray-500'}`}>
                                     *Limited slots available for Q1 2025 • Priority Access
                                 </p>
                             </div>
@@ -973,6 +845,120 @@ const PricingCard = ({ setChatOpen }: { setChatOpen: () => void }) => {
                     </div>
                 </div>
             </MouseTilt>
+        </div>
+    );
+};
+
+// --- MISSING COMPONENTS ---
+
+const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
+    const [exiting, setExiting] = useState(false);
+    
+    useEffect(() => {
+        // Simulate initialization sequence
+        const timer = setTimeout(() => {
+            setExiting(true);
+            setTimeout(onComplete, 800); 
+        }, 2200); 
+        return () => clearTimeout(timer);
+    }, [onComplete]);
+
+    return (
+        <div className={`fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center transition-opacity duration-700 ${exiting ? 'opacity-0' : 'opacity-100'}`}>
+             <div className="w-24 h-24 relative mb-6">
+                 <div className="absolute inset-0 border-4 border-[#38F8A8] border-t-transparent rounded-full animate-spin"></div>
+                 <div className="absolute inset-2 border-4 border-[#38F8A8]/30 border-b-transparent rounded-full animate-spin-reverse"></div>
+                 <div className="absolute inset-0 flex items-center justify-center font-black text-[#38F8A8] text-xl font-grotesk tracking-tighter">ORIN</div>
+             </div>
+             <div className="font-mono text-[#38F8A8] text-xs tracking-[0.3em] animate-pulse">
+                 INITIALIZING SYSTEM...
+             </div>
+        </div>
+    );
+};
+
+const MobileHero = ({ setChatOpen, theme }: { setChatOpen: () => void, theme: 'dark' | 'light' }) => {
+    return (
+        <section className="relative min-h-[90vh] flex flex-col justify-center px-4 pt-20 overflow-hidden">
+             <div className="absolute inset-0 z-0 opacity-40">
+                <TesseractCircuit isActive={true} theme={theme} />
+            </div>
+            
+            <div className="relative z-10 flex flex-col items-center text-center">
+                <div className="mb-6 scale-90">
+                     <OrbitingAvatar theme={theme} />
+                </div>
+                
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-black/10 dark:border-white/10 bg-white/5 backdrop-blur-md mb-6">
+                    <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${theme === 'light' ? 'bg-[#C5A028]' : 'bg-[#38F8A8]'}`}></span>
+                    <span className="text-xs font-mono tracking-widest uppercase text-gray-600 dark:text-gray-300">Online 24/7</span>
+                </div>
+
+                <h1 className="text-6xl font-black leading-[0.85] tracking-tighter mb-4 font-grotesk text-black dark:text-white">
+                    MEET <br/>
+                    <span className={`${theme === 'light' ? 'text-[#C5A028]' : 'text-[#38F8A8]'}`}>ORIN AI</span>
+                </h1>
+                
+                <p className="text-lg text-gray-700 dark:text-gray-300 font-medium leading-relaxed font-grotesk mb-8 max-w-xs mx-auto">
+                    Your 24/7 Digital Employee. Handles sales & support while you sleep.
+                </p>
+                
+                <button 
+                    onClick={setChatOpen}
+                    className={`font-black text-lg py-4 px-10 rounded-full flex items-center gap-2 font-grotesk border-2 border-transparent shadow-lg hover:scale-105 transition-transform ${theme === 'light' ? 'bg-[#C5A028] text-black shadow-[#C5A028]/30' : 'bg-[#38F8A8] text-black shadow-[#38F8A8]/30'}`}
+                >
+                    HIRE ORIN <ArrowRight className="w-5 h-5" />
+                </button>
+            </div>
+        </section>
+    );
+};
+
+const HireForm = ({ onSuccess }: { onSuccess: (data: any) => void }) => {
+    const [formData, setFormData] = useState({ name: '', business: '', aiType: 'Sales Agent', email: '' });
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        // Simulate API call
+        await new Promise(r => setTimeout(r, 1500));
+        setLoading(false);
+        onSuccess(formData);
+    };
+
+    return (
+        <div className="p-6 h-full flex flex-col">
+            <h3 className="text-xl font-black font-grotesk mb-1 text-black dark:text-white">HIRE APPLICATION</h3>
+            <p className="text-xs text-gray-500 mb-6 font-mono">Customize your AI Employee.</p>
+            
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Your Name</label>
+                    <input required type="text" className="w-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-[#38F8A8] transition-colors text-black dark:text-white" placeholder="Ex. Juan Dela Cruz" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                </div>
+                <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Business Name</label>
+                    <input required type="text" className="w-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-[#38F8A8] transition-colors text-black dark:text-white" placeholder="Ex. Juan's Gadgets" value={formData.business} onChange={e => setFormData({...formData, business: e.target.value})} />
+                </div>
+                 <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Email Address</label>
+                    <input required type="email" className="w-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-[#38F8A8] transition-colors text-black dark:text-white" placeholder="juan@example.com" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+                </div>
+                <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">AI Role</label>
+                    <select className="w-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-[#38F8A8] transition-colors text-black dark:text-white" value={formData.aiType} onChange={e => setFormData({...formData, aiType: e.target.value})}>
+                        <option>Sales Agent</option>
+                        <option>Customer Support</option>
+                        <option>Booking Assistant</option>
+                        <option>Real Estate Agent</option>
+                    </select>
+                </div>
+                
+                <button type="submit" disabled={loading} className="w-full bg-[#38F8A8] text-black font-black font-grotesk uppercase py-4 rounded-xl hover:bg-[#38F8A8]/90 transition-colors mt-6 flex items-center justify-center gap-2">
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'SUBMIT APPLICATION'}
+                </button>
+            </form>
         </div>
     );
 };
@@ -1003,8 +989,10 @@ export default function App() {
     useEffect(() => {
         if (theme === 'dark') {
             document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
         } else {
             document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light');
         }
     }, [theme]);
 
@@ -1077,12 +1065,12 @@ export default function App() {
         <ContentProtection>
             {!introFinished && <IntroOverlay onComplete={() => setIntroFinished(true)} />}
             
-            <div className={`min-h-screen transition-colors duration-300 ${theme === 'dark' ? 'text-white bg-[#020202]' : 'text-gray-900 bg-gray-50'} overflow-x-hidden selection:bg-[#38F8A8] selection:text-black ${!introFinished ? 'h-screen overflow-hidden' : ''}`}>
+            <div className={`min-h-screen transition-colors duration-300 ${theme === 'dark' ? 'text-white bg-[#020202]' : 'text-gray-900 bg-[#F4F4F5]'} overflow-x-hidden selection:bg-[#C5A028] selection:text-black ${!introFinished ? 'h-screen overflow-hidden' : ''}`}>
                 <ParticleBackground theme={theme} />
                 
-                <nav className="fixed top-0 w-full z-50 py-4 px-6 flex justify-between items-center bg-white/50 dark:bg-black/50 backdrop-blur-xl border-b border-gray-200 dark:border-white/5 transition-all duration-300">
+                <nav className={`fixed top-0 w-full z-50 py-4 px-6 flex justify-between items-center backdrop-blur-xl border-b transition-all duration-300 ${theme === 'light' ? 'bg-[#F4F4F5]/80 border-gray-200' : 'bg-black/50 border-white/5'}`}>
                     <div className="flex items-center gap-2 cursor-pointer" onClick={handleLogoClick}>
-                        <div className="w-10 h-10 rounded-full border border-gray-300 dark:border-white/20 overflow-hidden bg-black relative group">
+                        <div className={`w-10 h-10 rounded-full border overflow-hidden bg-black relative group ${theme === 'light' ? 'border-gray-300' : 'border-white/20'}`}>
                             <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110 transition-transform duration-500 group-hover:scale-125" alt="ORIN Logo" loading="lazy" />
                         </div>
                         <span className="font-black text-xl tracking-tighter font-grotesk text-gray-900 dark:text-white">ORIN AI</span>
@@ -1090,7 +1078,7 @@ export default function App() {
                     <div className="hidden md:flex gap-6 text-sm font-medium text-gray-600 dark:text-gray-400 font-mono items-center">
                         <a href="#features" className="hover:text-black dark:hover:text-[#38F8A8] transition-colors">Features</a>
                         <a href="#pricing" className="hover:text-black dark:hover:text-[#38F8A8] transition-colors">Pricing</a>
-                        <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">
+                        <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-white/10 transition-colors text-black dark:text-white">
                             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                         </button>
                     </div>
@@ -1098,7 +1086,7 @@ export default function App() {
                          <button onClick={toggleTheme} className="md:hidden p-2 rounded-full hover:bg-gray-200 dark:hover:bg-white/10 transition-colors text-gray-600 dark:text-gray-400">
                             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                         </button>
-                        <button onClick={handleHireClick} className="hidden md:flex bg-black dark:bg-white/10 border border-black/10 dark:border-white/10 px-6 py-2 rounded-full text-xs font-bold text-white hover:bg-[#38F8A8] hover:text-black transition-all">
+                        <button onClick={handleHireClick} className="hidden md:flex bg-black dark:bg-white/10 border border-black/10 dark:border-white/10 px-6 py-2 rounded-full text-xs font-bold text-white hover:bg-[#38F8A8] dark:hover:bg-[#38F8A8] hover:text-black transition-all hover:border-black">
                             HIRE ORIN
                         </button>
                     </div>
@@ -1111,7 +1099,7 @@ export default function App() {
                 )}
 
                 <VelocityScrollProvider>
-                    <div className="py-6 bg-[#38F8A8] text-black overflow-hidden border-y-4 border-black mb-8 md:mb-12 relative z-10">
+                    <div className={`py-6 text-black overflow-hidden border-y-4 mb-8 md:mb-12 relative z-10 ${theme === 'light' ? 'bg-[#C5A028] border-black' : 'bg-[#38F8A8] border-black'}`}>
                         <div className="animate-marquee whitespace-nowrap flex gap-12 text-2xl md:text-4xl font-black italic tracking-tighter font-grotesk">
                             <span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span><span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span>
                              <span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span><span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span>
@@ -1122,7 +1110,7 @@ export default function App() {
                         <div className="grid md:grid-cols-2 gap-8 items-center">
                             <ParallaxElement speed={0.2} rotation={5}>
                                 <MouseTilt>
-                                    <div className="glass-card p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] relative overflow-hidden gpu-accel bg-white/60 dark:bg-black/60 border border-gray-200 dark:border-white/10 shadow-xl">
+                                    <div className="glass-card p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] relative overflow-hidden gpu-accel bg-white/60 dark:bg-black/60 shadow-xl">
                                         <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/10 blur-[80px] rounded-full"></div>
                                         <h3 className="text-3xl md:text-4xl font-black mb-6 font-grotesk text-gray-900 dark:text-white">STOP DOING IT<br/>MANUALLY.</h3>
                                         <ul className="space-y-6 text-lg md:text-xl text-gray-600 dark:text-gray-300 font-grotesk">
@@ -1136,13 +1124,13 @@ export default function App() {
 
                             <ParallaxElement speed={0.4} rotation={-5}>
                                 <MouseTilt>
-                                    <div className="glass-card p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] border border-[#38F8A8]/30 relative overflow-hidden gpu-accel mt-8 md:mt-0 bg-white/60 dark:bg-black/60 shadow-xl">
-                                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#38F8A8]/20 blur-[80px] rounded-full"></div>
-                                        <h3 className="text-3xl md:text-4xl font-black mb-6 text-[#059669] dark:text-[#38F8A8] font-grotesk">THE UPGRADE.</h3>
+                                    <div className={`glass-card p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] border relative overflow-hidden gpu-accel mt-8 md:mt-0 shadow-xl ${theme === 'light' ? 'bg-white border-[#C5A028]/30' : 'bg-white/60 dark:bg-black/60 border-[#38F8A8]/30'}`}>
+                                        <div className={`absolute bottom-0 left-0 w-64 h-64 blur-[80px] rounded-full ${theme === 'light' ? 'bg-[#C5A028]/20' : 'bg-[#38F8A8]/20'}`}></div>
+                                        <h3 className={`text-3xl md:text-4xl font-black mb-6 font-grotesk ${theme === 'light' ? 'text-[#C5A028]' : 'text-[#059669] dark:text-[#38F8A8]'}`}>THE UPGRADE.</h3>
                                         <ul className="space-y-6 text-lg md:text-xl text-gray-900 dark:text-white font-grotesk">
-                                            <li className="flex items-center gap-4"><CheckCircle2 className="text-[#38F8A8] w-6 h-6 md:w-8 md:h-8" /> Auto-Replies in 1 Second</li>
-                                            <li className="flex items-center gap-4"><CheckCircle2 className="text-[#38F8A8] w-6 h-6 md:w-8 md:h-8" /> Closes Sales While You Sleep</li>
-                                            <li className="flex items-center gap-4"><CheckCircle2 className="text-[#38F8A8] w-6 h-6 md:w-8 md:h-8" /> ₱15,000 Monthly (Premium)</li>
+                                            <li className="flex items-center gap-4"><CheckCircle2 className={`w-6 h-6 md:w-8 md:h-8 ${theme === 'light' ? 'text-[#C5A028]' : 'text-[#38F8A8]'}`} /> Auto-Replies in 1 Second</li>
+                                            <li className="flex items-center gap-4"><CheckCircle2 className={`w-6 h-6 md:w-8 md:h-8 ${theme === 'light' ? 'text-[#C5A028]' : 'text-[#38F8A8]'}`} /> Closes Sales While You Sleep</li>
+                                            <li className="flex items-center gap-4"><CheckCircle2 className={`w-6 h-6 md:w-8 md:h-8 ${theme === 'light' ? 'text-[#C5A028]' : 'text-[#38F8A8]'}`} /> ₱15,000 Monthly (Premium)</li>
                                         </ul>
                                     </div>
                                 </MouseTilt>
@@ -1152,7 +1140,7 @@ export default function App() {
 
                     <section id="features" className="py-8 md:py-12 px-4 max-w-7xl mx-auto">
                         <h2 className="text-4xl md:text-8xl font-black text-center mb-8 tracking-tighter font-grotesk text-gray-900 dark:text-white">
-                            BUILT FOR<br/><span className="text-[#059669] dark:text-[#38F8A8]">EVERYONE.</span>
+                            BUILT FOR<br/><span className={`${theme === 'light' ? 'text-[#C5A028]' : 'text-[#059669] dark:text-[#38F8A8]'}`}>EVERYONE.</span>
                         </h2>
                         <div className="w-full">
                             <DynamicShowcase />
@@ -1173,7 +1161,7 @@ export default function App() {
                     </section>
 
                     <section id="pricing" className="py-8 md:py-16 px-4 relative z-20">
-                        <PricingCard setChatOpen={handleHireClick} />
+                        <PricingCard setChatOpen={handleHireClick} theme={theme} />
                     </section>
                     
                     <section className="py-8 px-4"> 
@@ -1197,7 +1185,7 @@ export default function App() {
                                     onMouseLeave={() => setHoveredMember(null)}
                                 >
                                     <MouseTilt intensity={5}>
-                                        <div className={`glass-card p-6 rounded-[2.5rem] text-center group h-full flex flex-col items-center bg-white/60 dark:bg-black/80 transition-all duration-500 hover:bg-gray-100 dark:hover:bg-[#111] border border-gray-200 dark:border-white/10 ${member.name === 'Marvin' ? 'border-2 border-transparent' : ''}`}>
+                                        <div className={`glass-card p-6 rounded-[2.5rem] text-center group h-full flex flex-col items-center transition-all duration-500 hover:bg-gray-50 dark:hover:bg-[#111] ${member.name === 'Marvin' ? 'border-2 border-transparent' : ''} ${theme === 'light' ? 'bg-white border-gray-100' : 'bg-white/60 dark:bg-black/80 border-gray-200 dark:border-white/10'}`}>
                                             <div className={`w-56 h-56 rounded-[2rem] overflow-hidden mb-6 bg-black relative transition-all duration-700 ${member.name === 'Marvin' ? '' : 'border border-gray-300 dark:border-white/5 group-hover:border-[#38F8A8]/50'}`}>
                                                 <img 
                                                     src={member.image} 
@@ -1239,7 +1227,7 @@ export default function App() {
                     </section>
                 </VelocityScrollProvider>
 
-                <div className="py-6 bg-[#38F8A8] text-black overflow-hidden border-y-4 border-black relative z-10">
+                <div className={`py-6 text-black overflow-hidden border-y-4 relative z-10 ${theme === 'light' ? 'bg-[#C5A028] border-black' : 'bg-[#38F8A8] border-black'}`}>
                     <div className="animate-marquee whitespace-nowrap flex gap-12 text-2xl md:text-4xl font-black italic tracking-tighter font-grotesk">
                         <span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span><span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span>
                          <span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span><span>AUTOMATE NOW</span><span>•</span><span>PREMIUM SAAS</span><span>•</span><span>24/7 SUPPORT</span><span>•</span>
@@ -1404,7 +1392,7 @@ export default function App() {
                 <div className={`fixed bottom-8 right-4 md:right-8 z-50 transition-all duration-500 ${showFloat ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
                     <button 
                         onClick={handleHireClick}
-                        className="bg-[#38F8A8] text-black font-black py-3 px-6 md:py-4 md:px-8 rounded-full shadow-[0_0_30px_rgba(56,248,168,0.4)] hover:scale-105 transition-transform flex items-center gap-2 font-grotesk text-sm md:text-base"
+                        className={`font-black py-3 px-6 md:py-4 md:px-8 rounded-full shadow-[0_0_30px_rgba(56,248,168,0.4)] hover:scale-105 transition-transform flex items-center gap-2 font-grotesk text-sm md:text-base border border-black ${theme === 'light' ? 'bg-[#C5A028] text-black' : 'bg-[#38F8A8] text-black'}`}
                     >
                         HIRE ORIN <MessageCircle className="w-5 h-5" />
                     </button>
@@ -1412,15 +1400,15 @@ export default function App() {
 
                 <div className={`fixed bottom-0 right-0 z-[70] transition-all duration-500 transform ${chatOpen ? 'translate-y-0 opacity-100' : 'translate-y-[120%] opacity-0'} w-full md:w-[360px] md:bottom-0 md:right-8`}>
                     <div className="w-full h-[85dvh] md:h-[500px] glass-card rounded-t-2xl md:rounded-2xl flex flex-col overflow-hidden border border-[#38F8A8]/30 shadow-2xl bg-white dark:bg-black">
-                        <div className="p-3 border-b border-gray-200 dark:border-white/10 flex justify-between items-center bg-[#38F8A8]/10 cursor-pointer" onClick={() => setChatOpen(false)}>
+                        <div className={`p-3 border-b flex justify-between items-center cursor-pointer ${theme === 'light' ? 'bg-[#F4F4F5] border-gray-200' : 'bg-[#38F8A8]/10 border-white/10'}`} onClick={() => setChatOpen(false)}>
                             <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-full border border-[#38F8A8] overflow-hidden bg-black relative">
+                                <div className={`w-8 h-8 rounded-full border overflow-hidden bg-black relative ${theme === 'light' ? 'border-black' : 'border-[#38F8A8]'}`}>
                                     <img src="https://i.imgur.com/7JAu9YG.png" className="w-full h-full object-cover object-top scale-110" alt="Orin" loading="lazy" />
-                                    <div className="absolute bottom-0 right-0 w-2 h-2 bg-[#38F8A8] rounded-full border border-black animate-pulse"></div>
+                                    <div className={`absolute bottom-0 right-0 w-2 h-2 rounded-full border border-black animate-pulse ${theme === 'light' ? 'bg-[#C5A028]' : 'bg-[#38F8A8]'}`}></div>
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-gray-900 dark:text-white text-sm font-grotesk">ORIN AI</h3>
-                                    <p className="text-[9px] text-[#059669] dark:text-[#38F8A8] uppercase tracking-wider font-mono">Active Now</p>
+                                    <p className={`text-[9px] uppercase tracking-wider font-mono ${theme === 'light' ? 'text-[#C5A028]' : 'text-[#059669] dark:text-[#38F8A8]'}`}>Active Now</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
@@ -1445,7 +1433,7 @@ export default function App() {
                                         <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                             <div className={`max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed whitespace-pre-wrap ${
                                                 m.role === 'user' 
-                                                    ? 'bg-[#38F8A8] text-black chat-bubble-user font-bold font-grotesk' 
+                                                    ? `${theme === 'light' ? 'bg-[#C5A028] text-black font-bold' : 'bg-[#38F8A8] text-black font-bold'} chat-bubble-user font-grotesk`
                                                     : 'bg-gray-100 dark:bg-white/10 text-gray-800 dark:text-gray-200 chat-bubble-bot border border-gray-200 dark:border-white/5 font-grotesk'
                                             }`}>
                                                 {m.text}
@@ -1455,15 +1443,15 @@ export default function App() {
                                     {isThinking && (
                                         <div className="flex justify-start">
                                             <div className="bg-gray-100 dark:bg-white/5 p-3 rounded-2xl rounded-bl-sm flex gap-1 items-center">
-                                                <div className="w-1.5 h-1.5 bg-[#38F8A8] rounded-full animate-bounce"></div>
-                                                <div className="w-1.5 h-1.5 bg-[#38F8A8] rounded-full animate-bounce delay-100"></div>
-                                                <div className="w-1.5 h-1.5 bg-[#38F8A8] rounded-full animate-bounce delay-200"></div>
+                                                <div className={`w-1.5 h-1.5 rounded-full animate-bounce ${theme === 'light' ? 'bg-[#C5A028]' : 'bg-[#38F8A8]'}`}></div>
+                                                <div className={`w-1.5 h-1.5 rounded-full animate-bounce delay-100 ${theme === 'light' ? 'bg-[#C5A028]' : 'bg-[#38F8A8]'}`}></div>
+                                                <div className={`w-1.5 h-1.5 rounded-full animate-bounce delay-200 ${theme === 'light' ? 'bg-[#C5A028]' : 'bg-[#38F8A8]'}`}></div>
                                             </div>
                                         </div>
                                     )}
                                 </div>
 
-                                <form onSubmit={sendChat} className="p-3 border-t border-gray-200 dark:border-white/10 bg-white/80 dark:bg-black/80 backdrop-blur-md">
+                                <form onSubmit={sendChat} className={`p-3 border-t backdrop-blur-md ${theme === 'light' ? 'border-gray-200 bg-white/80' : 'border-white/10 bg-black/80'}`}>
                                     <div className="relative">
                                         <input 
                                             type="text" 
@@ -1472,7 +1460,7 @@ export default function App() {
                                             placeholder="Ask questions..." 
                                             className="w-full bg-gray-100 dark:bg-white/5 border border-gray-300 dark:border-white/10 rounded-full py-2.5 pl-4 pr-10 text-gray-900 dark:text-white focus:outline-none focus:border-[#38F8A8] transition-colors placeholder:text-gray-500 font-mono text-xs"
                                         />
-                                        <button type="submit" className="absolute right-1.5 top-1.5 p-1.5 bg-[#38F8A8] rounded-full text-black hover:scale-105 transition-transform">
+                                        <button type="submit" className={`absolute right-1.5 top-1.5 p-1.5 rounded-full text-black hover:scale-105 transition-transform ${theme === 'light' ? 'bg-[#C5A028]' : 'bg-[#38F8A8]'}`}>
                                             <Send className="w-4 h-4" />
                                         </button>
                                     </div>
@@ -1488,11 +1476,4 @@ export default function App() {
                 </div>
 
                 {gameOpen && (
-                    <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center backdrop-blur-xl">
-                        <PacManGame onClose={() => setGameOpen(false)} />
-                    </div>
-                )}
-            </div>
-        </ContentProtection>
-    );
-}
+                    <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-
