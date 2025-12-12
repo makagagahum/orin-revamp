@@ -20,7 +20,7 @@ export const TEAM = [
 export const GALLERY_IMAGES = [
     { 
         urls: [
-            "https://i.imgur.com/PhitkXI.png", // Online Sellers (Updated Link)
+            "https://i.imgur.com/PhitkXI.png", // Online Sellers
             "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?q=80&w=1200&auto=format&fit=crop"
         ], 
         caption: "Online Sellers",
@@ -28,7 +28,7 @@ export const GALLERY_IMAGES = [
     },
     { 
         urls: [
-            "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=1200&auto=format&fit=crop",
+            "https://i.imgur.com/a7rjEhU.png", // Corporate (UPDATED)
             "https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=1200&auto=format&fit=crop"
         ], 
         caption: "Corporate",
@@ -52,7 +52,7 @@ export const GALLERY_IMAGES = [
     },
     { 
         urls: [
-            "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=1200&auto=format&fit=crop",
+            "https://i.imgur.com/fZZKmj3.png", // Hospitals (UPDATED)
             "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=1200&auto=format&fit=crop"
         ], 
         caption: "Hospitals",
