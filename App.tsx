@@ -673,10 +673,151 @@ const HeroTicker = ({ theme }: { theme: 'dark' | 'light' }) => {
                  <img src={messages[idx].img} className={`w-12 h-12 rounded-full border-2 object-cover shrink-0 ${theme === 'light' ? 'border-gray-200' : 'border-[#38F8A8]/30'}`} alt="avatar" />
                  <div className="text-left flex-1 min-w-0">
                      <p className="text-[10px] text-gray-500 dark:text-gray-400 font-mono uppercase tracking-wider mb-0.5">{messages[idx].role}</p>
-                     <p className="text-sm font-bold text-gray-900 dark:text-white italic leading-tight mb-1 whitespace-normal">"{messages[idx].q}"</p>
-                     <p className={`text-xs font-bold whitespace-normal leading-tight ${theme === 'light' ? 'text-[#C5A028]' : 'text-[#38F8A8]'}`}>Orin: {messages[idx].a}</p>
+                     <p className="text-sm font-bold text-gray-900 dark:text-white italic leading-tight mb-1 whitespace-normal line-clamp-2">"{messages[idx].q}"</p>
+                     <p className={`text-xs font-bold whitespace-normal leading-tight line-clamp-2 ${theme === 'light' ? 'text-[#C5A028]' : 'text-[#38F8A8]'}`}>Orin: {messages[idx].a}</p>
                  </div>
             </div>
+        </div>
+    );
+};
+
+const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
+    const [step, setStep] = useState(0);
+    const [exiting, setExiting] = useState(false);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // Durations for each step in milliseconds
+    const stepDurations = [1500, 1500, 1200, 1500, 2000];
+
+    const advance = () => {
+        if (exiting) return;
+        if (step < 4) {
+            setStep(s => s + 1);
+        } else {
+            finish();
+        }
+    };
+
+    const finish = () => {
+        if (exiting) return;
+        setExiting(true);
+        // Short delay for exit animation
+        setTimeout(onComplete, 500);
+    };
+
+    const skip = (e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent triggering advance
+        onComplete();
+    };
+
+    useEffect(() => {
+        // Clear previous timer when step changes
+        if (timerRef.current) clearTimeout(timerRef.current);
+
+        if (step < 4) {
+             timerRef.current = setTimeout(() => {
+                setStep(s => s + 1);
+            }, stepDurations[step]);
+        } else if (step === 4) {
+            // Final step (reveal), wait then auto-finish
+            timerRef.current = setTimeout(finish, stepDurations[step]);
+        }
+
+        return () => {
+            if (timerRef.current) clearTimeout(timerRef.current);
+        };
+    }, [step]);
+
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = ''; };
+    }, []);
+
+    return (
+        <div 
+            onClick={advance}
+            className={`fixed inset-0 z-[99999] bg-black flex flex-col items-center justify-center transition-opacity duration-700 cursor-pointer ${exiting ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+        >
+            {/* Skip Button */}
+            <button 
+                onClick={skip}
+                className="absolute top-8 right-8 z-[100000] text-gray-500 hover:text-white text-xs font-mono uppercase tracking-widest border border-white/10 hover:border-white px-4 py-2 rounded-full transition-colors"
+            >
+                Skip Intro
+            </button>
+
+            <div className="text-center px-4 relative pointer-events-none">
+                
+                {/* STEP 0: LOSING SALES? */}
+                {step === 0 && (
+                    <div className="animate-in fade-in zoom-in duration-300">
+                        <h1 className="text-5xl md:text-8xl font-black text-red-500 font-grotesk tracking-tighter leading-none mb-2 glitch-text" data-text="TIRED OF">
+                            TIRED OF
+                        </h1>
+                        <h1 className="text-5xl md:text-8xl font-black text-white font-grotesk tracking-tighter leading-none glitch-text" data-text="LOSING SALES?">
+                            LOSING SALES?
+                        </h1>
+                    </div>
+                )}
+
+                {/* STEP 1: REPLYING AT 2AM? */}
+                {step === 1 && (
+                    <div className="animate-in fade-in zoom-in duration-300">
+                        <h1 className="text-5xl md:text-8xl font-black text-white font-grotesk tracking-tighter leading-none mb-2">
+                            REPLYING
+                        </h1>
+                        <h1 className="text-5xl md:text-8xl font-black text-red-500 font-grotesk tracking-tighter leading-none italic">
+                            AT 2:00 AM?
+                        </h1>
+                    </div>
+                )}
+
+                {/* STEP 2: STOP. */}
+                {step === 2 && (
+                    <div className="animate-in fade-in zoom-in duration-100">
+                        <h1 className="text-7xl md:text-9xl font-black text-white font-grotesk tracking-tighter leading-none border-b-8 border-red-500 inline-block">
+                            STOP.
+                        </h1>
+                    </div>
+                )}
+
+                {/* STEP 3: AUTOMATE */}
+                {step === 3 && (
+                    <div className="animate-in fade-in zoom-in duration-500">
+                        <h1 className="text-4xl md:text-7xl font-black text-gray-500 font-grotesk tracking-widest leading-none mb-4">
+                            AUTOMATE
+                        </h1>
+                        <h1 className="text-5xl md:text-8xl font-black text-[#38F8A8] font-grotesk tracking-tighter leading-none text-stroke">
+                            EVERYTHING.
+                        </h1>
+                    </div>
+                )}
+
+                {/* STEP 4: ORIN REVEAL */}
+                {step === 4 && (
+                    <div className="animate-in fade-in zoom-in duration-700 flex flex-col items-center">
+                        <div className="w-24 h-24 relative mb-6">
+                            <div className="absolute inset-0 border-4 border-[#38F8A8] border-t-transparent rounded-full animate-spin"></div>
+                            <div className="absolute inset-2 border-4 border-[#38F8A8]/30 border-b-transparent rounded-full animate-spin-reverse"></div>
+                            <div className="absolute inset-0 flex items-center justify-center font-black text-[#38F8A8] text-xl font-grotesk tracking-tighter">ORIN</div>
+                        </div>
+                        <h1 className="text-6xl md:text-8xl font-black text-white font-grotesk tracking-tighter">
+                            ORIN <span className="text-[#38F8A8]">AI</span>
+                        </h1>
+                        <p className="mt-4 font-mono text-gray-500 tracking-[0.5em] text-xs uppercase animate-pulse">
+                            Neural Core Online
+                        </p>
+                    </div>
+                )}
+            </div>
+
+            {/* Tap to Forward Hint */}
+            <div className="absolute bottom-12 text-gray-600 text-[10px] font-mono uppercase tracking-[0.3em] animate-pulse pointer-events-none">
+                Tap anywhere to fast forward
+            </div>
+
+            {/* Scanline Effect Overlay */}
+            <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-50 bg-[length:100%_2px,3px_100%] pointer-events-none opacity-20"></div>
         </div>
     );
 };
@@ -849,230 +990,125 @@ const PricingCard = ({ setChatOpen, theme }: { setChatOpen: () => void, theme: '
     );
 };
 
-const IntroOverlay = ({ onComplete }: { onComplete: () => void }) => {
-    const [step, setStep] = useState(0);
-    const [exiting, setExiting] = useState(false);
-    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    // Durations for each step in milliseconds
-    const stepDurations = [1500, 1500, 1200, 1500, 2000];
-
-    const advance = () => {
-        if (exiting) return;
-        if (step < 4) {
-            setStep(s => s + 1);
-        } else {
-            finish();
-        }
-    };
-
-    const finish = () => {
-        if (exiting) return;
-        setExiting(true);
-        // Short delay for exit animation
-        setTimeout(onComplete, 500);
-    };
-
-    const skip = (e: React.MouseEvent) => {
-        e.stopPropagation(); // Prevent triggering advance
-        onComplete();
-    };
-
-    useEffect(() => {
-        // Clear previous timer when step changes
-        if (timerRef.current) clearTimeout(timerRef.current);
-
-        if (step < 4) {
-             timerRef.current = setTimeout(() => {
-                setStep(s => s + 1);
-            }, stepDurations[step]);
-        } else if (step === 4) {
-            // Final step (reveal), wait then auto-finish
-            timerRef.current = setTimeout(finish, stepDurations[step]);
-        }
-
-        return () => {
-            if (timerRef.current) clearTimeout(timerRef.current);
-        };
-    }, [step]);
-
-    useEffect(() => {
-        document.body.style.overflow = 'hidden';
-        return () => { document.body.style.overflow = ''; };
-    }, []);
-
-    return (
-        <div 
-            onClick={advance}
-            className={`fixed inset-0 z-[99999] bg-black flex flex-col items-center justify-center transition-opacity duration-700 cursor-pointer ${exiting ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
-        >
-            {/* Skip Button */}
-            <button 
-                onClick={skip}
-                className="absolute top-8 right-8 z-[100000] text-gray-500 hover:text-white text-xs font-mono uppercase tracking-widest border border-white/10 hover:border-white px-4 py-2 rounded-full transition-colors"
-            >
-                Skip Intro
-            </button>
-
-            <div className="text-center px-4 relative pointer-events-none">
-                
-                {/* STEP 0: LOSING SALES? */}
-                {step === 0 && (
-                    <div className="animate-in fade-in zoom-in duration-300">
-                        <h1 className="text-5xl md:text-8xl font-black text-red-500 font-grotesk tracking-tighter leading-none mb-2 glitch-text" data-text="TIRED OF">
-                            TIRED OF
-                        </h1>
-                        <h1 className="text-5xl md:text-8xl font-black text-white font-grotesk tracking-tighter leading-none glitch-text" data-text="LOSING SALES?">
-                            LOSING SALES?
-                        </h1>
-                    </div>
-                )}
-
-                {/* STEP 1: REPLYING AT 2AM? */}
-                {step === 1 && (
-                    <div className="animate-in fade-in zoom-in duration-300">
-                        <h1 className="text-5xl md:text-8xl font-black text-white font-grotesk tracking-tighter leading-none mb-2">
-                            REPLYING
-                        </h1>
-                        <h1 className="text-5xl md:text-8xl font-black text-red-500 font-grotesk tracking-tighter leading-none italic">
-                            AT 2:00 AM?
-                        </h1>
-                    </div>
-                )}
-
-                {/* STEP 2: STOP. */}
-                {step === 2 && (
-                    <div className="animate-in fade-in zoom-in duration-100">
-                        <h1 className="text-7xl md:text-9xl font-black text-white font-grotesk tracking-tighter leading-none border-b-8 border-red-500 inline-block">
-                            STOP.
-                        </h1>
-                    </div>
-                )}
-
-                {/* STEP 3: AUTOMATE */}
-                {step === 3 && (
-                    <div className="animate-in fade-in zoom-in duration-500">
-                        <h1 className="text-4xl md:text-7xl font-black text-gray-500 font-grotesk tracking-widest leading-none mb-4">
-                            AUTOMATE
-                        </h1>
-                        <h1 className="text-5xl md:text-8xl font-black text-[#38F8A8] font-grotesk tracking-tighter leading-none text-stroke">
-                            EVERYTHING.
-                        </h1>
-                    </div>
-                )}
-
-                {/* STEP 4: ORIN REVEAL */}
-                {step === 4 && (
-                    <div className="animate-in fade-in zoom-in duration-700 flex flex-col items-center">
-                        <div className="w-24 h-24 relative mb-6">
-                            <div className="absolute inset-0 border-4 border-[#38F8A8] border-t-transparent rounded-full animate-spin"></div>
-                            <div className="absolute inset-2 border-4 border-[#38F8A8]/30 border-b-transparent rounded-full animate-spin-reverse"></div>
-                            <div className="absolute inset-0 flex items-center justify-center font-black text-[#38F8A8] text-xl font-grotesk tracking-tighter">ORIN</div>
-                        </div>
-                        <h1 className="text-6xl md:text-8xl font-black text-white font-grotesk tracking-tighter">
-                            ORIN <span className="text-[#38F8A8]">AI</span>
-                        </h1>
-                        <p className="mt-4 font-mono text-gray-500 tracking-[0.5em] text-xs uppercase animate-pulse">
-                            Neural Core Online
-                        </p>
-                    </div>
-                )}
-            </div>
-
-            {/* Tap to Forward Hint */}
-            <div className="absolute bottom-12 text-gray-600 text-[10px] font-mono uppercase tracking-[0.3em] animate-pulse pointer-events-none">
-                Tap anywhere to fast forward
-            </div>
-
-            {/* Scanline Effect Overlay */}
-            <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-50 bg-[length:100%_2px,3px_100%] pointer-events-none opacity-20"></div>
-        </div>
-    );
-};
-
 const MobileHero = ({ setChatOpen, theme }: { setChatOpen: () => void, theme: 'dark' | 'light' }) => {
     return (
-        <section className="relative min-h-[90vh] flex flex-col justify-center px-4 pt-20 overflow-hidden">
-             <div className="absolute inset-0 z-0 opacity-40">
+        <section className="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden px-4 pt-24 pb-12 text-center">
+            <div className="absolute inset-0 z-0 opacity-40">
                 <TesseractCircuit isActive={true} theme={theme} />
             </div>
             
-            <div className="relative z-10 flex flex-col items-center text-center">
-                <div className="mb-6 scale-90">
-                     <OrbitingAvatar theme={theme} />
-                </div>
-                
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-black/10 dark:border-white/10 bg-white/5 backdrop-blur-md mb-6">
+            <div className="relative z-10 flex flex-col items-center gap-6">
+                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-black/10 dark:border-white/10 bg-white/5 backdrop-blur-md hover:border-[#38F8A8]/50 transition-colors cursor-default group">
                     <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${theme === 'light' ? 'bg-[#C5A028]' : 'bg-[#38F8A8]'}`}></span>
-                    <span className="text-xs font-mono tracking-widest uppercase text-gray-600 dark:text-gray-300">Online 24/7</span>
+                    <span className="text-gray-600 dark:text-gray-300 text-[10px] font-mono tracking-widest uppercase group-hover:text-black dark:group-hover:text-white transition-colors">STATUS: ONLINE 24/7</span>
                 </div>
 
-                <h1 className="text-6xl font-black leading-[0.85] tracking-tighter mb-4 font-grotesk text-black dark:text-white">
-                    MEET <br/>
-                    <span className={`${theme === 'light' ? 'text-[#C5A028]' : 'text-[#38F8A8]'}`}>ORIN AI</span>
-                </h1>
-                
-                <p className="text-lg text-gray-700 dark:text-gray-300 font-medium leading-relaxed font-grotesk mb-8 max-w-xs mx-auto">
-                    Your 24/7 Digital Employee. Handles sales & support while you sleep.
-                </p>
-                
-                <button 
-                    onClick={setChatOpen}
-                    className={`font-black text-lg py-4 px-10 rounded-full flex items-center gap-2 font-grotesk border-2 border-transparent shadow-lg hover:scale-105 transition-transform ${theme === 'light' ? 'bg-[#C5A028] text-black shadow-[#C5A028]/30' : 'bg-[#38F8A8] text-black shadow-[#38F8A8]/30'}`}
-                >
-                    HIRE ORIN <ArrowRight className="w-5 h-5" />
-                </button>
+                <div className="scale-75 origin-center -my-8 pointer-events-none">
+                     <OrbitingAvatar theme={theme} />
+                </div>
+
+                <div className="mt-4">
+                    <h1 className="text-6xl font-black leading-[0.8] tracking-tighter mb-2 font-grotesk text-black dark:text-white">
+                        MEET <br/>
+                        <span className={`${theme === 'light' ? 'text-[#C5A028]' : 'text-[#38F8A8]'}`}>ORIN AI</span>
+                    </h1>
+                    <h2 className="text-2xl text-transparent text-stroke font-black tracking-widest mb-4 uppercase" style={{ WebkitTextStrokeColor: theme === 'light' ? '#111' : 'rgba(255,255,255,0.8)' }}>
+                        YOUR 24/7 EMPLOYEE
+                    </h2>
+                     <p className="text-lg text-gray-800 dark:text-gray-300 font-medium leading-relaxed font-grotesk max-w-xs mx-auto mb-6">
+                        Orin handles sales, support, and operations while you sleep.
+                    </p>
+                    
+                     <button 
+                        onClick={setChatOpen}
+                        className={`text-black font-black text-lg py-4 px-8 rounded-full shadow-[0_0_20px_rgba(56,248,168,0.4)] flex items-center gap-2 font-grotesk mx-auto border-2 border-transparent ${theme === 'light' ? 'bg-[#C5A028] shadow-[0_0_20px_rgba(197,160,40,0.4)]' : 'bg-[#38F8A8]'}`}
+                    >
+                        HIRE ORIN <ArrowRight className="w-5 h-5" />
+                    </button>
+                </div>
             </div>
         </section>
     );
 };
 
 const HireForm = ({ onSuccess }: { onSuccess: (data: any) => void }) => {
-    const [formData, setFormData] = useState({ name: '', business: '', aiType: 'Sales Agent', email: '' });
+    const [formData, setFormData] = useState({
+        name: '',
+        business: '',
+        contact: '',
+        aiType: 'Sales & Support'
+    });
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         // Simulate API call
-        await new Promise(r => setTimeout(r, 1500));
+        await new Promise(resolve => setTimeout(resolve, 1500));
         setLoading(false);
         onSuccess(formData);
     };
 
     return (
-        <div className="p-6 h-full flex flex-col">
-            <h3 className="text-xl font-black font-grotesk mb-1 text-black dark:text-white">HIRE APPLICATION</h3>
-            <p className="text-xs text-gray-500 mb-6 font-mono">Customize your AI Employee.</p>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 font-grotesk">
+            <div>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-gray-500">Your Name</label>
+                <input 
+                    required
+                    type="text" 
+                    className="w-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#38F8A8] transition-colors text-black dark:text-white"
+                    placeholder="Juan Dela Cruz"
+                    value={formData.name}
+                    onChange={e => setFormData({...formData, name: e.target.value})}
+                />
+            </div>
+            <div>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-gray-500">Business Name</label>
+                <input 
+                    required
+                    type="text" 
+                    className="w-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#38F8A8] transition-colors text-black dark:text-white"
+                    placeholder="My Awesome Brand"
+                    value={formData.business}
+                    onChange={e => setFormData({...formData, business: e.target.value})}
+                />
+            </div>
+            <div>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-gray-500">Contact (Email or FB Link)</label>
+                <input 
+                    required
+                    type="text" 
+                    className="w-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#38F8A8] transition-colors text-black dark:text-white"
+                    placeholder="juandelacruz@gmail.com"
+                    value={formData.contact}
+                    onChange={e => setFormData({...formData, contact: e.target.value})}
+                />
+            </div>
+            <div>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-gray-500">AI Role Needed</label>
+                <select 
+                    className="w-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#38F8A8] transition-colors text-black dark:text-white appearance-none"
+                    value={formData.aiType}
+                    onChange={e => setFormData({...formData, aiType: e.target.value})}
+                >
+                    <option>Sales & Support (General)</option>
+                    <option>Real Estate Agent</option>
+                    <option>E-commerce Support</option>
+                    <option>Booking/Reservation</option>
+                </select>
+            </div>
             
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Your Name</label>
-                    <input required type="text" className="w-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-[#38F8A8] transition-colors text-black dark:text-white" placeholder="Ex. Juan Dela Cruz" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
-                </div>
-                <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Business Name</label>
-                    <input required type="text" className="w-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-[#38F8A8] transition-colors text-black dark:text-white" placeholder="Ex. Juan's Gadgets" value={formData.business} onChange={e => setFormData({...formData, business: e.target.value})} />
-                </div>
-                 <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Email Address</label>
-                    <input required type="email" className="w-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-[#38F8A8] transition-colors text-black dark:text-white" placeholder="juan@example.com" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
-                </div>
-                <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">AI Role</label>
-                    <select className="w-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-[#38F8A8] transition-colors text-black dark:text-white" value={formData.aiType} onChange={e => setFormData({...formData, aiType: e.target.value})}>
-                        <option>Sales Agent</option>
-                        <option>Customer Support</option>
-                        <option>Booking Assistant</option>
-                        <option>Real Estate Agent</option>
-                    </select>
-                </div>
-                
-                <button type="submit" disabled={loading} className="w-full bg-[#38F8A8] text-black font-black font-grotesk uppercase py-4 rounded-xl hover:bg-[#38F8A8]/90 transition-colors mt-6 flex items-center justify-center gap-2">
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'SUBMIT APPLICATION'}
-                </button>
-            </form>
-        </div>
+            <button 
+                type="submit" 
+                disabled={loading}
+                className="w-full bg-[#38F8A8] text-black font-black py-4 rounded-xl uppercase tracking-widest hover:bg-[#32d48f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
+            >
+                {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> PROCESSING</> : 'SUBMIT APPLICATION'}
+            </button>
+            <p className="text-[10px] text-center text-gray-500 mt-2">
+                By submitting, you agree to receive a proposal for the ₱15k/mo plan.
+            </p>
+        </form>
     );
 };
 
