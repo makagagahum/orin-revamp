@@ -556,7 +556,7 @@ const DynamicShowcase = () => {
                 setIndex((prev) => (prev + 1) % GALLERY_IMAGES.length);
                 setFade(true); 
             }, 500); 
-        }, 6000); 
+        }, 8000); // CHANGED: 8 seconds transition
         return () => clearInterval(interval);
     }, [isInView, isPlaying]);
 
@@ -610,7 +610,7 @@ const DynamicShowcase = () => {
                     <div className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${fade ? 'opacity-100' : 'opacity-0'}`}>
                         <img 
                             src={item.urls[0]} 
-                            className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-700"
+                            className="w-full h-full object-contain md:object-cover opacity-80 md:opacity-60 group-hover:opacity-40 transition-opacity duration-700 bg-black"
                             alt={item.caption}
                             loading="eager" 
                             decoding="async"
@@ -1016,7 +1016,8 @@ const MobileHero = ({ setChatOpen, theme }: { setChatOpen: () => void, theme: 'd
                         YOUR 24/7 EMPLOYEE
                     </h2>
                      <p className="text-lg text-gray-800 dark:text-gray-300 font-medium leading-relaxed font-grotesk max-w-xs mx-auto mb-6">
-                        Orin handles sales, support, and operations while you sleep.
+                        Orin is the <span className="text-black dark:text-white font-bold">Advanced Digital Employee</span> for Filipino Businesses. 
+                        He handles sales, customer support, and operations 24/7.
                     </p>
                     
                      <button 
@@ -1456,81 +1457,6 @@ export default function App() {
                                     <div>
                                         <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">9. GOVERNING LAW</h5>
                                         <p>These Terms shall be governed by the laws of the Republic of the Philippines.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </LegalModal>
-                )}
-
-                {showPrivacy && (
-                    <LegalModal title="Privacy Policy" onClose={() => setShowPrivacy(false)}>
-                        <div className="space-y-8">
-                            <div>
-                                <h4 className="text-white font-bold mb-1 text-base">ORIN AI - DATA PRIVACY POLICY</h4>
-                                <p className="text-xs mb-6 text-gray-500">Last Updated: December 11, 2025</p>
-
-                                <div className="space-y-6">
-                                    <div>
-                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">1. INTRODUCTION</h5>
-                                        <p>Orin AI ("We," "Us," or "Our") is committed to protecting the privacy and security of our Clients and their end-users. This Privacy Policy outlines how we collect, use, store, and protect data in the course of providing our AI automation services, in compliance with the Data Privacy Act of 2012 (Republic Act No. 10173) of the Philippines and applicable international standards such as GDPR and CCPA.</p>
-                                    </div>
-                                    <div>
-                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">2. INFORMATION WE COLLECT</h5>
-                                        <p className="mb-2">To provide our multimodal AI services, we may collect and process the following types of information:</p>
-                                        <ul className="list-disc pl-5 space-y-1">
-                                            <li><strong className="text-gray-300">Client Business Information:</strong> Contact details, billing information, and platform credentials (API keys) necessary for integration.</li>
-                                            <li><strong className="text-gray-300">Interaction Data:</strong> Data generated during interactions with end-users, including text logs, voice recordings (for speech-to-text processing), and images (for computer vision analysis).</li>
-                                            <li><strong className="text-gray-300">Integration Data:</strong> Information synced from connected third-party platforms (e.g., CRM, E-commerce, Messaging apps) as authorized by the Client.</li>
-                                        </ul>
-                                    </div>
-                                    <div>
-                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">3. HOW WE USE YOUR INFORMATION</h5>
-                                        <p className="mb-2">We use the collected data strictly for the following purposes:</p>
-                                        <ul className="list-disc pl-5 space-y-1">
-                                            <li><strong className="text-gray-300">Service Delivery:</strong> To automate responses, process orders, schedule appointments, and perform the functions of the Orin AI agent.</li>
-                                            <li><strong className="text-gray-300">Technical Support:</strong> To troubleshoot issues and optimize system performance as part of your unlimited 24/7 support package.</li>
-                                            <li><strong className="text-gray-300">System Improvement:</strong> To refine AI understanding and accuracy through machine learning algorithms. Note: Data used for training is anonymized and stripped of personally identifiable information (PII).</li>
-                                        </ul>
-                                    </div>
-                                    <div>
-                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">4. DATA SHARING AND DISCLOSURE</h5>
-                                        <p className="mb-2">We do not sell your business data to third parties. Data is only shared in the following circumstances:</p>
-                                        <ul className="list-disc pl-5 space-y-1">
-                                            <li><strong className="text-gray-300">Authorized Integrations:</strong> Data is transferred to the third-party platforms you have explicitly connected (e.g., sending an order detail to your Shopify dashboard or a lead to your Salesforce CRM).</li>
-                                            <li><strong className="text-gray-300">Legal Requirements:</strong> If required by law or in response to a valid legal process.</li>
-                                        </ul>
-                                    </div>
-                                    <div>
-                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">5. DATA SECURITY MEASURES</h5>
-                                        <p className="mb-2">We employ enterprise-grade security protocols to protect your data:</p>
-                                        <ul className="list-disc pl-5 space-y-1">
-                                            <li><strong className="text-gray-300">Encryption:</strong> All data is encrypted both in transit and at rest using industry-standard protocols.</li>
-                                            <li><strong className="text-gray-300">Access Control:</strong> We utilize strict Role-Based Access Control (RBAC) and Multi-Factor Authentication (MFA) to ensure only authorized personnel can access administrative tools.</li>
-                                            <li><strong className="text-gray-300">Monitoring:</strong> Real-time security monitoring and threat detection systems are active 24/7.</li>
-                                        </ul>
-                                    </div>
-                                    <div>
-                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">6. DATA RETENTION AND DELETION</h5>
-                                        <ul className="list-disc pl-5 space-y-1">
-                                            <li><strong className="text-gray-300">Active Subscription:</strong> Data is retained for the duration of your active subscription to maintain conversation context and history.</li>
-                                            <li><strong className="text-gray-300">Upon Cancellation:</strong> If you cancel your ₱15,000/month subscription, you have a grace period to export your data. After this period, automated deletion protocols are triggered to permanently remove Client data from our active servers in compliance with data retention policies.</li>
-                                        </ul>
-                                    </div>
-                                    <div>
-                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">7. CLIENT AND USER RIGHTS</h5>
-                                        <p className="mb-2">Under the Data Privacy Act, you have the right to:</p>
-                                        <ul className="list-disc pl-5 space-y-1">
-                                            <li><strong className="text-gray-300">Access:</strong> Request a copy of the personal data we hold about you.</li>
-                                            <li><strong className="text-gray-300">Correction:</strong> Request correction of inaccurate or incomplete data.</li>
-                                            <li><strong className="text-gray-300">Erasure:</strong> Request the deletion of your data, subject to our retention policies and legal obligations.</li>
-                                        </ul>
-                                    </div>
-                                    <div>
-                                        <h5 className="text-white font-bold mb-2 text-xs uppercase tracking-wider">8. CONTACT US</h5>
-                                        <p className="mb-2">For any privacy-related concerns, data subject requests, or questions regarding this policy, please contact our Data Protection Officer:</p>
-                                        <p className="text-gray-300">Name: Marvin</p>
-                                        <p className="text-gray-300">Email: marvin@orin.work</p>
                                     </div>
                                 </div>
                             </div>
