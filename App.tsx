@@ -556,7 +556,7 @@ const DynamicShowcase = () => {
                 setIndex((prev) => (prev + 1) % GALLERY_IMAGES.length);
                 setFade(true); 
             }, 500); 
-        }, 8000); // CHANGED: 8 seconds transition
+        }, 30000); // CHANGED: 30 seconds transition
         return () => clearInterval(interval);
     }, [isInView, isPlaying]);
 
@@ -610,7 +610,7 @@ const DynamicShowcase = () => {
                     <div className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${fade ? 'opacity-100' : 'opacity-0'}`}>
                         <img 
                             src={item.urls[0]} 
-                            className="w-full h-full object-contain md:object-cover opacity-80 md:opacity-60 group-hover:opacity-40 transition-opacity duration-700 bg-black"
+                            className="w-full h-full object-contain md:object-cover opacity-100 md:opacity-90 group-hover:opacity-75 transition-opacity duration-700 bg-black"
                             alt={item.caption}
                             loading="eager" 
                             decoding="async"
