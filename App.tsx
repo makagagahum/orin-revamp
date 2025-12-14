@@ -292,6 +292,48 @@ const BrandIcons = {
 };
 
 const OrbitingAvatar = ({ theme }: { theme: 'dark' | 'light' }) => {
+    // EASTER EGG STATE: Triple Tap Logic
+    const [tapCount, setTapCount] = useState(0);
+    const [playMusic, setPlayMusic] = useState(false);
+    const audioRef = useRef<HTMLAudioElement>(null);
+
+    useEffect(() => {
+        if (tapCount > 0 && tapCount < 3) {
+            const timer = setTimeout(() => setTapCount(0), 1000); // Reset if too slow
+            return () => clearTimeout(timer);
+        }
+    }, [tapCount]);
+
+    const handleAvatarTap = (e: React.MouseEvent) => {
+        // Prevent interfering with other interactions if needed, though simple tap is safe
+        const newCount = tapCount + 1;
+        setTapCount(newCount);
+        if (newCount === 3) {
+            // Trigger playback DIRECTLY inside the click handler to satisfy browser autoplay policies
+            if (playMusic) {
+                // STOP Logic
+                setPlayMusic(false);
+                if (audioRef.current) {
+                    audioRef.current.pause();
+                    audioRef.current.currentTime = 0;
+                }
+            } else {
+                // PLAY Logic
+                setPlayMusic(true);
+                if (audioRef.current) {
+                    audioRef.current.volume = 0.5;
+                    const playPromise = audioRef.current.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            console.error("Audio play failed (User interaction needed or source blocked):", error);
+                        });
+                    }
+                }
+            }
+            setTapCount(0); // Reset for next time or keep playing
+        }
+    };
+
     // Config for planetary placement: angle in degrees, dist in % from center
     const PLATFORMS = [
         { id: 0, name: 'Facebook', color: '#1877F2', icon: <BrandIcons.Facebook />, angle: 270, dist: 48 }, // Top
@@ -387,13 +429,37 @@ const OrbitingAvatar = ({ theme }: { theme: 'dark' | 'light' }) => {
             <div className={`absolute inset-[46%] rounded-full border pointer-events-none ${theme === 'dark' ? 'border-[#38F8A8]/5' : 'border-[#C5A028]/5'}`}></div>
 
             {/* Main Avatar - Zoomed out to show head and shoulders */}
-            <div className={`w-[55%] h-[55%] rounded-full overflow-hidden border-[3px] shadow-[0_0_60px_rgba(56,248,168,0.2)] bg-black relative z-10 group ${theme === 'dark' ? 'border-[#38F8A8]' : 'border-[#0A0A0A] shadow-none'}`}>
+            <div 
+                onClick={handleAvatarTap}
+                className={`w-[55%] h-[55%] rounded-full overflow-hidden border-[3px] shadow-[0_0_60px_rgba(56,248,168,0.2)] bg-black relative z-10 group cursor-pointer ${theme === 'dark' ? 'border-[#38F8A8]' : 'border-[#0A0A0A] shadow-none'}`}
+            >
                 <img 
                     src="https://i.imgur.com/7JAu9YG.png" 
                     alt="Orin" 
                     className="w-full h-full object-cover object-top scale-100 translate-y-0 transition-transform duration-700 group-hover:scale-105" 
                 />
             </div>
+
+            {/* Audio Element - Persistent & Controlled via Ref. Using the user-provided MP3 URL from Archive.org. */}
+            {/* Using style object to ensure it is technically visible to the browser but practically invisible, avoiding 'display:none' pitfalls */}
+            <audio 
+                ref={audioRef} 
+                loop 
+                preload="auto" 
+                src="https://archive.org/download/oiia_spinning_cat_meme/oiia_spinning_cat_meme.mp3"
+                style={{ position: 'fixed', top: -100, left: -100, width: 1, height: 1, opacity: 0.01, pointerEvents: 'none', zIndex: -1 }}
+            />
+
+            {/* Audio Visualizer Indicator */}
+            {playMusic && (
+                 <div className="absolute top-0 right-0 p-4 z-40">
+                    <div className="flex items-end gap-1 h-4">
+                        <div className={`w-1 bg-[#38F8A8] animate-[bounce_0.6s_infinite] h-2`}></div>
+                        <div className={`w-1 bg-[#38F8A8] animate-[bounce_0.8s_infinite] h-4`}></div>
+                        <div className={`w-1 bg-[#38F8A8] animate-[bounce_0.5s_infinite] h-3`}></div>
+                    </div>
+                 </div>
+            )}
 
             {/* Ticker Below */}
             <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-[90%] max-w-sm z-30">
