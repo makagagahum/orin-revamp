@@ -4,7 +4,6 @@ import { MarketGrowthChart, ROIChart } from './components/Charts';
 import PacManGame from './components/PacManGame';
 import { ContentProtection } from './components/ContentProtection';
 import { TEAM, FEATURES, GALLERY_IMAGES } from './constants';
-import { GoogleGenAI, Chat } from "@google/genai";
 import { systemInstruction, generateFallbackResponse } from './services/geminiService';
 
 // --- UTILS ---
@@ -1196,20 +1195,22 @@ export default function App() {
         setInput('');
         setIsThinking(true);
 
-        if (chatSession) {
-             try {
-                const response = await chatSession.sendMessage({ message: input });
-                setMessages(p => [...p, {role: 'model', text: response.text || "Sorry boss, medyo loading ako ngayon."}]);
-             } catch(e) {
-                 const fallbackText = await generateFallbackResponse(input);
-                 setMessages(p => [...p, {role: 'model', text: fallbackText}]);
-             }
-        } else {
-             const fallbackText = await generateFallbackResponse(input);
-             setMessages(p => [...p, {role: 'model', text: fallbackText}]);
-        }
-        setIsThinking(false);
-    };
+        const response = await fetch('https://api.cerebras.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer csk-8mk6f68eddcexjh6w36k653vmhx8353rmy6h8y3hhfhr398c`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b',
+        messages: [{role: 'user', content: systemInstruction}, ...messages.map(m => ({role: m.role === 'user' ? 'user' : 'assistant', content: m.text})), {role: 'user', content: input}],
+        max_tokens: 1024,
+      }),
+    });
+    const data = await response.json();
+    const replyText = data.choices[0].message.content;
+    setMessages(p => [...p, {role: 'model', text: replyText}]);
+    setIsThinking(false);    };
 
     return (
         <ContentProtection>
