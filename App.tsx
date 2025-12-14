@@ -5,6 +5,7 @@ import PacManGame from './components/PacManGame';
 import { ContentProtection } from './components/ContentProtection';
 import { TEAM, FEATURES, GALLERY_IMAGES } from './constants';
 import { systemInstruction, generateFallbackResponse } from './services/geminiService';
+import { GoogleGenAI, Chat } from "@google/genai";
 
 // --- UTILS ---
 function useInView(options = { threshold: 0.1 }) {
@@ -1135,6 +1136,16 @@ export default function App() {
     const [chatSession, setChatSession] = useState<Chat | null>(null);
     const [showFloat, setShowFloat] = useState(false);
 
+    // Ref for auto-scrolling
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Auto-scroll effect
+    useEffect(() => {
+        if (chatOpen && viewMode === 'chat') {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [messages, isThinking, chatOpen, viewMode]);
+
     useEffect(() => {
         if (theme === 'dark') {
             document.documentElement.classList.add('dark');
@@ -1525,6 +1536,7 @@ export default function App() {
                                             </div>
                                         </div>
                                     )}
+                                    <div ref={messagesEndRef} />
                                 </div>
 
                                 <form onSubmit={sendChat} className={`p-3 border-t backdrop-blur-md ${theme === 'light' ? 'border-gray-200 bg-white/80' : 'border-white/10 bg-black/80'}`}>
