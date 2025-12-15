@@ -309,7 +309,6 @@ const OrbitingAvatar = ({ theme }: { theme: 'dark' | 'light' }) => {
         const newCount = tapCount + 1;
         setTapCount(newCount);
         if (newCount === 3) {
-            // Trigger playback DIRECTLY inside the click handler to satisfy browser autoplay policies
             if (playMusic) {
                 // STOP Logic
                 setPlayMusic(false);
@@ -318,7 +317,7 @@ const OrbitingAvatar = ({ theme }: { theme: 'dark' | 'light' }) => {
                     audioRef.current.currentTime = 0;
                 }
             } else {
-                // PLAY Logic
+                // PLAY Logic - Must be inside event handler for browser permission
                 setPlayMusic(true);
                 if (audioRef.current) {
                     audioRef.current.volume = 0.5;
@@ -395,7 +394,7 @@ const OrbitingAvatar = ({ theme }: { theme: 'dark' | 'light' }) => {
                     return (
                         <div 
                             key={i}
-                            className="absolute flex items-center justify-center w-10 h-10 md:w-14 md:h-14 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white transition-all duration-300 hover:scale-125 hover:z-50 hover:border-transparent group/icon cursor-pointer shadow-lg"
+                            className="absolute flex items-center justify-center w-10 h-10 md:w-14 md:h-14 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white transition-all duration-300 hover:scale-125 hover:z-50 hover:border-transparent group/icon cursor-pointer shadow-lg pointer-events-auto"
                             style={{
                                 left: `${left}%`,
                                 top: `${top}%`,
@@ -431,7 +430,7 @@ const OrbitingAvatar = ({ theme }: { theme: 'dark' | 'light' }) => {
             {/* Main Avatar - Zoomed out to show head and shoulders */}
             <div 
                 onClick={handleAvatarTap}
-                className={`w-[55%] h-[55%] rounded-full overflow-hidden border-[3px] shadow-[0_0_60px_rgba(56,248,168,0.2)] bg-black relative z-10 group cursor-pointer ${theme === 'dark' ? 'border-[#38F8A8]' : 'border-[#0A0A0A] shadow-none'}`}
+                className={`w-[55%] h-[55%] rounded-full overflow-hidden border-[3px] shadow-[0_0_60px_rgba(56,248,168,0.2)] bg-black relative z-10 group cursor-pointer pointer-events-auto ${theme === 'dark' ? 'border-[#38F8A8]' : 'border-[#0A0A0A] shadow-none'}`}
             >
                 <img 
                     src="https://i.imgur.com/7JAu9YG.png" 
@@ -440,15 +439,10 @@ const OrbitingAvatar = ({ theme }: { theme: 'dark' | 'light' }) => {
                 />
             </div>
 
-            {/* Audio Element - Persistent & Controlled via Ref. Using the user-provided MP3 URL from Archive.org. */}
-            {/* Using style object to ensure it is technically visible to the browser but practically invisible, avoiding 'display:none' pitfalls */}
-            <audio 
-                ref={audioRef} 
-                loop 
-                preload="auto" 
-                src="https://archive.org/download/oiia_spinning_cat_meme/oiia_spinning_cat_meme.mp3"
-                style={{ position: 'fixed', top: -100, left: -100, width: 1, height: 1, opacity: 0.01, pointerEvents: 'none', zIndex: -1 }}
-            />
+            {/* Audio Element - Persistent & Controlled via Ref. Using a highly reliable Google Storage URL. */}
+            <audio ref={audioRef} loop preload="auto" style={{ position: 'absolute', width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}>
+                 <source src="https://archive.org/download/oiia_spinning_cat_meme/oiia_spinning_cat_meme.mp3" type="audio/mpeg" />
+            </audio>
 
             {/* Audio Visualizer Indicator */}
             {playMusic && (
@@ -1069,7 +1063,7 @@ const MobileHero = ({ setChatOpen, theme }: { setChatOpen: () => void, theme: 'd
                     <span className="text-gray-600 dark:text-gray-300 text-[10px] font-mono tracking-widest uppercase group-hover:text-black dark:group-hover:text-white transition-colors">STATUS: ONLINE 24/7</span>
                 </div>
 
-                <div className="scale-75 origin-center -my-8 pointer-events-none">
+                <div className="scale-75 origin-center -my-8">
                      <OrbitingAvatar theme={theme} />
                 </div>
 
