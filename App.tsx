@@ -1187,13 +1187,12 @@ export default function App() {
     const [showTos, setShowTos] = useState(false);
     const [showPrivacy, setShowPrivacy] = useState(false);
     
-    const [messages, setMessages] = useState([
-        {role: 'model', text: 'Hello! Ako nga pala si Orin 👋. Advanced AI Employee na parang tao kausap. ₱15,000 Monthly lang for Premium Access. Sulit diba? 🚀'},
-        {role: 'model', text: 'Questions? Chat here. Ready to hire? Click the "Hire Application" button above!'}
+    const [conversationHistory, setConversationHistory] = useState([
+        {role: 'assistant', content: 'Hello! Ako nga pala si Orin 👋. Advanced AI Employee na parang tao kausap. ₱15,000 Monthly lang for Premium Access. Sulit diba? 🚀'},
+        {role: 'assistant', content: 'Questions? Chat here. Ready to hire? Click the "Hire Application" button above!'}
     ]);
     const [input, setInput] = useState('');
     const [isThinking, setIsThinking] = useState(false);
-    const [chatSession, setChatSession] = useState<Chat | null>(null);
     const [showFloat, setShowFloat] = useState(false);
 
     // Ref for auto-scrolling
@@ -1204,7 +1203,7 @@ export default function App() {
         if (chatOpen && viewMode === 'chat') {
             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
-    }, [messages, isThinking, chatOpen, viewMode]);
+    }, [conversationHistory, isThinking, chatOpen, viewMode]);
 
     useEffect(() => {
         if (theme === 'dark') {
@@ -1217,15 +1216,6 @@ export default function App() {
     }, [theme]);
 
     useEffect(() => {
-        if(typeof process !== 'undefined' && process.env && process.env.API_KEY) {
-             const client = new GoogleGenAI({ apiKey: process.env.API_KEY });
-             const session = client.chats.create({
-                 model: 'gemini-2.5-flash',
-                 config: { systemInstruction: systemInstruction }
-             });
-             setChatSession(session);
-        }
-
         const handleScroll = () => {
             setShowFloat(window.scrollY > 400); 
         };
@@ -1251,37 +1241,54 @@ export default function App() {
 
     const handleFormSuccess = (formData: any) => {
         setViewMode('chat');
-        setMessages(prev => [
+        setConversationHistory(prev => [
             ...prev,
-            {role: 'user', text: `Submitted Application:\nName: ${formData.name}\nBusiness: ${formData.business}`},
-            {role: 'model', text: `Application Received, ${formData.name}! 🚀\n\nI've forwarded your details to Marvin. While we process your ${formData.aiType} setup, feel free to ask me any questions about how I can help grow ${formData.business}.`}
+            {role: 'user', content: `Submitted Application:\nName: ${formData.name}\nBusiness: ${formData.business}`},
+            {role: 'assistant', content: `Application Received, ${formData.name}! 🚀\n\nI've forwarded your details to Marvin. While we process your ${formData.aiType} setup, feel free to ask me any questions about how I can help grow ${formData.business}.`}
         ]);
     };
 
-    const sendChat = async (e: React.FormEvent) => {
+    const sendChat = async (userMessage: string) => {
+      try {
+        const newHistory = [...conversationHistory, { role: 'user', content: userMessage }];
+
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: userMessage,
+            conversationHistory: newHistory,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('API request failed');
+        }
+
+        const data = await response.json();
+        const assistantMessage = data.choices?.[0]?.message?.content || '';
+
+        setConversationHistory([
+          ...newHistory,
+          { role: 'assistant', content: assistantMessage },
+        ]);
+
+        return assistantMessage;
+      } catch (error) {
+        console.error('Chat error:', error);
+        return 'Error: Could not process request';
+      }
+    };
+
+    const handleChatSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if(!input) return;
-        const userMsg = {role: 'user', text: input};
-        setMessages(p => [...p, userMsg]);
+        const msg = input;
         setInput('');
         setIsThinking(true);
-
-        const response = await fetch('https://api.cerebras.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer csk-8mk6f68eddcexjh6w36k653vmhx8353rmy6h8y3hhfhr398c`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b',
-        messages: [{role: 'user', content: systemInstruction}, ...messages.map(m => ({role: m.role === 'user' ? 'user' : 'assistant', content: m.text})), {role: 'user', content: input}],
-        max_tokens: 1024,
-      }),
-    });
-    const data = await response.json();
-    const replyText = data.choices[0].message.content;
-    setMessages(p => [...p, {role: 'model', text: replyText}]);
-    setIsThinking(false);    };
+        await sendChat(msg);
+        setIsThinking(false);
+    };
 
     return (
         <ContentProtection>
@@ -1576,14 +1583,14 @@ export default function App() {
                         ) : (
                             <>
                                 <div className="flex-1 overflow-y-auto p-3 space-y-3 scroll-smooth">
-                                    {messages.map((m, i) => (
+                                    {conversationHistory.map((m, i) => (
                                         <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                             <div className={`max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed whitespace-pre-wrap ${
                                                 m.role === 'user' 
                                                     ? `${theme === 'light' ? 'bg-[#C5A028] text-black font-bold' : 'bg-[#38F8A8] text-black font-bold'} chat-bubble-user font-grotesk`
                                                     : 'bg-gray-100 dark:bg-white/10 text-gray-800 dark:text-gray-200 chat-bubble-bot border border-gray-200 dark:border-white/5 font-grotesk'
                                             }`}>
-                                                {m.text}
+                                                {m.content}
                                             </div>
                                         </div>
                                     ))}
@@ -1599,7 +1606,7 @@ export default function App() {
                                     <div ref={messagesEndRef} />
                                 </div>
 
-                                <form onSubmit={sendChat} className={`p-3 border-t backdrop-blur-md ${theme === 'light' ? 'border-gray-200 bg-white/80' : 'border-white/10 bg-black/80'}`}>
+                                <form onSubmit={handleChatSubmit} className={`p-3 border-t backdrop-blur-md ${theme === 'light' ? 'border-gray-200 bg-white/80' : 'border-white/10 bg-black/80'}`}>
                                     <div className="relative">
                                         <input 
                                             type="text" 
